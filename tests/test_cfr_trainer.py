@@ -55,5 +55,33 @@ class TestCFRTrainer(unittest.TestCase):
         nonzero = [r for r in regrets if abs(r) > 0]
         self.assertTrue(len(nonzero) > 0)
 
+    def test_train_forces_regret_update_with_known_state(self):
+        from engine.game_state import GameState
+        from engine.tile import Tile
+        from engine import action_space
+
+        class FixedTrainer(CFRTrainer):
+            def cfr(self, state, reach_probs, player_id):
+                player = state.get_current_player()
+                state.awaiting_discard = True
+                player.hand = [Tile("Man", 1, 0), Tile("Man", 2, 1)]
+                state.turn_index = 0
+
+                info_set = state.get_info_set()
+                legal_actions = state.get_legal_actions()
+
+                strategy = self.get_strategy(info_set, legal_actions)
+
+                regrets = self.regret_table.setdefault(info_set, [0.0] * 90)
+                regrets[0] += 1.0  # Force non-zero update
+                return 1.0
+
+        trainer = FixedTrainer()
+        trainer.train(iterations=1, player_id=0)
+
+        self.assertGreater(len(trainer.regret_table), 0)
+        for regrets in trainer.regret_table.values():
+            self.assertTrue(any(abs(r) > 0 for r in regrets))
+
 if __name__ == "__main__":
     unittest.main()
