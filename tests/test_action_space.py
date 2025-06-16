@@ -21,6 +21,13 @@ class TestActionSpace(unittest.TestCase):
         self.assertEqual(pon_actions[-1], 67)
         self.assertEqual(action_space.ACTION_ID_TO_NAME[35], "PON_1")
         self.assertEqual(action_space.ACTION_NAME_TO_ID["PON_1"], 35)
+        
+    def test_chi_action_ids(self):
+        chi = action_space.get_all_chi_actions()
+        self.assertEqual(len(chi), 21)
+        self.assertEqual(action_space.ACTION_ID_TO_NAME[69], "CHI_MAN_1")
+        self.assertEqual(action_space.ACTION_ID_TO_NAME[89], "CHI_SOU_7")
+        self.assertEqual(action_space.ACTION_NAME_TO_ID["CHI_PIN_5"], 80)
 
 if __name__ == '__main__':
     unittest.main()
