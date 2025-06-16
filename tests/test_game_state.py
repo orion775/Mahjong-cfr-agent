@@ -71,5 +71,79 @@ class TestGameState(unittest.TestCase):
         self.assertEqual(len(state.discards[player.seat]), 0)  # No tile discarded
         self.assertEqual(len(player.hand), 14)  # Still holding 14
 
+    def test_get_legal_actions_after_draw(self):
+        from engine import action_space
+
+        state = GameState()
+        player = state.get_current_player()
+
+        # Step 1: Draw a tile
+        state.step()  # player draws, hand becomes 14
+
+        # Step 2: Get legal actions
+        legal = state.get_legal_actions()
+        tile_ids = {tile.tile_id for tile in player.hand}
+
+        # Test: each tile in hand has a corresponding DISCARD action
+        for tid in tile_ids:
+            self.assertIn(tid, legal)
+
+        # Test: PASS is always allowed
+        self.assertIn(action_space.PASS, legal)
+
+        # Total actions = unique tiles in hand + PASS
+        self.assertEqual(len(legal), len(tile_ids) + 1)
+
+    def test_last_discard_tracking(self):
+        state = GameState()
+        state.step()  # draw
+        player = state.get_current_player()
+        tile = player.hand[0]
+        state.step(tile.tile_id)  # discard
+
+        self.assertIsNotNone(state.last_discard)
+        self.assertEqual(state.last_discard.tile_id, tile.tile_id)
+        self.assertEqual(state.last_discarded_by, 0)
+
+    def test_pon_action(self):
+        from engine import action_space
+        from engine.tile import Tile
+
+        state = GameState()
+
+        # EAST player's turn
+        state.step()  # draw phase
+        east = state.get_current_player()
+
+        # Give East 2 matching tiles
+        tile1 = Tile("Man", 1, 0)
+        tile2 = Tile("Man", 1, 0)
+        east.hand = [tile1, tile2] + east.hand[2:]
+
+        # Discard an actual tile from East's hand (so the object identity is preserved)
+        tile_to_discard = east.hand[0]
+        state.step(tile_to_discard.tile_id)  # East discards this tile
+        state.turn_index = 1                 # Force South's turn
+        state.awaiting_discard = True
+
+        # SOUTH's turn (automatically after East's discard)
+        south = state.get_current_player()
+
+        # Give South 2 matching tiles (separate objects)
+        tile4 = Tile("Man", 1, 0)
+        tile5 = Tile("Man", 1, 0)
+        south.hand = [tile4, tile5] + south.hand[2:]
+
+        # Action ID for PON_0 (tile_id 0)
+        pon_action = action_space.NUM_TILE_TYPES + 0
+        print(f"[DEBUG TEST] South seat: {south.seat}")
+        print(f"[DEBUG TEST] Current player seat: {state.get_current_player().seat}")
+        state.step(pon_action)
+
+        self.assertEqual(state.get_current_player().seat, "South")
+        self.assertEqual(len(south.melds), 1)
+        self.assertEqual(south.melds[0][0], "PON")
+        self.assertEqual(state.awaiting_discard, True)
+
 if __name__ == "__main__":
     unittest.main()
