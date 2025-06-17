@@ -160,28 +160,42 @@ class GameState:
             if tile_to_kan is None:
                 raise ValueError(f"KAN tile_id {tile_index} not found in hand")
 
-            if not player.can_ankan(tile_to_kan):
-                raise ValueError("Cannot KAN: need 4 identical tiles")
+            # === Check if this is an OPEN KAN (Minkan) on discarded tile ===
+            if self.last_discard and self.last_discard.tile_id == tile_index:
+                matching_tiles = [t for t in player.hand if t.tile_id == tile_index]
+                if len(matching_tiles) != 3:
+                    raise ValueError("Cannot MINKAN: need 3 matching tiles in hand")
 
-            # Remove 4 tiles
-            removed = 0
-            for _ in range(4):
-                player.hand.remove(tile_to_kan)
-                removed += 1
+                # Build meld with 3 from hand + 1 discard
+                used_tiles = matching_tiles[:3]
+                meld_tiles = used_tiles + [self.last_discard]
+                player.call_meld("KAN", meld_tiles, include_discard=True)
 
-            if removed != 4:
-                raise ValueError("KAN failed: could not remove 4 tiles")
+                # Remove discard from discard pile
+                discard_seat = self.players[self.last_discarded_by].seat
+                self.discards[discard_seat] = [
+                    t for t in self.discards[discard_seat] if t.tile_id != tile_index
+                ]
+                self.last_discard = None
+                self.last_discarded_by = None
 
-            # Register the meld
-            kan_tiles = [tile_to_kan] * 4
-            player.melds.append(("KAN", kan_tiles))
+            else:
+                # === Closed KAN (Ankan) ===
+                if not player.can_ankan(tile_to_kan):
+                    raise ValueError("Cannot ANKAN: need 4 identical tiles")
 
-            self.awaiting_discard = True  # player must discard after calling KAN
+                for _ in range(4):
+                    player.hand.remove(tile_to_kan)
+                player.melds.append(("KAN", [tile_to_kan] * 4))
+
+            # Bonus tile draw after KAN (open or closed)
             if not self.wall:
                 raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
 
             bonus_tile = self.wall.pop()
             player.draw_tile(bonus_tile)
+
+            self.awaiting_discard = True
             return
 
         else:

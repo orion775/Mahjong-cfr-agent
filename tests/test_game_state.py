@@ -335,6 +335,102 @@ class TestGameState(unittest.TestCase):
         # Verify the hand contains 1 tile not matching the KAN tile_id (bonus draw)
         kan_tile_ids = [t.tile_id for t in player.hand if t.tile_id == 0]
         self.assertLess(len(kan_tile_ids), len(player.hand))  # At least 1 bonus tile differs
+    
+    def test_minkan_action_successful(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+
+        # Force turn order and discard state
+        state.turn_index = 3  # West
+        state.step()  # West draws
+        discard_tile = Tile("Pin", 2, 10)
+        state.last_discard = discard_tile
+        state.last_discarded_by = 3
+        state.discards["North"].append(discard_tile)
+
+        # Player South holds 3× tile_id = 10
+        state.turn_index = 0
+        player = state.get_current_player()
+        player.hand.clear()
+        player.hand.extend([Tile("Pin", 2, 10) for _ in range(3)])
+
+        state.awaiting_discard = True
+        kan_action = action_space.ACTION_NAME_TO_ID["KAN_10"]
+
+        state.step(kan_action)
+
+        self.assertEqual(len(player.melds), 1)
+        self.assertEqual(player.melds[0][0], "KAN")
+        self.assertEqual(len(player.melds[0][1]), 4)
+        self.assertTrue(state.awaiting_discard)
+
+    def test_minkan_bonus_draw(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        discard_tile = Tile("Sou", 5, 22)
+
+        state.last_discard = discard_tile
+        state.last_discarded_by = 3
+        state.discards["North"].append(discard_tile)
+        player = state.get_current_player()
+        player.hand.clear()
+        player.hand.extend([Tile("Sou", 5, 22) for _ in range(3)])
+
+        wall_before = len(state.wall)
+        state.awaiting_discard = True
+        state.step(action_space.ACTION_NAME_TO_ID["KAN_22"])
+
+        self.assertEqual(len(state.wall), wall_before - 1)
+        self.assertEqual(len(player.hand), 0 + 1)  # -3 + 1 = 1
+
+    def test_minkan_removes_discard(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        discard_tile = Tile("Man", 8, 7)
+        state.last_discard = discard_tile
+        state.last_discarded_by = 2
+        state.discards["West"].append(discard_tile)
+
+        player = state.get_current_player()
+        player.hand.clear()
+        player.hand.extend([Tile("Man", 8, 7) for _ in range(3)])
+
+        state.awaiting_discard = True
+        state.step(action_space.ACTION_NAME_TO_ID["KAN_7"])
+
+        discards = state.discards["West"]
+        self.assertFalse(any(t.tile_id == 7 for t in discards))
+        self.assertIsNone(state.last_discard)
+        self.assertIsNone(state.last_discarded_by)
+
+    def test_minkan_fails_with_less_than_3(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        discard_tile = Tile("Dragon", "Red", 31)
+        state.last_discard = discard_tile
+        state.last_discarded_by = 1
+        state.discards["South"].append(discard_tile)
+
+        player = state.get_current_player()
+        player.hand.clear()
+        player.hand.extend([Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31)])  # only 2
+
+        state.awaiting_discard = True
+        with self.assertRaises(ValueError):
+            state.step(action_space.ACTION_NAME_TO_ID["KAN_31"])
+
         
 
 if __name__ == "__main__":
