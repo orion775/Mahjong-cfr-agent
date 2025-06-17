@@ -48,6 +48,14 @@ class TestActionSpace(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             action_space.encode_chi([27, 28, 29])
+    
+    def test_kan_action_ids(self):
+        kan = action_space.get_all_kan_actions()
+        self.assertEqual(len(kan), 34)
+        self.assertEqual(kan[0], 90)
+        self.assertEqual(kan[-1], 123)
+        self.assertEqual(action_space.ACTION_ID_TO_NAME[90], "KAN_0")
+        self.assertEqual(action_space.ACTION_NAME_TO_ID["KAN_0"], 90)
 
 if __name__ == '__main__':
     unittest.main()

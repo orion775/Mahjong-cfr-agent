@@ -78,6 +78,21 @@ class TestPlayer(unittest.TestCase):
         self.assertEqual(player.melds[0][0], "PON")
         self.assertEqual(player.melds[0][1], [tile, tile])
 
+    def test_can_ankan(self):
+        from engine.tile import Tile
+        player = Player("East")
+
+        # Give player four identical tiles (e.g. 4× Man 1)
+        tile = Tile("Man", 1, 0)
+        for _ in range(4):
+            player.draw_tile(tile)
+
+        self.assertTrue(player.can_ankan(tile))
+
+        # Remove one tile — should fail
+        player.discard_tile(tile)
+        self.assertFalse(player.can_ankan(tile))
+
 
 if __name__ == '__main__':
     unittest.main()
