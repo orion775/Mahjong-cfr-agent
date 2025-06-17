@@ -29,5 +29,25 @@ class TestActionSpace(unittest.TestCase):
         self.assertEqual(action_space.ACTION_ID_TO_NAME[89], "CHI_SOU_7")
         self.assertEqual(action_space.ACTION_NAME_TO_ID["CHI_PIN_5"], 80)
 
+    def test_encode_decode_chi(self):
+        from engine import action_space
+
+        melds = [
+            [0, 1, 2],
+            [10, 11, 12],
+            [24, 25, 26]
+        ]
+
+        for meld in melds:
+            action_id = action_space.encode_chi(meld)
+            decoded = action_space.decode_chi(action_id)
+            self.assertEqual(decoded, meld)
+
+        with self.assertRaises(ValueError):
+            action_space.encode_chi([1, 2, 4])
+
+        with self.assertRaises(ValueError):
+            action_space.encode_chi([27, 28, 29])
+
 if __name__ == '__main__':
     unittest.main()

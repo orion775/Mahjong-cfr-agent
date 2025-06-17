@@ -39,15 +39,25 @@ class Player:
             (val + 1 in values and val + 2 in values)
         )
     
-    def call_meld(self, meld_type, tiles):
-        """
-        Register a meld (e.g., PON, CHI).
-        - meld_type: "PON", "CHI", etc.
-        - tiles: List[Tile] used for the meld (2 tiles from hand)
-        """
+    def call_meld(self, meld_type, tiles, include_discard=False):
+        print(f"[DEBUG] Calling meld: {meld_type} with {[str(t) for t in tiles]}")
+        print(f"[DEBUG] Hand before: {[str(t) for t in self.hand]}")
+
+        removed = 0
         for t in tiles:
             if t in self.hand:
                 self.hand.remove(t)
-            else:
+                removed += 1
+                print(f"[DEBUG] Removed {t} from hand")
+            elif not include_discard:
                 raise ValueError(f"Cannot declare {meld_type}, missing tile: {t}")
+            else:
+                print(f"[DEBUG] Skipped removal for {t} (discarded tile)")
+
+        print(f"[DEBUG] Total removed: {removed}, required: {len(tiles) - 1}")
+        if include_discard and removed < len(tiles) - 1:
+            raise ValueError("Not enough tiles in hand for meld")
+
         self.melds.append((meld_type, tiles))
+        print(f"[DEBUG] Meld appended: {meld_type}")
+        print(f"[DEBUG] Melds now: {[(m[0], [str(t) for t in m[1]]) for m in self.melds]}")

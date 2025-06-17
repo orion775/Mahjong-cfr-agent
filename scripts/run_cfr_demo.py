@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from engine.cfr_trainer import CFRTrainer
 
 trainer = CFRTrainer()
-trainer.train(iterations=1000, player_id=0)
+trainer.train(iterations=10000, player_id=0)
 
 # Export full strategy to file
 trainer.export_strategy_table("cfr_policy.txt", threshold=0.05)
