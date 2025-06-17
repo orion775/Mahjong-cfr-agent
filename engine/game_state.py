@@ -177,6 +177,11 @@ class GameState:
             player.melds.append(("KAN", kan_tiles))
 
             self.awaiting_discard = True  # player must discard after calling KAN
+            if not self.wall:
+                raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
+
+            bonus_tile = self.wall.pop()
+            player.draw_tile(bonus_tile)
             return
 
         else:
@@ -239,20 +244,6 @@ class GameState:
 
         # Info set string (used as CFR table key)
         return f"{player.seat}|H:{','.join(map(str, hand_vec))}|L:{last_tile_id}|BY:{last_seat}|M:{meld_str}"
-    
-    def is_terminal(self):
-        """Stub: game ends when any player has 4 melds."""
-        for player in self.players:
-            if len(player.melds) >= 4:
-                return True
-        return False
-
-    def get_reward(self, player_id):
-        """Stub: +1 for winning player, 0 for others."""
-        for i, player in enumerate(self.players):
-            if len(player.melds) >= 4:
-                return 1.0 if i == player_id else 0.0
-        return 0.0
     
     def can_chi(self, tile):
         """Returns a list of valid CHI melds the current player could call on this tile, if eligible."""

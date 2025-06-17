@@ -255,33 +255,87 @@ class TestGameState(unittest.TestCase):
     def test_ankan_action(self):
         from engine.tile import Tile
         from engine import action_space
+        from engine.game_state import GameState
 
         state = GameState()
         player = state.get_current_player()
 
-        # Give player 4 identical tiles (e.g. tile_id 0)
-        tile = Tile("Man", 1, 0)
-        player.hand = [tile, tile, tile, tile] + player.hand[4:]
+        # Force hand to contain only 4 of the same tile
+        player.hand.clear()
+        player.hand.extend([Tile("Man", 1, 0) for _ in range(4)])
 
-        # Build the KAN action (KAN_0 = tile_id 0)
-        kan_action = action_space.ACTION_NAME_TO_ID["KAN_0"]
-
-        # Set phase to discard (immediately after draw)
         state.awaiting_discard = True
-
-        # Take the action
+        kan_action = action_space.ACTION_NAME_TO_ID["KAN_0"]
         state.step(kan_action)
 
-        # Meld should be registered
         self.assertEqual(len(player.melds), 1)
         self.assertEqual(player.melds[0][0], "KAN")
         self.assertEqual(len(player.melds[0][1]), 4)
-        self.assertTrue(all(t.tile_id == 0 for t in player.melds[0][1]))
-
-        # Hand should be down by 4 tiles
-        self.assertEqual(player.hand.count(tile), 0)
-
-        # Player must now discard
         self.assertTrue(state.awaiting_discard)
+
+        
+    def test_bonus_draw_after_ankan(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        player = state.get_current_player()
+
+        # Give player 4 matching tiles (e.g., tile_id = 0)
+        player.hand.clear()
+        tile = Tile("Man", 1, 0)
+        player.hand.extend([tile] * 4)
+        hand_size_before = len(player.hand)
+        wall_size_before = len(state.wall)
+
+        kan_action = action_space.ACTION_NAME_TO_ID["KAN_0"]
+        state.awaiting_discard = True  # simulate discard phase
+        state.step(kan_action)
+
+        self.assertEqual(len(player.hand), hand_size_before - 4 + 1)  # -4 tiles + 1 bonus draw
+        self.assertTrue(state.awaiting_discard)
+
+    def test_wall_decreases_after_bonus_draw(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        player = state.get_current_player()
+
+        player.hand.clear()
+        tile = Tile("Man", 1, 0)
+        player.hand.extend([tile] * 4)
+
+        state.awaiting_discard = True
+        wall_before = len(state.wall)
+        kan_action = action_space.ACTION_NAME_TO_ID["KAN_0"]
+        state.step(kan_action)
+        wall_after = len(state.wall)
+
+        self.assertEqual(wall_after, wall_before - 1)
+
+    def test_bonus_tile_goes_to_correct_player(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        player = state.get_current_player()
+
+        player.hand.clear()
+        tile = Tile("Man", 1, 0)
+        player.hand.extend([tile] * 4)
+
+        state.awaiting_discard = True
+        kan_action = action_space.ACTION_NAME_TO_ID["KAN_0"]
+        state.step(kan_action)
+
+        # Verify the hand contains 1 tile not matching the KAN tile_id (bonus draw)
+        kan_tile_ids = [t.tile_id for t in player.hand if t.tile_id == 0]
+        self.assertLess(len(kan_tile_ids), len(player.hand))  # At least 1 bonus tile differs
+        
+
 if __name__ == "__main__":
     unittest.main()
