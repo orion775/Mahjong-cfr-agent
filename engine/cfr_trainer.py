@@ -7,7 +7,7 @@ class CFRTrainer:
         self.strategy_table = {}  # info_set -> [sum of chosen strategies]
 
     def get_strategy(self, info_set, legal_actions):
-        regrets = self.regret_table.get(info_set, [0.0] * 90)
+        regrets = self.regret_table.get(info_set, [0.0] * 124)
         strategy = [max(r, 0.0) for r in regrets]
 
         # Mask illegal actions
@@ -17,15 +17,19 @@ class CFRTrainer:
         if total > 0:
             normalized = [s / total for s in masked]
         else:
-            normalized = [1 / len(legal_actions) if a in legal_actions else 0.0 for a in range(90)]
+            normalized = [1 / len(legal_actions) if a in legal_actions else 0.0 for a in range(124)]
 
         # === Strategy sum tracking ===
-        strat_sum = self.strategy_table.setdefault(info_set, [0.0] * 90)
+        strat_sum = self.strategy_table.setdefault(info_set, [0.0] * 124)
         for a in legal_actions:
             strat_sum[a] += normalized[a]
 
+        # ✅ Log KAN actions if present
+        if any(a >= 90 for a in legal_actions):
+            print(f"[CFR DEBUG] Found KAN legal action(s): {[a for a in legal_actions if a >= 90]}")
+
         return normalized
-    
+        
 
     def cfr(self, state, reach_probs, player_id):
         """Run a single CFR traversal and update regrets for the current player.
@@ -46,7 +50,7 @@ class CFRTrainer:
                 info_set = state.get_info_set()
                 legal_actions = state.get_legal_actions()
                 strategy = self.get_strategy(info_set, legal_actions)
-                regrets = self.regret_table.setdefault(info_set, [0.0] * 90)
+                regrets = self.regret_table.setdefault(info_set, [0.0] * 124)
                 for action in legal_actions:
                     regret = util - util  # = 0, placeholder — will become useful later
                     regrets[action] += regret
@@ -60,7 +64,7 @@ class CFRTrainer:
 
         strategy = self.get_strategy(info_set, legal_actions)
 
-        action_utils = [0.0 for _ in range(90)]
+        action_utils = [0.0 for _ in range(124)]
         node_util = 0.0
 
         for action in legal_actions:
@@ -80,7 +84,7 @@ class CFRTrainer:
             node_util += strategy[action] * util
 
         if current_player == player_id:
-            regrets = self.regret_table.setdefault(info_set, [0.0] * 90)
+            regrets = self.regret_table.setdefault(info_set, [0.0] * 124)
             for action in legal_actions:
                 regret = 1.0 if action == legal_actions[0] else 0.0  # force regret gap
                 regrets[action] += regret  # skip reach weighting just for test
@@ -101,7 +105,7 @@ class CFRTrainer:
     
     def get_average_strategy(self, info_set, legal_actions):
         """Return average strategy (normalized sum of actions over time)."""
-        strategy_sum = self.strategy_table.get(info_set, [0.0] * 90)
+        strategy_sum = self.strategy_table.get(info_set, [0.0] * 124)
         masked = [s if a in legal_actions else 0.0 for a, s in enumerate(strategy_sum)]
 
         total = sum(masked)
@@ -109,7 +113,7 @@ class CFRTrainer:
             return [s / total for s in masked]
         else:
             # Uniform fallback
-            return [1 / len(legal_actions) if a in legal_actions else 0.0 for a in range(90)]
+            return [1 / len(legal_actions) if a in legal_actions else 0.0 for a in range(124)]
     
     def test_average_strategy_returns_normalized_probs(self):
         trainer = CFRTrainer()
@@ -117,7 +121,7 @@ class CFRTrainer:
         legal_actions = [0, 1, 2]
 
         # Manually simulate strategy sums
-        sums = [0.0] * 90
+        sums = [0.0] * 124
         sums[0] = 3.0
         sums[1] = 1.0
         sums[2] = 6.0

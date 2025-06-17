@@ -11,10 +11,12 @@ NUM_TILE_TYPES = 34  # Man (0–8), Pin (9–17), Sou (18–26), Winds (27–30)
 # -----------------------------
 
 DISCARD_ACTIONS = list(range(NUM_TILE_TYPES))                        # 0–33
-PON_ACTIONS = list(range(NUM_TILE_TYPES, NUM_TILE_TYPES * 2))        # 34–67
+PON_ACTIONS = list(range(NUM_TILE_TYPES, NUM_TILE_TYPES * 2)) 
+KAN_BASE = 90
+KAN_ACTIONS = list(range(KAN_BASE, KAN_BASE + NUM_TILE_TYPES))  # 90–123
 PASS = NUM_TILE_TYPES * 2                                            # 68
 
-ALL_ACTIONS = DISCARD_ACTIONS + PON_ACTIONS + [PASS]
+ALL_ACTIONS = DISCARD_ACTIONS + PON_ACTIONS + KAN_ACTIONS + [PASS]
 
 # -----------------------------
 # ID ↔ Name Mappings
@@ -30,14 +32,15 @@ for i in DISCARD_ACTIONS:
 for i, action_id in enumerate(PON_ACTIONS):
     ACTION_ID_TO_NAME[action_id] = f"PON_{i}"
 
+# Add kan actions
+for i, action_id in enumerate(KAN_ACTIONS):
+    ACTION_ID_TO_NAME[action_id] = f"KAN_{i}"
+
 # Add PASS
 ACTION_ID_TO_NAME[PASS] = "PASS"
 
 # Reverse map
 ACTION_NAME_TO_ID = {v: k for k, v in ACTION_ID_TO_NAME.items()}
-
-
-
 
 # -----------------------------
 # Helper functions
@@ -51,6 +54,9 @@ def get_all_pon_actions():
 
 def get_all_actions():
     return ALL_ACTIONS
+
+def get_all_kan_actions():
+    return KAN_ACTIONS
 
 # -----------------------------
 # Chi Actions (Sequences)
