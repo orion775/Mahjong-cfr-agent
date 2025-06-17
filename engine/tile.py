@@ -11,6 +11,12 @@ class Tile:
 
     def __repr__(self):
         return self.__str__()
+    
+    def __eq__(self, other):
+        if not isinstance(other, Tile):
+            return False
+        return self.tile_id == other.tile_id
+    
+    def __hash__(self):
+        return hash(self.tile_id)
 
-t = Tile("Man", 5, 4)
-print(t)  # Output: Man 5
