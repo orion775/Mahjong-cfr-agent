@@ -61,3 +61,6 @@ class Player:
         self.melds.append((meld_type, tiles))
         print(f"[DEBUG] Meld appended: {meld_type}")
         print(f"[DEBUG] Melds now: {[(m[0], [str(t) for t in m[1]]) for m in self.melds]}")
+
+    def can_ankan(self, tile):
+        return self.hand.count(tile) == 4

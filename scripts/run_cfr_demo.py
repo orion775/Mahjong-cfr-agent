@@ -7,7 +7,7 @@ trainer = CFRTrainer()
 trainer.train(iterations=10000, player_id=0)
 
 # Export full strategy to file
-trainer.export_strategy_table("cfr_policy.txt", threshold=0.05)
+trainer.export_strategy_table("cfr_policy.txt", threshold=0.0)
 
 # Print top strategies in memory
 print("\nSample learned strategies (threshold > 5%):")
