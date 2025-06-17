@@ -151,6 +151,34 @@ class GameState:
             self.awaiting_discard = True
             return
 
+        # KAN ACTION
+        elif action_id in action_space.KAN_ACTIONS:
+            tile_index = action_id - 90
+            player = self.get_current_player()
+            tile_to_kan = next((t for t in player.hand if t.tile_id == tile_index), None)
+
+            if tile_to_kan is None:
+                raise ValueError(f"KAN tile_id {tile_index} not found in hand")
+
+            if not player.can_ankan(tile_to_kan):
+                raise ValueError("Cannot KAN: need 4 identical tiles")
+
+            # Remove 4 tiles
+            removed = 0
+            for _ in range(4):
+                player.hand.remove(tile_to_kan)
+                removed += 1
+
+            if removed != 4:
+                raise ValueError("KAN failed: could not remove 4 tiles")
+
+            # Register the meld
+            kan_tiles = [tile_to_kan] * 4
+            player.melds.append(("KAN", kan_tiles))
+
+            self.awaiting_discard = True  # player must discard after calling KAN
+            return
+
         else:
             raise NotImplementedError("Only discard, PON, PASS, CHI supported")
     
@@ -179,6 +207,16 @@ class GameState:
         tile_ids_in_hand = {tile.tile_id for tile in player.hand}
         for tile_id in tile_ids_in_hand:
             legal.append(tile_id)  # discards are direct tile_id
+
+        # === Closed KAN detection ===
+        tile_counts = {}
+        for tile in player.hand:
+            tile_counts[tile.tile_id] = tile_counts.get(tile.tile_id, 0) + 1
+
+        for tile_id, count in tile_counts.items():
+            if count == 4:
+                kan_action = action_space.ACTION_NAME_TO_ID[f"KAN_{tile_id}"]
+                legal.append(kan_action)
 
         legal.append(action_space.PASS)
         return sorted(legal)

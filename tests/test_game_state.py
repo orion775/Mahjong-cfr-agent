@@ -251,5 +251,37 @@ class TestGameState(unittest.TestCase):
 
         for pid in range(1, 4):
             self.assertEqual(state.get_reward(pid), 0.0)
+    
+    def test_ankan_action(self):
+        from engine.tile import Tile
+        from engine import action_space
+
+        state = GameState()
+        player = state.get_current_player()
+
+        # Give player 4 identical tiles (e.g. tile_id 0)
+        tile = Tile("Man", 1, 0)
+        player.hand = [tile, tile, tile, tile] + player.hand[4:]
+
+        # Build the KAN action (KAN_0 = tile_id 0)
+        kan_action = action_space.ACTION_NAME_TO_ID["KAN_0"]
+
+        # Set phase to discard (immediately after draw)
+        state.awaiting_discard = True
+
+        # Take the action
+        state.step(kan_action)
+
+        # Meld should be registered
+        self.assertEqual(len(player.melds), 1)
+        self.assertEqual(player.melds[0][0], "KAN")
+        self.assertEqual(len(player.melds[0][1]), 4)
+        self.assertTrue(all(t.tile_id == 0 for t in player.melds[0][1]))
+
+        # Hand should be down by 4 tiles
+        self.assertEqual(player.hand.count(tile), 0)
+
+        # Player must now discard
+        self.assertTrue(state.awaiting_discard)
 if __name__ == "__main__":
     unittest.main()
