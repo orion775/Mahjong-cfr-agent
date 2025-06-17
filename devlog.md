@@ -94,3 +94,45 @@ Tests
     test_minkan_removes_discard
 
     test_minkan_fails_with_less_than_3
+
+v1.4.1 – Add Shominkan (Upgrade PON to KAN)
+
+What Was Added
+
+    Added Shominkan logic to GameState.step() to detect and allow upgrade from PON to KAN.
+
+    Player must:
+
+        Have an existing ("PON", [...]) meld
+
+        Hold the 4th matching tile in hand
+
+    On upgrade:
+
+        The 4th tile is removed from hand
+
+        PON meld is replaced in-place with a ("KAN", [...]) meld
+
+        A bonus tile is drawn from the wall
+
+        Player continues with a discard
+
+Known Limitations
+
+    No priority conflict resolution yet (i.e. other players cannot block the upgrade)
+
+    Meld type (open/closed) is not encoded explicitly in the meld string
+
+Tests
+
+    test_shominkan_upgrade_successful
+
+    test_shominkan_removes_tile_from_hand
+
+    test_shominkan_replaces_meld_type
+
+    test_shominkan_bonus_draw_after_upgrade
+
+    test_shominkan_illegal_if_no_pon
+
+    test_shominkan_illegal_if_tile_not_in_hand
