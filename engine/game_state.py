@@ -160,18 +160,15 @@ class GameState:
             if tile_to_kan is None:
                 raise ValueError(f"KAN tile_id {tile_index} not found in hand")
 
-            # === Check if this is an OPEN KAN (Minkan) on discarded tile ===
+            # === Case 1: Minkan ===
             if self.last_discard and self.last_discard.tile_id == tile_index:
                 matching_tiles = [t for t in player.hand if t.tile_id == tile_index]
                 if len(matching_tiles) != 3:
                     raise ValueError("Cannot MINKAN: need 3 matching tiles in hand")
-
-                # Build meld with 3 from hand + 1 discard
-                used_tiles = matching_tiles[:3]
-                meld_tiles = used_tiles + [self.last_discard]
+                meld_tiles = matching_tiles + [self.last_discard]
                 player.call_meld("KAN", meld_tiles, include_discard=True)
 
-                # Remove discard from discard pile
+                # Remove discard from pile
                 discard_seat = self.players[self.last_discarded_by].seat
                 self.discards[discard_seat] = [
                     t for t in self.discards[discard_seat] if t.tile_id != tile_index
@@ -179,16 +176,32 @@ class GameState:
                 self.last_discard = None
                 self.last_discarded_by = None
 
+            # === Case 2: Shominkan (upgrade PON → KAN) ===
+            elif any(m[0] == "PON" and all(t.tile_id == tile_index for t in m[1]) for m in player.melds):
+                matching_pon_index = next(
+                    i for i, m in enumerate(player.melds)
+                    if m[0] == "PON" and all(t.tile_id == tile_index for t in m[1])
+                )
+                # Must have 4th tile in hand
+                if player.hand.count(tile_to_kan) < 1:
+                    raise ValueError("Cannot upgrade PON to KAN: missing 4th tile in hand")
+
+                # Remove 4th tile from hand
+                player.hand.remove(tile_to_kan)
+
+                # Replace meld with KAN
+                new_kan_meld = ("KAN", [tile_to_kan] * 4)
+                player.melds[matching_pon_index] = new_kan_meld
+
+            # === Case 3: Ankan ===
             else:
-                # === Closed KAN (Ankan) ===
                 if not player.can_ankan(tile_to_kan):
                     raise ValueError("Cannot ANKAN: need 4 identical tiles")
-
                 for _ in range(4):
                     player.hand.remove(tile_to_kan)
                 player.melds.append(("KAN", [tile_to_kan] * 4))
 
-            # Bonus tile draw after KAN (open or closed)
+            # === Bonus draw after any KAN ===
             if not self.wall:
                 raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
 
