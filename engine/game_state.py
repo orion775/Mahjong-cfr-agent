@@ -203,12 +203,18 @@ class GameState:
         return f"{player.seat}|H:{','.join(map(str, hand_vec))}|L:{last_tile_id}|BY:{last_seat}|M:{meld_str}"
     
     def is_terminal(self):
-    # TEMPORARY: treat the game as terminal if fewer than N tiles remain
-        return len(self.wall) < 130  # ends early just for CFR progression
-    
+        """Stub: game ends when any player has 4 melds."""
+        for player in self.players:
+            if len(player.melds) >= 4:
+                return True
+        return False
+
     def get_reward(self, player_id):
-    # TEMPORARY: reward player 0 with 1.0, others 0.0 (fake win condition)
-        return 1.0 if player_id == 0 else 0.0
+        """Stub: +1 for winning player, 0 for others."""
+        for i, player in enumerate(self.players):
+            if len(player.melds) >= 4:
+                return 1.0 if i == player_id else 0.0
+        return 0.0
     
     def can_chi(self, tile):
         """Returns a list of valid CHI melds the current player could call on this tile, if eligible."""
@@ -243,5 +249,20 @@ class GameState:
             candidates.append([id, id + 1, id + 2])
 
         return candidates
+    
+    def is_terminal(self):
+        """Stub: game ends when any player has 4 melds."""
+        for player in self.players:
+            if len(player.melds) >= 4:
+                return True
+        return False
+
+    def get_reward(self, player_id):
+        """Stub: +1 for winning player, 0 for others."""
+        for i, player in enumerate(self.players):
+            if len(player.melds) >= 4:
+                return 1.0 if i == player_id else 0.0
+        return 0.0
+
         
         

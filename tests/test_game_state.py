@@ -237,5 +237,19 @@ class TestGameState(unittest.TestCase):
 
         # Player must now discard
         self.assertTrue(state.awaiting_discard)
+    
+    def test_terminal_win_check(self):
+        state = GameState()
+        player = state.players[0]
+
+        # Simulate winning by creating 4 melds
+        for _ in range(4):
+            player.melds.append(("PON", ["Man 1", "Man 1", "Man 1"]))
+
+        self.assertTrue(state.is_terminal())
+        self.assertEqual(state.get_reward(0), 1.0)
+
+        for pid in range(1, 4):
+            self.assertEqual(state.get_reward(pid), 0.0)
 if __name__ == "__main__":
     unittest.main()
