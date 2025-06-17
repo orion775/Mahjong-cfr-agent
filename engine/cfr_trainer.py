@@ -7,19 +7,22 @@ class CFRTrainer:
         self.strategy_table = {}  # info_set -> [sum of chosen strategies]
 
     def get_strategy(self, info_set, legal_actions):
-        """Return normalized strategy for the given info set."""
-        regrets = self.regret_table.get(info_set, [0.0] * 90)  # support up to CHI
-        strategy = [max(r, 0) for r in regrets]
+        regrets = self.regret_table.get(info_set, [0.0] * 90)
+        strategy = [max(r, 0.0) for r in regrets]
 
         # Mask illegal actions
-        masked = [s if a in legal_actions else 0 for a, s in enumerate(strategy)]
+        masked = [s if a in legal_actions else 0.0 for a, s in enumerate(strategy)]
 
-        normalizing_sum = sum(masked)
-        if normalizing_sum > 0:
-            normalized = [p / normalizing_sum for p in masked]
+        total = sum(masked)
+        if total > 0:
+            normalized = [s / total for s in masked]
         else:
-            # Uniform strategy over legal actions
-            normalized = [1 / len(legal_actions) if i in legal_actions else 0 for i in range(90)]
+            normalized = [1 / len(legal_actions) if a in legal_actions else 0.0 for a in range(90)]
+
+        # === Strategy sum tracking ===
+        strat_sum = self.strategy_table.setdefault(info_set, [0.0] * 90)
+        for a in legal_actions:
+            strat_sum[a] += normalized[a]
 
         return normalized
     
@@ -95,3 +98,47 @@ class CFRTrainer:
             state.step()  # start with a draw
             reach_probs = [1.0] * 4
             self.cfr(state, reach_probs, player_id)
+    
+    def get_average_strategy(self, info_set, legal_actions):
+        """Return average strategy (normalized sum of actions over time)."""
+        strategy_sum = self.strategy_table.get(info_set, [0.0] * 90)
+        masked = [s if a in legal_actions else 0.0 for a, s in enumerate(strategy_sum)]
+
+        total = sum(masked)
+        if total > 0:
+            return [s / total for s in masked]
+        else:
+            # Uniform fallback
+            return [1 / len(legal_actions) if a in legal_actions else 0.0 for a in range(90)]
+    
+    def test_average_strategy_returns_normalized_probs(self):
+        trainer = CFRTrainer()
+        info_set = "East|H:...|L:...|BY:...|M:..."
+        legal_actions = [0, 1, 2]
+
+        # Manually simulate strategy sums
+        sums = [0.0] * 90
+        sums[0] = 3.0
+        sums[1] = 1.0
+        sums[2] = 6.0
+        trainer.strategy_table[info_set] = sums
+
+        avg = trainer.get_average_strategy(info_set, legal_actions)
+
+        self.assertEqual(len(avg), 90)
+        self.assertAlmostEqual(sum(avg), 1.0)
+        self.assertGreater(avg[2], avg[0])
+        self.assertEqual(avg[3], 0.0)  # illegal action
+    
+    def export_strategy_table(self, filename="strategy_table.txt", threshold=0.01):
+        with open(filename, "w") as f:
+            for info_set, strategy_sum in self.strategy_table.items():
+                legal_actions = [a for a, p in enumerate(strategy_sum) if p > 0]
+                if not legal_actions:
+                    continue
+                avg = self.get_average_strategy(info_set, legal_actions)
+                f.write(f"{info_set}:\n")
+                for a, prob in enumerate(avg):
+                    if prob > threshold:
+                        f.write(f"  Action {a}: {prob:.3f}\n")
+                f.write("\n")
