@@ -136,14 +136,106 @@ class TestGameState(unittest.TestCase):
 
         # Action ID for PON_0 (tile_id 0)
         pon_action = action_space.NUM_TILE_TYPES + 0
-        print(f"[DEBUG TEST] South seat: {south.seat}")
-        print(f"[DEBUG TEST] Current player seat: {state.get_current_player().seat}")
+
         state.step(pon_action)
 
         self.assertEqual(state.get_current_player().seat, "South")
         self.assertEqual(len(south.melds), 1)
         self.assertEqual(south.melds[0][0], "PON")
         self.assertEqual(state.awaiting_discard, True)
+    
+    def test_get_info_set_format(self):
+        state = GameState()
+        state.step()  # draw phase
+        info = state.get_info_set()
 
+        self.assertIn("H:", info)
+        self.assertIn("L:", info)
+        self.assertIn("BY:", info)
+        self.assertIn("M:", info)
+        self.assertIn(state.get_current_player().seat, info)
+    
+    def test_can_chi_detects_valid_melds(self):
+        from engine.tile import Tile
+
+        state = GameState()
+
+        # Simulate a discard from West to South (valid CHI direction)
+        state.turn_index = 3  # West
+        state.step()  # West draws
+        discard_tile = Tile("Man", 3, 2)  # ID = 2 (Man 3)
+        state.last_discard = discard_tile
+        state.last_discarded_by = 3  # West
+
+        # South's turn
+        state.turn_index = 0  # South
+
+        # Give South a hand that can form a CHI with Man 3
+        state.players[0].hand = [
+            Tile("Man", 1, 0),  # ID 0
+            Tile("Man", 2, 1),  # ID 1
+            Tile("Man", 4, 3),  # ID 3
+            Tile("Man", 5, 4),  # ID 4
+        ] + state.players[0].hand[4:]
+
+        result = state.can_chi(discard_tile)
+        expected = [[0, 1, 2], [1, 2, 3], [2, 3, 4]]  # depending on the tile IDs
+
+        self.assertTrue(any(result))  # At least one meld returned
+        flat = [tuple(m) for m in result]
+        self.assertIn((1, 2, 3), flat)  # (Man 2, 3, 4)
+
+    def test_step_handles_chi_action(self):
+        from engine.tile import Tile
+        from engine import action_space
+
+        state = GameState()
+        from engine.tile import Tile
+
+        east = state.players[0]
+        east.hand = [
+            Tile("Man", 2, 1), Tile("Man", 3, 2), Tile("Man", 4, 3),
+            Tile("Sou", 9, 26), Tile("Pin", 9, 17)
+]
+
+        # Simulate West's discard of Man 3 (tile_id=2)
+        discard_tile = Tile("Man", 3, 2)
+        state.last_discard = discard_tile
+        state.last_discarded_by = 3
+        state.discards["North"].append(discard_tile)
+        state.awaiting_discard = True
+        
+        # Set turn to South (next player after West)
+        state.turn_index = 0  # South
+        player = state.get_current_player()
+
+        # Give South a hand that completes CHI with Man 2 (1) and Man 4 (3)
+        player.hand = [Tile("Man", 2, 1), Tile("Man", 4, 3)] + player.hand[2:]
+
+        # Verify everything lines up
+        assert discard_tile.tile_id == 2  # Man 3
+        chi_action = action_space.encode_chi([1, 2, 3])  # [Man 2, Man 3, Man 4]
+
+        # Take CHI action
+        print("[DEBUG] chi_action =", chi_action)
+        print("[DEBUG] action_space.CHI_ACTIONS =", action_space.CHI_ACTIONS)
+        print("[DEBUG TEST] player.melds =", player.melds)
+        state.awaiting_discard = True
+        state.step(chi_action)
+        print("[DEBUG TEST] player.melds =", player.melds)
+
+        # Check meld added
+        self.assertIn(("CHI", ["Man 2", "Man 3", "Man 4"]), player.melds)
+        print("[DEBUG TEST] player.melds =", player.melds)
+        
+
+        # Check discard removed by tile_id
+        self.assertFalse(any(t.tile_id == 2 for t in state.discards["West"]))
+
+        # Check removed from hand
+        hand_ids = [t.tile_id for t in player.hand]
+
+        # Player must now discard
+        self.assertTrue(state.awaiting_discard)
 if __name__ == "__main__":
     unittest.main()

@@ -82,3 +82,50 @@ ALL_ACTIONS += CHI_ACTIONS
 
 def get_all_chi_actions():
     return CHI_ACTIONS
+
+def encode_chi(meld):
+    """Given a sorted meld like [3,4,5], return its CHI action ID."""
+    if len(meld) != 3:
+        raise ValueError("CHI meld must have 3 tiles")
+
+    base = meld[0]
+    if not (0 <= base <= 24):
+        raise ValueError("Base tile_id out of range for CHI")
+
+    if meld != [base, base + 1, base + 2]:
+        raise ValueError("Invalid CHI sequence")
+
+    if base < 9:
+        suit = "MAN"
+        start = base - 0 + 1
+    elif base < 18:
+        suit = "PIN"
+        start = base - 9 + 1
+    elif base < 27:
+        suit = "SOU"
+        start = base - 18 + 1
+    else:
+        raise ValueError("Invalid CHI suit")
+
+    action_name = f"CHI_{suit}_{start}"
+    return ACTION_NAME_TO_ID[action_name]
+
+def decode_chi(action_id):
+    """Given a CHI action ID, return the meld as [tile_id1, tile_id2, tile_id3]."""
+    name = ACTION_ID_TO_NAME.get(action_id, "")
+    if not name.startswith("CHI_"):
+        raise ValueError("Not a CHI action")
+
+    _, suit, start = name.split("_")
+    start = int(start)
+
+    if suit == "MAN":
+        base = 0 + (start - 1)
+    elif suit == "PIN":
+        base = 9 + (start - 1)
+    elif suit == "SOU":
+        base = 18 + (start - 1)
+    else:
+        raise ValueError("Unknown CHI suit")
+
+    return [base, base + 1, base + 2]
