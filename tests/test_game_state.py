@@ -4,6 +4,9 @@ import unittest
 from engine.game_state import GameState
 
 class TestGameState(unittest.TestCase):
+    def seat_index(self, seat):
+        return ["East", "South", "West", "North"].index(seat)
+    
     def test_initial_state(self):
         state = GameState()
         self.assertEqual(len(state.players), 4)
@@ -225,7 +228,10 @@ class TestGameState(unittest.TestCase):
         print("[DEBUG TEST] player.melds =", player.melds)
 
         # Check meld added
-        self.assertIn(("CHI", ["Man 2", "Man 3", "Man 4"]), player.melds)
+        self.assertIn(
+            ("CHI", ["Man 2", "Man 3", "Man 4"]),
+            [("CHI", [str(t) for t in meld[1]]) for meld in player.melds]
+    )
         print("[DEBUG TEST] player.melds =", player.melds)
         
 
@@ -430,6 +436,273 @@ class TestGameState(unittest.TestCase):
         state.awaiting_discard = True
         with self.assertRaises(ValueError):
             state.step(action_space.ACTION_NAME_TO_ID["KAN_31"])
+
+    def test_shominkan_upgrade_successful(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        player = state.get_current_player()
+
+        # Set up an existing PON meld for tile_id = 4
+        tile = Tile("Man", 5, 4)
+        pon_meld = ("PON", [tile, tile, tile])
+        player.melds = [pon_meld]
+
+        # Add 4th tile to hand
+        player.hand.clear()
+        player.hand.append(Tile("Man", 5, 4))
+
+        # Simulate discard phase
+        state.awaiting_discard = True
+        state.step(action_space.ACTION_NAME_TO_ID["KAN_4"])
+
+        self.assertEqual(len(player.melds), 1)
+        self.assertEqual(player.melds[0][0], "KAN")
+        self.assertEqual(len(player.melds[0][1]), 4)
+        self.assertTrue(state.awaiting_discard)
+
+    def test_shominkan_removes_tile_from_hand(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        player = state.get_current_player()
+        tile = Tile("Sou", 3, 20)
+
+        player.melds = [("PON", [tile, tile, tile])]
+        player.hand.clear()
+        player.hand.append(Tile("Sou", 3, 20))
+
+        state.awaiting_discard = True
+        state.step(action_space.ACTION_NAME_TO_ID["KAN_20"])
+
+        self.assertNotIn(tile, player.hand)
+
+    def test_shominkan_replaces_meld_type(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        player = state.get_current_player()
+        tile = Tile("Pin", 9, 17)
+
+        player.melds = [("PON", [tile, tile, tile])]
+        player.hand.clear()
+        player.hand.append(Tile("Pin", 9, 17))
+
+        state.awaiting_discard = True
+        state.step(action_space.ACTION_NAME_TO_ID["KAN_17"])
+
+        self.assertEqual(len(player.melds), 1)
+        self.assertEqual(player.melds[0][0], "KAN")
+
+    def test_shominkan_bonus_draw_after_upgrade(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        player = state.get_current_player()
+        tile = Tile("Wind", "East", 27)
+
+        player.melds = [("PON", [tile, tile, tile])]
+        player.hand.clear()
+        player.hand.append(Tile("Wind", "East", 27))
+
+        wall_before = len(state.wall)
+        state.awaiting_discard = True
+        state.step(action_space.ACTION_NAME_TO_ID["KAN_27"])
+        self.assertEqual(len(state.wall), wall_before - 1)
+
+    def test_shominkan_illegal_if_no_pon(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        player = state.get_current_player()
+        player.melds = [("PON", [Tile("Man", 5, 4)] * 3)]  # wrong PON
+        player.hand.clear()
+        player.hand.extend([Tile("Man", 6, 5)] * 4)
+
+        state.awaiting_discard = True
+        with self.assertRaises(ValueError):
+            state.step(action_space.ACTION_NAME_TO_ID["KAN_5"])
+
+    def test_shominkan_illegal_if_tile_not_in_hand(self):
+        from engine.tile import Tile
+        from engine import action_space
+        from engine.game_state import GameState
+
+        state = GameState()
+        player = state.get_current_player()
+        tile = Tile("Dragon", "Green", 32)
+
+        player.melds = [("PON", [tile, tile, tile])]
+        player.hand.clear()  # no 4th tile in hand
+
+        state.awaiting_discard = True
+        with self.assertRaises(ValueError):
+            state.step(action_space.ACTION_NAME_TO_ID["KAN_32"])
+    
+    def test_chi_only_from_left_seat(self):
+        from engine.tile import Tile
+        from engine.game_state import GameState
+        from engine.action_space import encode_chi
+
+        state = GameState()
+
+        # Simulate East discards tile 4 (Man 5)
+        discarded_tile = Tile("Man", 5, 4)
+        state.last_discard = discarded_tile
+        state.last_discarded_by = 0  # East
+
+        # Player South is to the left of East
+        state.turn_index = 1  # South's turn
+        player = state.get_current_player()
+
+        # Give South tiles to CHI: 4 + [3, 5]
+        player.hand.clear()
+        player.hand.append(Tile("Man", 4, 3))
+        player.hand.append(Tile("Man", 6, 5))
+
+        action_id = encode_chi([3, 4, 5])
+        legal_actions = state.get_legal_actions()
+
+        self.assertIn(action_id, legal_actions)
+
+    def test_chi_fails_from_wrong_seat(self):
+        from engine.tile import Tile
+        from engine.action_space import encode_chi
+        from engine.game_state import GameState
+
+        state = GameState()
+        tile = Tile("Sou", 6, 23)  # Discarded tile
+
+        # Discarder is West (index 2)
+        state.last_discarded_by = 2
+        state.players[2].seat = "West"
+
+        # Current player is East (index 0)
+        state.turn_index = 0
+        state.players[0].seat = "East"
+
+        player = state.get_current_player()
+        player.hand.clear()
+        player.hand.extend([
+            Tile("Sou", 5, 22),
+            Tile("Sou", 7, 24),
+        ])
+
+        state.last_discard = tile
+        state.discards["West"].append(tile)
+
+        action_id = encode_chi([22, 23, 24])
+        legal_actions = state.get_legal_actions()
+
+        print("[DEBUG] Legal actions:", legal_actions)
+        print("[DEBUG] Trying to assert action_id:", action_id)
+        self.assertNotIn(action_id, legal_actions)
+
+    def test_chi_removes_two_tiles_from_hand(self):
+        from engine.tile import Tile
+        from engine.game_state import GameState
+        from engine.action_space import encode_chi
+
+        state = GameState()
+
+        state.turn_index = 1  # South
+        state.last_discard = Tile("Pin", 3, 11)
+        state.last_discarded_by = 0  # East
+        player = state.get_current_player()
+
+        player.hand.clear()
+        player.hand.extend([Tile("Pin", 2, 10), Tile("Pin", 4, 12)])
+
+        action_id = encode_chi([10, 11, 12])
+        state.awaiting_discard = True
+        state.step(action_id)
+
+        self.assertEqual(len(player.hand), 0)
+        self.assertEqual(len(player.melds), 1)
+        self.assertEqual(player.melds[0][0], "CHI")
+
+    def test_chi_removes_discard_from_pile(self):
+        from engine.tile import Tile
+        from engine.game_state import GameState
+        from engine.action_space import encode_chi
+
+        state = GameState()
+        state.last_discarded_by = 0  # East
+        state.turn_index = 1  # South
+        tile = Tile("Man", 6, 5)
+        state.last_discard = tile
+        state.discards["East"].append(tile)
+
+        player = state.get_current_player()
+        player.hand.clear()
+        player.hand.extend([Tile("Man", 5, 4), Tile("Man", 7, 6)])
+
+        action_id = encode_chi([4, 5, 6])
+        state.awaiting_discard = True
+
+        # Store discard seat before we step (since it's cleared inside step)
+        discard_seat = state.players[state.last_discarded_by].seat
+
+        state.step(action_id)
+
+        self.assertFalse(any(t.tile_id == tile.tile_id for t in state.discards[discard_seat]))
+        self.assertIsNone(state.last_discard)
+        self.assertIsNone(state.last_discarded_by)
+
+    def test_chi_turn_passes_to_caller(self):
+        from engine.tile import Tile
+        from engine.game_state import GameState
+        from engine.action_space import encode_chi
+
+        state = GameState()
+        state.last_discarded_by = 3  # North
+        state.turn_index = 0  # East
+        tile = Tile("Sou", 4, 21)
+        state.last_discard = tile
+        state.discards["North"].append(tile)
+
+        player = state.get_current_player()
+        player.hand.clear()
+        player.hand.extend([Tile("Sou", 3, 20), Tile("Sou", 5, 22)])
+
+        action_id = encode_chi([20, 21, 22])
+        state.awaiting_discard = False
+        state.step(action_id)
+
+        self.assertEqual(state.turn_index, 0)  # caller keeps the turn
+        self.assertTrue(state.awaiting_discard)
+
+    def test_illegal_chi_action_raises(self):
+        from engine.tile import Tile
+        from engine.game_state import GameState
+        from engine.action_space import encode_chi
+
+        state = GameState()
+        state.turn_index = 1
+        state.last_discarded_by = 0
+        tile = Tile("Man", 4, 3)
+        state.last_discard = tile
+        state.discards["East"].append(tile)
+
+        player = state.get_current_player()
+        player.hand.clear()
+        player.hand.append(Tile("Man", 2, 1))  # missing one tile for CHI
+
+        action_id = encode_chi([1, 2, 3])  # invalid chi: [1,2,3] but missing 2
+
+        state.awaiting_discard = True
+        with self.assertRaises(ValueError):
+            state.step(action_id)
 
         
 

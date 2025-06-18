@@ -136,3 +136,41 @@ Tests
     test_shominkan_illegal_if_no_pon
 
     test_shominkan_illegal_if_tile_not_in_hand
+
+## v1.4.2-shominkan-fix-complete
+
+### Summary
+This patch resolves critical issues around CHI and KAN meld behavior, including Shominkan and Minkan edge cases. It corrects action resolution, tile tracking, and meld registration logic.
+
+### Changes
+- ✅ Fixed `can_chi()` to properly restrict CHI to left-seat only
+- ✅ CHI action now:
+  - Removes exactly two tiles from hand (excluding the claimed tile)
+  - Constructs meld using correct `Tile` objects
+  - Removes claimed tile from discard pile
+- ✅ Shominkan (upgrade PON to KAN) now:
+  - Checks for exact PON match before allowing upgrade
+  - Validates 4th tile exists in hand
+  - Replaces PON with a 4-tile KAN meld
+- ✅ Minkan fixes:
+  - Verifies 3 matching tiles in hand + last discard
+  - Ensures correct meld structure and discard cleanup
+- ✅ Added robust error handling for illegal melds (CHI with missing tiles, KAN with no matching melds)
+- ✅ Cleaned up test cases to assert meld content using string representation (prevents object identity mismatch)
+- ✅ 100% test pass: 51 tests
+
+### Bug Fixes
+- CHI tile mismatch caused test failures
+- Discard not removed after meld (test_chi_removes_discard_from_pile)
+- No exception raised for bad CHI or KAN attempts
+- Meld object mismatch in `test_step_handles_chi_action`
+
+### Known Limitations
+- Meld encoding/decoding is not yet fully type-safe
+- Meld registration logic could be abstracted to reduce duplication (e.g., `resolve_chi_meld()` helper)
+- No CHI interrupt or priority handling — assume atomic resolution for now
+
+### Future Impact
+- 🧠 These changes stabilize action logic for downstream CFR updates (where info sets depend on visible melds)
+- 🧪 Refactor opportunities: unify meld resolution logic (CHI, PON, KAN) into a helper
+- 📦 Useful for later stage: visualization of melds + replay tools, since melds are now fully traceable
