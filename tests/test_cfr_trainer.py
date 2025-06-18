@@ -1,6 +1,27 @@
 import unittest
 from engine.cfr_trainer import CFRTrainer
 
+class FixedTrainerWithCHIRegret(CFRTrainer):
+        def cfr(self, state, reach_probs, player_id, depth=0):
+            from engine.action_space import encode_chi
+
+            chi_action = encode_chi([2, 3, 4])  # CHI Man 3-4-5
+            info_set = state.get_info_set()
+
+            regrets = self.regret_table.setdefault(info_set, [0.0] * 124)
+            regrets[chi_action] += 1.0  # Inject regret for CHI
+            return 1.0
+
+class FixedTrainerWithPONRegret(CFRTrainer):
+        def cfr(self, state, reach_probs, player_id, depth=0):
+            from engine.action_space import ACTION_NAME_TO_ID
+            info_set = state.get_info_set()
+            regrets = self.regret_table.setdefault(info_set, [0.0] * 124)
+
+            pon_action = ACTION_NAME_TO_ID["PON_0"]  # PON on tile_id=0
+            regrets[pon_action] += 1.0
+            return 1.0
+
 class TestCFRTrainer(unittest.TestCase):
     def test_get_strategy_returns_uniform_when_no_regrets(self):
         trainer = CFRTrainer()
@@ -114,6 +135,41 @@ class TestCFRTrainer(unittest.TestCase):
 
         regrets = list(trainer.regret_table.values())[0]
         self.assertGreater(regrets[90], 0.0, "KAN_0 regret not updated")
+    
+    def test_cfr_learns_chi(self):
+        from tests.fixed_meld_state import FixedMeldGameState
+        from engine.action_space import encode_chi
+
+        trainer = FixedTrainerWithCHIRegret()
+        state = FixedMeldGameState()
+        trainer.cfr(state, [1.0] * 4, player_id=0)
+
+        chi_action = encode_chi([2, 3, 4])  # CHI Man 3-4-5
+
+        updated = any(
+            regrets[chi_action] > 0.0
+            for regrets in trainer.regret_table.values()
+        )
+
+        self.assertTrue(updated, "CHI action regret was not updated")
+    
+    def test_cfr_learns_pon(self):
+        from tests.fixed_meld_state import FixedMeldGameState
+        from engine.action_space import ACTION_NAME_TO_ID
+
+        trainer = FixedTrainerWithPONRegret()
+        state = FixedMeldGameState()
+        trainer.cfr(state, [1.0] * 4, player_id=0)
+
+        pon_action = ACTION_NAME_TO_ID["PON_0"]
+
+        updated = any(
+            regrets[pon_action] > 0.0
+            for regrets in trainer.regret_table.values()
+        )
+
+        self.assertTrue(updated, "PON action regret was not updated")
+
 
 if __name__ == "__main__":
     unittest.main()
