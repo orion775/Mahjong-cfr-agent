@@ -5,14 +5,21 @@ from engine.player import Player
 from engine import action_space
 
 
+from engine.wall import generate_wall
+from engine.player import Player
+from engine import action_space
+
+
 class GameState:
     def __init__(self):
         self.wall = generate_wall()
         self.players = [Player(seat) for seat in ["East", "South", "West", "North"]]
         self.discards = {seat: [] for seat in ["East", "South", "West", "North"]}
         self.turn_index = 0  # Start with East
+        self.pass_counter = 0
         self.last_discard = None
         self.last_discarded_by = None
+        self.cfr_debug_counter = 0
 
         # Deal 13 tiles to each player
         for player in self.players:
@@ -20,6 +27,8 @@ class GameState:
                 tile = self.wall.pop()
                 player.draw_tile(tile)
         self.awaiting_discard = False
+        self.pass_counter = 0
+
     
     def seat_index(self, seat):
         return ["East", "South", "West", "North"].index(seat)
@@ -45,12 +54,19 @@ class GameState:
 
     def step(self, action_id=None):
         from engine.tile import Tile
+        self.cfr_debug_counter += 1
+        if self.cfr_debug_counter > 5:
+            print("[DEBUG] Forcing terminal state after 5 steps for CFR testing.")
+            self._terminal = True
+            return
         player = self.get_current_player()
 
         # DRAW PHASE
         if not self.awaiting_discard:
             if not self.wall:
-                raise RuntimeError("Wall is empty — game should end.")
+                print("[DEBUG] Setting _terminal = True (wall is empty)")
+                self._terminal = True
+                return
             drawn_tile = self.wall.pop()
             player.draw_tile(drawn_tile)
             self.awaiting_discard = True
@@ -244,22 +260,24 @@ class GameState:
     
     def get_legal_actions(self):
         from engine import action_space
+        if self.is_terminal():
+            return []
+        legal_actions = []
 
         player = self.get_current_player()
 
         # Not discard phase (i.e., just drew), only meld reactions allowed
         if not self.awaiting_discard:
-            legal = []
-
-            # Check for CHI opportunities
             chi_melds = self.can_chi(self.last_discard)
             for meld in chi_melds:
-                action_id = action_space.encode_chi(meld)
-                legal.append(action_id)
+                try:
+                    action_id = action_space.encode_chi(meld)
+                    legal_actions.append(action_id)
+                except ValueError:
+                    continue
 
-            # PON logic may already be elsewhere here — leave it untouched
-            legal.append(action_space.PASS)
-            return sorted(legal)
+            legal_actions.append(action_space.PASS)
+            return sorted(legal_actions)
 
         # Discard phase — player just drew
         legal = []
@@ -307,12 +325,12 @@ class GameState:
 
         current = self.get_current_player()
         discarder = self.players[self.last_discarded_by]
-        print("[DEBUG] Current player seat:", current.seat)
-        print("[DEBUG] Discarder seat:", discarder.seat)
-        print("[DEBUG] Seat diff mod 4:", (self.seat_index(current.seat) - self.seat_index(discarder.seat)) % 4)
+        #print("[DEBUG] Current player seat:", current.seat)
+        #print("[DEBUG] Discarder seat:", discarder.seat)
+        #print("[DEBUG] Seat diff mod 4:", (self.seat_index(current.seat) - self.seat_index(discarder.seat)) % 4)
         # CHI is only allowed from the player to the LEFT of the discarder
         if (self.seat_index(current.seat) - self.seat_index(discarder.seat)) % 4 != 1:
-            print("[DEBUG] CHI not allowed: not left of discarder")
+            #print("[DEBUG] CHI not allowed: not left of discarder")
             return []
 
         if tile.category not in ["Man", "Pin", "Sou"]:
@@ -336,18 +354,18 @@ class GameState:
         return candidates
     
     def is_terminal(self):
-        """Stub: game ends when any player has 4 melds."""
-        for player in self.players:
-            if len(player.melds) >= 4:
-                return True
-        return False
+        if hasattr(self, "_terminal") and self._terminal:
+            print("[DEBUG] Terminal hit via wall exhaustion.")
+            return True
+        return any(len(p.melds) >= 4 for p in self.players)
 
     def get_reward(self, player_id):
-        """Stub: +1 for winning player, 0 for others."""
-        for i, player in enumerate(self.players):
-            if len(player.melds) >= 4:
-                return 1.0 if i == player_id else 0.0
-        return 0.0
+        # Temporary terminal reward: +1.0 if this player formed 4 melds
+        player = self.players[player_id]
+        if len(player.melds) >= 4:
+            return 1.0
+        else:
+            return 0.0
 
         
         

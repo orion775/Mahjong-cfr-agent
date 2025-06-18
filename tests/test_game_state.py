@@ -556,24 +556,31 @@ class TestGameState(unittest.TestCase):
 
         state = GameState()
 
-        # Simulate East discards tile 4 (Man 5)
-        discarded_tile = Tile("Man", 5, 4)
-        state.last_discard = discarded_tile
+        # Set discard info: East discards Man 3 (tile_id=2)
+        state.last_discard = Tile("Man", 3, 2)
         state.last_discarded_by = 0  # East
 
-        # Player South is to the left of East
-        state.turn_index = 1  # South's turn
+        # South is to the left of East
+        state.turn_index = 1
+        state.awaiting_discard = False  # must be false for meld reaction
+
+        # Setup South’s hand with Man 2 (tile_id=1), Man 4 (tile_id=3)
         player = state.get_current_player()
-
-        # Give South tiles to CHI: 4 + [3, 5]
         player.hand.clear()
-        player.hand.append(Tile("Man", 4, 3))
-        player.hand.append(Tile("Man", 6, 5))
+        player.hand.extend([
+            Tile("Man", 2, 1),
+            Tile("Man", 4, 3)
+        ])
+        print("DEBUG: Discarder =", state.players[state.last_discarded_by].seat)
+        print("DEBUG: Current player =", state.get_current_player().seat)
+        print("DEBUG: awaiting_discard =", state.awaiting_discard)
+        print("DEBUG: can_chi() =", state.can_chi(state.last_discard))
 
-        action_id = encode_chi([3, 4, 5])
+        action_id = encode_chi([1, 2, 3])  # CHI Man 2,3,4 (tile_ids)
+
         legal_actions = state.get_legal_actions()
 
-        self.assertIn(action_id, legal_actions)
+        self.assertIn(action_id, legal_actions, f"Expected CHI action {action_id} in legal_actions={legal_actions}")
 
     def test_chi_fails_from_wrong_seat(self):
         from engine.tile import Tile

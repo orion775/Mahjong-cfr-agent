@@ -64,3 +64,9 @@ class Player:
 
     def can_ankan(self, tile):
         return self.hand.count(tile) == 4
+    
+    def clone(self):
+        new_player = Player(self.seat)
+        new_player.hand = self.hand[:]
+        new_player.melds = [tuple(m) for m in self.melds]
+        return new_player

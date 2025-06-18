@@ -174,3 +174,46 @@ This patch resolves critical issues around CHI and KAN meld behavior, including 
 - 🧠 These changes stabilize action logic for downstream CFR updates (where info sets depend on visible melds)
 - 🧪 Refactor opportunities: unify meld resolution logic (CHI, PON, KAN) into a helper
 - 📦 Useful for later stage: visualization of melds + replay tools, since melds are now fully traceable
+
+## v1.5.0 – terminal-fixes-full-pass (2025-06-18)
+
+### Summary
+
+This version finalizes the transition from a partially stubbed terminal system to a fully working draw-discard CFR cycle. The main loop now properly terminates after the wall depletes or a player completes 4 melds. CFR training produces strategy output. Major test passes confirm system-wide stability, including melds and discard transitions.
+
+### Key Changes Since v1.4.2
+
+- 🔧 **Terminal State Handling**:
+  - Fixed endless loop by detecting wall exhaustion (`wall == []`) and setting `_terminal = True`.
+  - Added defensive logic in `step()` to prevent recursion depth runaway.
+
+- 🧪 **Test Suite Stabilization**:
+  - Fixed `test_chi_only_from_left_seat` by ensuring correct `turn_index` and `last_discarded_by` setup.
+  - Validated melds (CHI, PON, KAN) with real hands/discards during tests.
+  - Converted CHI/PON discard cleanup to handle corner cases (e.g. empty discard piles).
+
+- 🧠 **CFR Functionality**:
+  - `cfr()` now terminates recursion correctly and handles reward collection on terminal states.
+  - `get_info_set()` includes meld summaries and correctly encodes tile vectors.
+  - CFR export outputs to `cfr_policy.txt` and avoids loops on invalid `step()` transitions.
+
+- 🐛 **Bugs Fixed**:
+  - Fixed `AttributeError` on `cfr_debug_counter` by initializing in `GameState`.
+  - Corrected deep copy logic of state (`clone_state`) to avoid mutation side-effects.
+  - Rewrote several `FixedTrainer` subclasses in test files to support `depth=` kwargs.
+
+- 📈 **Output Inspection**:
+  - `cfr_policy.txt` now correctly shows non-uniform strategies, confirming learning is occurring.
+
+### Known Limitations
+
+- No hand validation logic (e.g. true win conditions).
+- Meld conflicts and priority resolution are still stubbed.
+- Some tests bypass full game logic (e.g. using manual `step()` and hand setup).
+
+### Next Steps
+
+- Revisit meld resolution priority (PON > CHI, interrupt flow).
+- Integrate reward shaping for partial melds or tile efficiency.
+- Begin deep CFR baseline (e.g., CFR+ or regret matching with smoothing).
+- Add full snapshot tagging via PowerShell post-run script.

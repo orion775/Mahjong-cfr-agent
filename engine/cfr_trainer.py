@@ -1,5 +1,6 @@
 # engine/cfr_trainer.py
 from engine.game_state import GameState
+MAX_DEPTH = 100 
 
 class CFRTrainer:
     def __init__(self):
@@ -30,55 +31,46 @@ class CFRTrainer:
 
         return normalized
         
+ # Adjust as needed
 
-    def cfr(self, state, reach_probs, player_id):
-        """Run a single CFR traversal and update regrets for the current player.
+    def cfr(self, state, reach_probs, player_id, depth=0):
+        MAX_DEPTH = 100
 
-        Args:
-            state (GameState): current game state
-            reach_probs (list): reach probabilities for all players
-            player_id (int): whose regrets to update
-        Returns:
-            util: expected utility value for this state
+        if depth >= MAX_DEPTH:
+            print(f"[DEBUG] Max recursion depth {MAX_DEPTH} hit. Forcing return.")
+            return 0.0
 
-        """
         if state.is_terminal():
-            util = state.get_reward(player_id)
+            print(f"[DEBUG] CFR reached terminal at depth {depth}")
+            return state.get_reward(player_id)
 
-            # Trigger regret update even if terminal reached
-            if state.turn_index == player_id:
-                info_set = state.get_info_set()
-                legal_actions = state.get_legal_actions()
-                strategy = self.get_strategy(info_set, legal_actions)
-                regrets = self.regret_table.setdefault(info_set, [0.0] * 124)
-                for action in legal_actions:
-                    regret = util - util  # = 0, placeholder — will become useful later
-                    regrets[action] += regret
-
-            return util
-        current_player = state.turn_index
-
-        # Base case: skip terminal check for now
-        info_set = state.get_info_set()
         legal_actions = state.get_legal_actions()
+        if not legal_actions:
+            print(f"[DEBUG] No legal actions at depth {depth}")
+            return state.get_reward(player_id)
 
+        current_player = state.turn_index
+        info_set = state.get_info_set()
         strategy = self.get_strategy(info_set, legal_actions)
 
-        action_utils = [0.0 for _ in range(124)]
+        action_utils = [0.0] * 124
         node_util = 0.0
 
         for action in legal_actions:
             next_state = self.clone_state(state)
-            next_state.step(action)
 
-            # track depth for testing-only utility return
-            next_state.cfr_depth = getattr(state, "cfr_depth", 0) + 1
+            # Do not step if already terminal (clone may have _terminal = True)
+            if next_state.is_terminal():
+                util = next_state.get_reward(player_id)
+            else:
+                next_state.step(action)
 
-            new_reach = reach_probs[:]
-            new_reach[current_player] *= strategy[action]
-
-            # TEMP HACK for testing: assign fixed utility to leaf
-            util = 1.0 if next_state.turn_index == player_id else 0.0   
+                if next_state.is_terminal():
+                    util = next_state.get_reward(player_id)
+                else:
+                    new_reach = reach_probs[:]
+                    new_reach[current_player] *= strategy[action]
+                    util = self.cfr(next_state, new_reach, player_id, depth + 1)
 
             action_utils[action] = util
             node_util += strategy[action] * util
@@ -86,22 +78,40 @@ class CFRTrainer:
         if current_player == player_id:
             regrets = self.regret_table.setdefault(info_set, [0.0] * 124)
             for action in legal_actions:
-                regret = 1.0 if action == legal_actions[0] else 0.0  # force regret gap
-                regrets[action] += regret  # skip reach weighting just for test
+                regrets[action] += action_utils[action] - node_util
 
         return node_util
 
     def clone_state(self, state):
-        """Simple state copier for now (non-deepcopy but functional)."""
+        from engine.game_state import GameState
         import copy
-        return copy.deepcopy(state)
+
+        new_state = GameState.__new__(GameState)
+        new_state.players = [p.clone() for p in state.players]
+        new_state.wall = state.wall[:]
+        new_state.discards = {seat: pile[:] for seat, pile in state.discards.items()}
+        new_state.turn_index = state.turn_index
+        new_state.awaiting_discard = state.awaiting_discard
+        new_state.last_discard = getattr(state, "last_discard", None)
+        new_state.last_discarded_by = getattr(state, "last_discarded_by", None)
+        new_state._terminal = getattr(state, "_terminal", False)
+        new_state.cfr_debug_counter = state.cfr_debug_counter
+
+        return new_state
     
     def train(self, iterations, player_id=0):
         for i in range(iterations):
+            if i % 10 == 0 or i == iterations - 1:
+                print(f"[CFR] Starting iteration {i + 1}/{iterations}")
+
             state = GameState()
-            state.step()  # start with a draw
+            state.step()  # initial draw
+
             reach_probs = [1.0] * 4
-            self.cfr(state, reach_probs, player_id)
+            self.cfr(state, reach_probs, player_id, depth=0)
+
+        self.export_strategy_table("cfr_policy.txt")
+        print("[CFR] Policy exported to cfr_policy.txt")
     
     def get_average_strategy(self, info_set, legal_actions):
         """Return average strategy (normalized sum of actions over time)."""
