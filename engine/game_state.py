@@ -21,6 +21,9 @@ class GameState:
                 player.draw_tile(tile)
         self.awaiting_discard = False
     
+    def seat_index(self, seat):
+        return ["East", "South", "West", "North"].index(seat)
+    
     def id_to_tile_name(self, tile_id):
         from engine.tile import Tile
 
@@ -41,6 +44,7 @@ class GameState:
         return self.players[self.turn_index]
 
     def step(self, action_id=None):
+        from engine.tile import Tile
         player = self.get_current_player()
 
         # DRAW PHASE
@@ -108,47 +112,58 @@ class GameState:
 
         # CHI ACTION
         elif action_id in action_space.CHI_ACTIONS:
+            print("[DEBUG] ENTERED CHI ACTION")
             meld_ids = action_space.decode_chi(action_id)
             tile_to_claim = self.last_discard
+            print("[DEBUG] Meld IDs:", meld_ids)
+            print("[DEBUG] Tile to claim:", tile_to_claim)
             if tile_to_claim is None or tile_to_claim.tile_id not in meld_ids:
                 raise ValueError("Invalid CHI: discarded tile not in meld.")
 
-            print(f"[DEBUG] Player {player.seat} is calling CHI with {[self.id_to_tile_name(i) for i in meld_ids]}")
+            player = self.get_current_player()
+            discarder = self.players[self.last_discarded_by]
+            seat_order = ["East", "South", "West", "North"]
+            left_index = (seat_order.index(discarder.seat) + 1) % 4
+            if seat_order[left_index] != player.seat:
+                raise ValueError("Illegal CHI: can only CHI from left player's discard")
 
-            # Remove two tiles from hand (not the discarded one)
-            removed = 0
+            # Remove + collect the two tiles from hand (not the discarded one)
+            tiles_to_add = []
+            tiles_to_remove = [tid for tid in meld_ids if tid != tile_to_claim.tile_id]
+            print("[DEBUG] Meld IDs:", meld_ids)
+            for tid in tiles_to_remove:
+                match = next((t for t in player.hand if t.tile_id == tid and t not in tiles_to_add), None)
+                if match:
+                    print("[DEBUG] Removed from hand:", match)
+                    print("[DEBUG] Remaining hand after removal:", [str(t) for t in player.hand])       
+                    player.hand.remove(match)
+                    tiles_to_add.append(match)
+                else:
+                    raise ValueError("CHI failed: missing required tile in hand")
+
+            # Build meld using actual tile objects
+            full_meld = []
             for tid in meld_ids:
                 if tid == tile_to_claim.tile_id:
-                    continue
-                for i, t in enumerate(player.hand):
-                    if t.tile_id == tid:
-                        del player.hand[i]
-                        removed += 1
-                        break
+                    print("[DEBUG] Adding to meld (claimed tile):", tile_to_claim)
+                    full_meld.append(tile_to_claim)
+                else:
+                    added = tiles_to_add.pop(0)
+                    print("[DEBUG] Adding to meld (from hand):", added)
+                    full_meld.append(added)
+            player.melds.append(("CHI", full_meld))
 
-            if removed != 2:
-                raise ValueError(f"CHI failed: only removed {removed} tiles from hand.")
-
-            # Register meld
-            meld_tiles = [self.id_to_tile_name(tid) for tid in meld_ids]
-            print(f"[DEBUG] CHI meld tiles: {meld_tiles}")
-            player.melds.append(("CHI", meld_tiles))
-
-            # Remove discard by matching tile_id
+            # Remove discard from the correct seat’s discard pile
             discard_seat = self.players[self.last_discarded_by].seat
-            discard_pile = self.discards[discard_seat]
-            matched_index = next((i for i, t in enumerate(discard_pile) if t.tile_id == tile_to_claim.tile_id), None)
-
-            if matched_index is not None:
-                del discard_pile[matched_index]
-            else:
-                raise ValueError(
-                    f"Discard tile with tile_id {tile_to_claim.tile_id} not found in {discard_seat}'s discard pile: {[t.tile_id for t in discard_pile]}"
-                )
-
+            print("[DEBUG] Before discard removal:", self.discards[discard_seat])
+            self.discards[discard_seat] = [
+            t for t in self.discards[discard_seat] if t.tile_id != tile_to_claim.tile_id
+        ]
+            print("[DEBUG] After discard removal:", self.discards[discard_seat])
             self.last_discard = None
             self.last_discarded_by = None
             self.awaiting_discard = True
+            print("[DEBUG] last_discard:", self.last_discard)
             return
 
         # KAN ACTION
@@ -157,8 +172,9 @@ class GameState:
             player = self.get_current_player()
             tile_to_kan = next((t for t in player.hand if t.tile_id == tile_index), None)
 
-            if tile_to_kan is None:
-                raise ValueError(f"KAN tile_id {tile_index} not found in hand")
+            # Minkan uses a discarded tile, so it's allowed to not be in hand at all
+            if tile_to_kan is None and not (self.last_discard and self.last_discard.tile_id == tile_index):
+                raise ValueError(f"KAN tile_id {tile_index} not found in hand or discard")
 
             # === Case 1: Minkan ===
             if self.last_discard and self.last_discard.tile_id == tile_index:
@@ -176,30 +192,41 @@ class GameState:
                 self.last_discard = None
                 self.last_discarded_by = None
 
+                # Bonus draw
+                if not self.wall:
+                    raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
+                bonus_tile = self.wall.pop()
+                player.draw_tile(bonus_tile)
+                self.awaiting_discard = True
+                return  # ✅ Prevent fallthrough
+
             # === Case 2: Shominkan (upgrade PON → KAN) ===
-            elif any(m[0] == "PON" and all(t.tile_id == tile_index for t in m[1]) for m in player.melds):
+            has_pon = any(m[0] == "PON" for m in player.melds)
+            has_matching_pon = any(m[0] == "PON" and all(t.tile_id == tile_index for t in m[1]) for m in player.melds)
+
+            if has_matching_pon:
                 matching_pon_index = next(
                     i for i, m in enumerate(player.melds)
                     if m[0] == "PON" and all(t.tile_id == tile_index for t in m[1])
                 )
-                # Must have 4th tile in hand
                 if player.hand.count(tile_to_kan) < 1:
                     raise ValueError("Cannot upgrade PON to KAN: missing 4th tile in hand")
-
-                # Remove 4th tile from hand
                 player.hand.remove(tile_to_kan)
-
-                # Replace meld with KAN
                 new_kan_meld = ("KAN", [tile_to_kan] * 4)
                 player.melds[matching_pon_index] = new_kan_meld
 
+            elif has_pon:
+                raise ValueError("Cannot upgrade: no matching PON meld")
+
             # === Case 3: Ankan ===
-            else:
-                if not player.can_ankan(tile_to_kan):
-                    raise ValueError("Cannot ANKAN: need 4 identical tiles")
+            elif player.can_ankan(tile_to_kan):
                 for _ in range(4):
                     player.hand.remove(tile_to_kan)
                 player.melds.append(("KAN", [tile_to_kan] * 4))
+
+            # === Invalid KAN attempt ===
+            else:
+                raise ValueError("Invalid KAN: no valid meld can be formed")
 
             # === Bonus draw after any KAN ===
             if not self.wall:
@@ -210,6 +237,7 @@ class GameState:
 
             self.awaiting_discard = True
             return
+
 
         else:
             raise NotImplementedError("Only discard, PON, PASS, CHI supported")
@@ -279,16 +307,17 @@ class GameState:
 
         current = self.get_current_player()
         discarder = self.players[self.last_discarded_by]
-
-        # CHI can only be declared by player to the left of discarder
-        if (discarder.seat != "East" and current.seat != "East" and
-            (self.seat_index(current.seat) - self.seat_index(discarder.seat)) % 4 != 1):
+        print("[DEBUG] Current player seat:", current.seat)
+        print("[DEBUG] Discarder seat:", discarder.seat)
+        print("[DEBUG] Seat diff mod 4:", (self.seat_index(current.seat) - self.seat_index(discarder.seat)) % 4)
+        # CHI is only allowed from the player to the LEFT of the discarder
+        if (self.seat_index(current.seat) - self.seat_index(discarder.seat)) % 4 != 1:
+            print("[DEBUG] CHI not allowed: not left of discarder")
             return []
 
         if tile.category not in ["Man", "Pin", "Sou"]:
             return []
 
-        # Check for possible chi combinations
         hand_ids = [t.tile_id for t in current.hand]
         id = tile.tile_id
 
