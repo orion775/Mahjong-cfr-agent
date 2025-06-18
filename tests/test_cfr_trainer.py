@@ -61,7 +61,7 @@ class TestCFRTrainer(unittest.TestCase):
         from engine import action_space
 
         class FixedTrainer(CFRTrainer):
-            def cfr(self, state, reach_probs, player_id):
+            def cfr(self, state, reach_probs, player_id, depth=0):
                 player = state.get_current_player()
                 state.awaiting_discard = True
                 player.hand = [Tile("Man", 1, 0), Tile("Man", 2, 1)]
@@ -90,7 +90,7 @@ class TestCFRTrainer(unittest.TestCase):
         from engine.cfr_trainer import CFRTrainer
 
         class FixedKanTrainer(CFRTrainer):
-            def cfr(self, state, reach_probs, player_id):
+            def cfr(self, state, reach_probs, player_id, depth=0):
                 # Force correct discard phase
                 state.awaiting_discard = True
                 player = state.get_current_player()

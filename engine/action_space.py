@@ -95,8 +95,13 @@ def encode_chi(meld):
         raise ValueError("CHI meld must have 3 tiles")
 
     base = meld[0]
-    if not (0 <= base <= 24):
-        raise ValueError("Base tile_id out of range for CHI")
+
+    # ❗ Prevent CHI that would run past tile 9 in any suit
+    if base in [7, 8, 16, 17, 25, 26]:
+        raise ValueError(f"Invalid CHI start tile_id: {base} — sequence runs off end of suit")
+
+    if not (0 <= base <= 24):  # Ensure it's within Man/Pin/Sou 1–7
+        raise ValueError(f"Base tile_id {base} out of range for CHI")
 
     if meld != [base, base + 1, base + 2]:
         raise ValueError("Invalid CHI sequence")
