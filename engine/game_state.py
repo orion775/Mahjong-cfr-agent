@@ -360,12 +360,15 @@ class GameState:
         return any(len(p.melds) >= 4 for p in self.players)
 
     def get_reward(self, player_id):
-        # Temporary terminal reward: +1.0 if this player formed 4 melds
-        player = self.players[player_id]
-        if len(player.melds) >= 4:
-            return 1.0
-        else:
-            return 0.0
+        """
+        Simplified reward function:
+        - Returns 1.0 if player_id is the first to have 4 melds
+        - Returns 0.0 otherwise
+        """
+        for i, player in enumerate(self.players):
+            if len(player.melds) >= 4:
+                return 1.0 if i == player_id else 0.0
+        return 0.0
 
         
         

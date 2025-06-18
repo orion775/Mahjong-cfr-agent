@@ -217,3 +217,23 @@ This version finalizes the transition from a partially stubbed terminal system t
 - Integrate reward shaping for partial melds or tile efficiency.
 - Begin deep CFR baseline (e.g., CFR+ or regret matching with smoothing).
 - Add full snapshot tagging via PowerShell post-run script.
+
+## v1.5.1 – Meld Action CFR Tests
+
+✅ CFR Regret Table Learning for Meld Actions
+
+| Component     | Description                                      |
+|---------------|--------------------------------------------------|
+| CHI Meld Test | `FixedTrainerWithCHIRegret` injects regret       |
+| PON Meld Test | `FixedTrainerWithPONRegret` injects regret       |
+| KAN Meld Test | Previously tested via `test_cfr_learns_ankan`    |
+| Action IDs    | All tested via encode/decode or fixed mapping    |
+
+All meld-related CFR actions now:
+- Can appear in strategy output
+- Can be tested independently of random game state
+- Are verified via unit tests that assert regret updates
+
+🧪 All meld action test functions are isolated and pass with:
+```bash
+python -m unittest tests.test_cfr_trainer
