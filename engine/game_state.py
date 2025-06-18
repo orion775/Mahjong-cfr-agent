@@ -81,13 +81,20 @@ class GameState:
             player.discard_tile(tile_to_discard)
             self.discards[player.seat].append(tile_to_discard)
 
-            # Track who discarded and what
+            # Track discard
             self.last_discard = tile_to_discard
             self.last_discarded_by = self.turn_index
-
             self.awaiting_discard = False
+
+            # 🔥 New: Try to resolve melds from other players
+            meld_owner = self.resolve_meld_priority(tile_to_discard)
+            if meld_owner is not None:
+                self.turn_index = meld_owner
+                return  # Give meld claimer the next move
+
+            # No melds → rotate turn
             self.turn_index = (self.turn_index + 1) % 4
-            return 
+            return
         
         # PASS action
         elif action_id == action_space.PASS:
@@ -374,6 +381,7 @@ class GameState:
         """
         Enforces meld priority: PON > CHI > PASS
         Only one meld call can succeed.
+        Returns player index (pid) if a meld was claimed, else None.
         """
         claimers = []
 
@@ -385,30 +393,24 @@ class GameState:
                 claimers.append((i, "PON"))
 
         # CHI check (only left player)
-        left_of = {
-            "East": "North",
-            "South": "East",
-            "West": "South",
-            "North": "West",
-        }
         chi_candidate = (self.last_discarded_by + 1) % 4
         chi_player = self.players[chi_candidate]
         discarder_seat = self.players[self.last_discarded_by].seat
         if chi_player.can_chi(tile, discarder_seat):
             claimers.append((chi_candidate, "CHI"))
 
-        # Apply priority: PON > CHI
+        # Priority resolution: PON first
         for pid, action in claimers:
             if action == "PON":
                 p = self.players[pid]
-                # Remove 2 matching tiles
                 meld_tiles = [t for t in p.hand if t.tile_id == tile.tile_id][:2]
                 for t in meld_tiles:
                     p.hand.remove(t)
                 p.melds.append(("PON", meld_tiles + [tile]))
                 self.discards[self.players[self.last_discarded_by].seat].remove(tile)
-                return  # Only one meld allowed
+                return pid
 
+        # Then CHI
         for pid, action in claimers:
             if action == "CHI":
                 p = self.players[pid]
@@ -429,7 +431,11 @@ class GameState:
 
                 p.melds.append(("CHI", needed + [tile]))
                 self.discards[self.players[self.last_discarded_by].seat].remove(tile)
-                return
+                return pid
+
+        return None  # No meld claimed
+
+
     pass
         
         

@@ -757,6 +757,40 @@ class TestGameState(unittest.TestCase):
         # Only PON should have succeeded
         self.assertIn(("PON", [tile, tile, tile]), state.players[2].melds)
         self.assertEqual(len(state.players[1].melds), 0)
+    
+    def test_step_auto_resolves_pon(self):
+        from engine.tile import Tile
+
+        state = GameState()
+        tile = Tile("Man", 3, 2)
+        state.turn_index = 0
+        state.players[0].hand = [Tile("Man", 1, 0)] * 13 + [tile]
+        state.awaiting_discard = True
+
+        # Player 2 (West) can PON
+        state.players[2].hand = [tile, tile]
+        state.step(2)  # Discard Man 3
+
+        # PON should be auto-resolved
+        melds = state.players[2].melds
+        self.assertEqual(len(melds), 1)
+        self.assertEqual(melds[0][0], "PON")
+    
+    def test_turn_passes_to_meld_claimer(self):
+        from engine.tile import Tile
+
+        state = GameState()
+        tile = Tile("Man", 3, 2)
+        state.turn_index = 0  # East
+        state.players[0].hand = [Tile("Man", 1, 0)] * 13 + [tile]
+        state.awaiting_discard = True
+
+        # Player 2 (West) has PON
+        state.players[2].hand = [tile, tile]
+        state.step(2)  # Discard Man 3
+
+        # Player 2 should now have turn
+        self.assertEqual(state.turn_index, 2)
 
         
 

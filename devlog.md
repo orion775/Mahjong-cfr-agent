@@ -259,3 +259,22 @@ Implemented `resolve_meld_priority()` inside `GameState`:
 - Add KAN priority
 - Meld contest resolution for simultaneous PON callers (future CFR support)
 - Integrate `resolve_meld_priority()` into main `step()` loop
+
+## v1.5.3 – Meld Ownership & Turn Reassignment
+
+✔ Meld player now gains control of the turn
+
+We updated `resolve_meld_priority(tile)` to:
+- Return player ID of meld claimer (instead of True/False)
+- Allow `step()` to redirect turn ownership
+
+✅ Tested with:
+- `test_turn_passes_to_meld_claimer`
+- `test_step_auto_resolves_pon`
+
+📌 This now allows CFR to:
+- Model interrupts realistically
+- Track ownership and future expected values properly
+- Safely simulate meld sequences in multi-agent settings
+
+Next: win detection, KAN interrupts, or CFR strategy logging
