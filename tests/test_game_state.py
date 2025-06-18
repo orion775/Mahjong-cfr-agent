@@ -710,6 +710,53 @@ class TestGameState(unittest.TestCase):
         state.awaiting_discard = True
         with self.assertRaises(ValueError):
             state.step(action_id)
+    
+    def test_reward_logic_basic(self):
+        state = GameState()
+        player = state.players[0]
+
+        # Simulate 4 melds for player 0
+        for _ in range(4):
+            player.melds.append(("PON", ["Man 1", "Man 1", "Man 1"]))
+
+        self.assertTrue(state.is_terminal())
+        self.assertEqual(state.get_reward(0), 1.0)
+        self.assertEqual(state.get_reward(1), 0.0)
+        self.assertEqual(state.get_reward(2), 0.0)
+        self.assertEqual(state.get_reward(3), 0.0)
+    
+    def test_chi_blocked_by_pon(self):
+        from engine.tile import Tile
+
+        state = GameState()
+
+        # Player 0 (East) discards tile
+        tile = Tile("Man", 3, 2)
+        state.turn_index = 0
+        state.awaiting_discard = True
+        state.players[0].hand = [Tile("Man", 1, 0)] * 13 + [tile]
+        state.step(2)  # Discard tile_id=2 (Man 3)
+
+        # Player 1 (South, left of East) has CHI opportunity
+        state.players[1].hand = [Tile("Man", 2, 1), Tile("Man", 4, 3)]
+
+        # Player 2 (West) has PON opportunity
+        state.players[2].hand = [tile, tile]
+
+        # Sanity check
+        print("Player 1 hand:", state.players[1].hand)
+        print("Checking CHI with:", tile, "from seat: East")
+        chi_legal = state.players[1].can_chi(tile, "East")
+        pon_legal = state.players[2].can_pon(tile)
+        self.assertTrue(chi_legal)
+        self.assertTrue(pon_legal)
+
+        # Priority logic not enforced yet — expect this to fail until patched
+        state.resolve_meld_priority(tile)
+
+        # Only PON should have succeeded
+        self.assertIn(("PON", [tile, tile, tile]), state.players[2].melds)
+        self.assertEqual(len(state.players[1].melds), 0)
 
         
 

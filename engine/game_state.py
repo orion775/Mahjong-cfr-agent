@@ -370,5 +370,66 @@ class GameState:
                 return 1.0 if i == player_id else 0.0
         return 0.0
 
+    def resolve_meld_priority(self, tile):
+        """
+        Enforces meld priority: PON > CHI > PASS
+        Only one meld call can succeed.
+        """
+        claimers = []
+
+        # PON check (anyone except discarder)
+        for i, player in enumerate(self.players):
+            if i == self.last_discarded_by:
+                continue
+            if player.can_pon(tile):
+                claimers.append((i, "PON"))
+
+        # CHI check (only left player)
+        left_of = {
+            "East": "North",
+            "South": "East",
+            "West": "South",
+            "North": "West",
+        }
+        chi_candidate = (self.last_discarded_by + 1) % 4
+        chi_player = self.players[chi_candidate]
+        discarder_seat = self.players[self.last_discarded_by].seat
+        if chi_player.can_chi(tile, discarder_seat):
+            claimers.append((chi_candidate, "CHI"))
+
+        # Apply priority: PON > CHI
+        for pid, action in claimers:
+            if action == "PON":
+                p = self.players[pid]
+                # Remove 2 matching tiles
+                meld_tiles = [t for t in p.hand if t.tile_id == tile.tile_id][:2]
+                for t in meld_tiles:
+                    p.hand.remove(t)
+                p.melds.append(("PON", meld_tiles + [tile]))
+                self.discards[self.players[self.last_discarded_by].seat].remove(tile)
+                return  # Only one meld allowed
+
+        for pid, action in claimers:
+            if action == "CHI":
+                p = self.players[pid]
+                v = tile.value
+                needed = []
+
+                for offset in [-2, -1, 1, 2]:
+                    val = v + offset
+                    for t in p.hand:
+                        if t.category == tile.category and t.value == val:
+                            needed.append(t)
+                            break
+                    if len(needed) == 2:
+                        break
+
+                for t in needed:
+                    p.hand.remove(t)
+
+                p.melds.append(("CHI", needed + [tile]))
+                self.discards[self.players[self.last_discarded_by].seat].remove(tile)
+                return
+    pass
         
         

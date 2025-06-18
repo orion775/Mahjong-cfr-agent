@@ -236,4 +236,26 @@ All meld-related CFR actions now:
 
 🧪 All meld action test functions are isolated and pass with:
 ```bash
-python -m unittest tests.test_cfr_trainer
+(python -m unittest tests.test_cfr_trainer)
+
+
+
+### v1.5.2 – Meld Priority Resolution
+
+✅ PON > CHI arbitration now functional
+
+Implemented `resolve_meld_priority()` inside `GameState`:
+- Collects all potential meld claimers for the last discard
+- Enforces that only one meld proceeds, based on priority rules
+- Removes discard from discarder’s pile upon successful meld
+- Meld (PON or CHI) is registered with correct tile structure
+
+🧪 Test: `test_chi_blocked_by_pon`
+- Player 1 has CHI
+- Player 2 has PON on same tile
+- Confirm PON is chosen and CHI is blocked
+
+📌 Next:
+- Add KAN priority
+- Meld contest resolution for simultaneous PON callers (future CFR support)
+- Integrate `resolve_meld_priority()` into main `step()` loop
