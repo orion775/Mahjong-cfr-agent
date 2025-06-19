@@ -56,7 +56,6 @@ class GameState:
         from engine.tile import Tile
         self.cfr_debug_counter += 1
         if self.cfr_debug_counter > 5:
-            print("[DEBUG] Forcing terminal state after 5 steps for CFR testing.")
             self._terminal = True
             return
         player = self.get_current_player()
@@ -64,7 +63,6 @@ class GameState:
         # DRAW PHASE
         if not self.awaiting_discard:
             if not self.wall:
-                print("[DEBUG] Setting _terminal = True (wall is empty)")
                 self._terminal = True
                 return
             drawn_tile = self.wall.pop()
@@ -121,12 +119,9 @@ class GameState:
 
             # Remove tile from discard pile by tile_id
             discard_seat = self.players[self.last_discarded_by].seat
-            for i, t in enumerate(self.discards[discard_seat]):
-                if t.tile_id == tile_to_claim.tile_id:
-                    del self.discards[discard_seat][i]
-                    break
-            else:
-                raise ValueError("Discard tile not found for PON cleanup")
+            self.discards[discard_seat] = [
+            t for t in self.discards[discard_seat] if t.tile_id != tile_to_claim.tile_id
+            ]
 
             self.last_discard = None
             self.last_discarded_by = None
@@ -195,69 +190,47 @@ class GameState:
             player = self.get_current_player()
             tile_to_kan = next((t for t in player.hand if t.tile_id == tile_index), None)
 
-            # Minkan uses a discarded tile, so it's allowed to not be in hand at all
-            if tile_to_kan is None and not (self.last_discard and self.last_discard.tile_id == tile_index):
-                raise ValueError(f"KAN tile_id {tile_index} not found in hand or discard")
-
-            # === Case 1: Minkan ===
-            if self.last_discard and self.last_discard.tile_id == tile_index:
-                matching_tiles = [t for t in player.hand if t.tile_id == tile_index]
-                if len(matching_tiles) != 3:
-                    raise ValueError("Cannot MINKAN: need 3 matching tiles in hand")
-                meld_tiles = matching_tiles + [self.last_discard]
-                player.call_meld("KAN", meld_tiles, include_discard=True)
-
-                # Remove discard from pile
-                discard_seat = self.players[self.last_discarded_by].seat
-                self.discards[discard_seat] = [
-                    t for t in self.discards[discard_seat] if t.tile_id != tile_index
-                ]
-                self.last_discard = None
-                self.last_discarded_by = None
-
-                # Bonus draw
-                if not self.wall:
-                    raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
-                bonus_tile = self.wall.pop()
-                player.draw_tile(bonus_tile)
-                self.awaiting_discard = True
-                return  # ✅ Prevent fallthrough
-
-            # === Case 2: Shominkan (upgrade PON → KAN) ===
-            has_pon = any(m[0] == "PON" for m in player.melds)
-            has_matching_pon = any(m[0] == "PON" and all(t.tile_id == tile_index for t in m[1]) for m in player.melds)
-
-            if has_matching_pon:
-                matching_pon_index = next(
-                    i for i, m in enumerate(player.melds)
-                    if m[0] == "PON" and all(t.tile_id == tile_index for t in m[1])
-                )
-                if player.hand.count(tile_to_kan) < 1:
-                    raise ValueError("Cannot upgrade PON to KAN: missing 4th tile in hand")
-                player.hand.remove(tile_to_kan)
-                new_kan_meld = ("KAN", [tile_to_kan] * 4)
-                player.melds[matching_pon_index] = new_kan_meld
-
-            elif has_pon:
-                raise ValueError("Cannot upgrade: no matching PON meld")
-
-            # === Case 3: Ankan ===
-            elif player.can_ankan(tile_to_kan):
+            # === Case 1: Ankan (4 tiles in hand)
+            if player.hand.count(tile_to_kan) == 4:
                 for _ in range(4):
                     player.hand.remove(tile_to_kan)
                 player.melds.append(("KAN", [tile_to_kan] * 4))
 
-            # === Invalid KAN attempt ===
-            else:
-                raise ValueError("Invalid KAN: no valid meld can be formed")
+            # === Case 2: Minkan (3 in hand + 1 from discard)
+            elif self.last_discard and self.last_discard.tile_id == tile_index:
+                matching_tiles = [t for t in player.hand if t.tile_id == tile_index]
+                if len(matching_tiles) == 3:
+                    meld_tiles = matching_tiles + [self.last_discard]
+                    player.call_meld("KAN", meld_tiles, include_discard=True)
 
-            # === Bonus draw after any KAN ===
+                    discard_seat = self.players[self.last_discarded_by].seat
+                    self.discards[discard_seat] = [
+                        t for t in self.discards[discard_seat] if t.tile_id != tile_index
+                    ]
+                    self.last_discard = None
+                    self.last_discarded_by = None
+                else:
+                    return  # Invalid Minkan — skip
+
+            # === Case 3: Shominkan (upgrade PON → KAN)
+            else:
+                for i, (meld_type, meld_tiles) in enumerate(player.melds):
+                    if meld_type == "PON" and all(t.tile_id == tile_index for t in meld_tiles):
+                        if tile_to_kan is None or player.hand.count(tile_to_kan) < 1:
+                            return  # Missing 4th tile
+                        player.hand.remove(tile_to_kan)
+                        new_kan_meld = ("KAN", meld_tiles + [tile_to_kan])
+                        player.melds[i] = new_kan_meld
+                        break
+                else:
+                    return  # No valid PON upgrade
+
+            # === Bonus draw after valid KAN
             if not self.wall:
                 raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
 
             bonus_tile = self.wall.pop()
             player.draw_tile(bonus_tile)
-
             self.awaiting_discard = True
             return
 
@@ -362,7 +335,6 @@ class GameState:
     
     def is_terminal(self):
         if hasattr(self, "_terminal") and self._terminal:
-            print("[DEBUG] Terminal hit via wall exhaustion.")
             return True
         return any(len(p.melds) >= 4 for p in self.players)
 
@@ -379,61 +351,53 @@ class GameState:
 
     def resolve_meld_priority(self, tile):
         """
-        Enforces meld priority: PON > CHI > PASS
+        Enforces meld priority: PON > CHI > PASS.
         Only one meld call can succeed.
         Returns player index (pid) if a meld was claimed, else None.
         """
-        claimers = []
+        discarder_seat = self.players[self.last_discarded_by].seat
 
-        # PON check (anyone except discarder)
+        # ----- Step 1: Try PON for any player except discarder
         for i, player in enumerate(self.players):
             if i == self.last_discarded_by:
                 continue
-            if player.can_pon(tile):
-                claimers.append((i, "PON"))
+            pon_tiles = [t for t in player.hand if t.category == tile.category and t.value == tile.value]
+            if len(pon_tiles) >= 2:
+                print(f"[DEBUG] Player {i} claims PON on tile: {tile}")
+                for t in pon_tiles[:2]:
+                    player.hand.remove(t)
+                player.melds.append(("PON", pon_tiles[:2] + [tile]))
+                self.discards[self.players[self.last_discarded_by].seat] = [
+                    t for t in self.discards[self.players[self.last_discarded_by].seat]
+                    if t.tile_id != tile.tile_id
+                ]
+                return i
 
-        # CHI check (only left player)
+        # ----- Step 2: Try CHI for the left player only
         chi_candidate = (self.last_discarded_by + 1) % 4
         chi_player = self.players[chi_candidate]
-        discarder_seat = self.players[self.last_discarded_by].seat
         if chi_player.can_chi(tile, discarder_seat):
-            claimers.append((chi_candidate, "CHI"))
-
-        # Priority resolution: PON first
-        for pid, action in claimers:
-            if action == "PON":
-                p = self.players[pid]
-                meld_tiles = [t for t in p.hand if t.tile_id == tile.tile_id][:2]
-                for t in meld_tiles:
-                    p.hand.remove(t)
-                p.melds.append(("PON", meld_tiles + [tile]))
-                self.discards[self.players[self.last_discarded_by].seat].remove(tile)
-                return pid
-
-        # Then CHI
-        for pid, action in claimers:
-            if action == "CHI":
-                p = self.players[pid]
-                v = tile.value
-                needed = []
-
-                for offset in [-2, -1, 1, 2]:
-                    val = v + offset
-                    for t in p.hand:
-                        if t.category == tile.category and t.value == val:
-                            needed.append(t)
-                            break
-                    if len(needed) == 2:
+            print(f"[DEBUG] Player {chi_candidate} claims CHI on tile: {tile}")
+            v = tile.value
+            needed = []
+            for offset in [-2, -1, 1, 2]:
+                val = v + offset
+                for t in chi_player.hand:
+                    if t.category == tile.category and t.value == val:
+                        needed.append(t)
                         break
+                if len(needed) == 2:
+                    break
+            for t in needed:
+                chi_player.hand.remove(t)
+            chi_player.melds.append(("CHI", needed + [tile]))
+            self.discards[discarder_seat] = [
+                t for t in self.discards[discarder_seat]
+                if t.tile_id != tile.tile_id
+            ]
+            return chi_candidate
 
-                for t in needed:
-                    p.hand.remove(t)
-
-                p.melds.append(("CHI", needed + [tile]))
-                self.discards[self.players[self.last_discarded_by].seat].remove(tile)
-                return pid
-
-        return None  # No meld claimed
+        return None
 
 
     pass
