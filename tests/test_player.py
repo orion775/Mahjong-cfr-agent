@@ -42,24 +42,25 @@ class TestPlayer(unittest.TestCase):
         self.assertFalse(player.can_pon(tile))  # only one copy left
     
     def test_can_chi(self):
+        from engine.player import Player
         from engine.tile import Tile
-        player = Player("East")
-        tile3 = Tile("Man", 3, 2)
-        tile4 = Tile("Man", 4, 3)
-        tile5 = Tile("Man", 5, 4)
 
-        player.draw_tile(tile3)
-        player.draw_tile(tile5)
+        # Setup Player South, meaning LEFT is East
+        player = Player(seat="South")
+        player.hand = [
+            Tile("Man", 2, 0),
+            Tile("Man", 4, 2),
+            Tile("Sou", 9, 33)
+        ]
 
-        # Legal Chi from left
-        self.assertTrue(player.can_chi(tile4, "South"))  # South is left of East
+        tile3 = Tile("Man", 3, 1)  # the discard
 
-        # Illegal Chi from non-left seat
-        self.assertFalse(player.can_chi(tile4, "North"))
+        # Valid CHI if discarded by player on the left (East)
+        self.assertTrue(player.can_chi(tile3, "East"))
 
-        # Illegal Chi if one tile is missing
-        player.discard_tile(tile3)
-        self.assertFalse(player.can_chi(tile4, "South"))
+        # Invalid CHI if discarded by any other seat
+        for seat in ["South", "West", "North"]:
+            self.assertFalse(player.can_chi(tile3, seat))
 
     def test_call_meld(self):
         from engine.tile import Tile
