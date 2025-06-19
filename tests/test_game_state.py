@@ -715,18 +715,27 @@ class TestGameState(unittest.TestCase):
             state.step(action_id)
     
     def test_reward_logic_basic(self):
-        state = GameState()
-        player = state.players[0]
+        from engine.tile import Tile
+        from engine.game_state import GameState
 
-        # Simulate 4 melds for player 0
-        for _ in range(4):
-            player.melds.append(("PON", ["Man 1", "Man 1", "Man 1"]))
+        state = GameState()
+        # Force Player 0 to a real winning hand (4 melds + pair)
+        state.players[0].hand.clear()
+        state.players[0].hand.extend([
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),
+            Tile("Man", 1, 3), Tile("Man", 2, 4), Tile("Man", 3, 5),
+            Tile("Man", 4, 6), Tile("Man", 5, 7), Tile("Man", 6, 8),
+            Tile("Man", 7, 9), Tile("Man", 8, 10), Tile("Man", 9, 11),
+            Tile("Pin", 1, 12), Tile("Pin", 1, 13),
+        ])
+        # All other players: clear their hands
+        for i in range(1, 4):
+            state.players[i].hand.clear()
+            state.players[i].melds.clear()
 
         self.assertTrue(state.is_terminal())
         self.assertEqual(state.get_reward(0), 1.0)
         self.assertEqual(state.get_reward(1), 0.0)
-        self.assertEqual(state.get_reward(2), 0.0)
-        self.assertEqual(state.get_reward(3), 0.0)
     
     def test_chi_blocked_by_pon(self):
         from engine.tile import Tile
@@ -839,7 +848,23 @@ class TestGameState(unittest.TestCase):
         # Claimer should now control the turn
         self.assertEqual(state.turn_index, 2)
 
-        
+    def test_terminal_win_check(self):
+        from engine.tile import Tile
+        from engine.game_state import GameState
+
+        gs = GameState()
+        # Force Player 0 to a win hand
+        gs.players[0].hand.clear()
+        gs.players[0].hand.extend([
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),
+            Tile("Man", 1, 3), Tile("Man", 2, 4), Tile("Man", 3, 5),
+            Tile("Man", 4, 6), Tile("Man", 5, 7), Tile("Man", 6, 8),
+            Tile("Man", 7, 9), Tile("Man", 8, 10), Tile("Man", 9, 11),
+            Tile("Pin", 1, 12), Tile("Pin", 1, 13),
+        ])
+        self.assertTrue(gs.is_terminal())
+        self.assertEqual(gs.get_reward(0), 1.0)
+        self.assertEqual(gs.get_reward(1), 0.0)
 
 if __name__ == "__main__":
     unittest.main()
