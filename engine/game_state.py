@@ -334,18 +334,31 @@ class GameState:
         return candidates
     
     def is_terminal(self):
+        # Allow manual override with _terminal (for forced ends, e.g. exhaustive draw)
         if hasattr(self, "_terminal") and self._terminal:
             return True
-        return any(len(p.melds) >= 4 for p in self.players)
+
+        # Check for real win (any player with valid winning hand)
+        for player in self.players:
+            # Combine hand + all tiles from open melds (flattened)
+            full_hand = player.hand[:]
+            for meld_type, meld_tiles in getattr(player, "melds", []):
+                full_hand.extend(meld_tiles)
+            if is_winning_hand(full_hand):
+                return True
+        return False
 
     def get_reward(self, player_id):
         """
-        Simplified reward function:
-        - Returns 1.0 if player_id is the first to have 4 melds
-        - Returns 0.0 otherwise
+        Returns 1.0 if player_id has a valid winning hand, else 0.0.
+        Only the player with a true winning hand gets 1.0; others get 0.0.
         """
         for i, player in enumerate(self.players):
-            if len(player.melds) >= 4:
+            # Combine hand and melds (flattened) to check for a real win
+            full_hand = player.hand[:]
+            for meld_type, meld_tiles in getattr(player, "melds", []):
+                full_hand.extend(meld_tiles)
+            if is_winning_hand(full_hand):
                 return 1.0 if i == player_id else 0.0
         return 0.0
 
@@ -398,8 +411,68 @@ class GameState:
             return chi_candidate
 
         return None
-
-
     pass
+
+def is_winning_hand(hand_tiles):
+    """
+    Check if the hand can be split into 4 melds (3 tiles each) and a pair.
+    Only works for closed hands with 14 tiles, no honor hand/yaku check.
+    """
+    from collections import Counter
+
+    if len(hand_tiles) != 14:
+        return False
+
+    counts = Counter((t.category, t.value) for t in hand_tiles)
+    # Try every possible pair
+    for pair, n in counts.items():
+        if n >= 2:
+            remaining = list(hand_tiles)
+            # Remove pair
+            removed = 0
+            for i in range(len(remaining)-1, -1, -1):
+                if (remaining[i].category, remaining[i].value) == pair:
+                    del remaining[i]
+                    removed += 1
+                    if removed == 2:
+                        break
+            if _can_form_melds(remaining):
+                return True
+    return False
+
+def _can_form_melds(tiles):
+    from collections import Counter
+    if not tiles:
+        return True
+    tiles = sorted(tiles, key=lambda t: (t.category, t.value))
+    first = tiles[0]
+    # Pong
+    if sum(1 for t in tiles if t.category == first.category and t.value == first.value) >= 3:
+        remaining = []
+        removed = 0
+        for t in tiles:
+            if t.category == first.category and t.value == first.value and removed < 3:
+                removed += 1
+            else:
+                remaining.append(t)
+        if _can_form_melds(remaining):
+            return True
+    # Chi (sequence, only for suits)
+    if first.category in ["Man", "Pin", "Sou"]:
+        val2 = first.value + 1
+        val3 = first.value + 2
+        i2 = i3 = -1
+        for i, t in enumerate(tiles[1:], 1):
+            if i2 == -1 and t.category == first.category and t.value == val2:
+                i2 = i
+            elif i3 == -1 and t.category == first.category and t.value == val3:
+                i3 = i
+        if i2 != -1 and i3 != -1:
+            remaining = [t for i, t in enumerate(tiles) if i not in [0, i2, i3]]
+            if _can_form_melds(remaining):
+                return True
+    return False
+
+
         
         

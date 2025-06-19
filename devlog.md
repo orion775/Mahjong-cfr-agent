@@ -300,3 +300,11 @@ Next: win detection, KAN interrupts, or CFR strategy logging
 ### Next Planned Feature
 - Reward signal adjustment based on meld value
 - Win detection / scoring
+
+## v1.5.7 - Baseline CFR Policy & Win Detection Integrated
+
+- All tests pass (including meld logic, terminal check, win detection, CFR integration)
+- Ran CFR for 1000 iterations; observed nearly uniform policy (no clear learning as expected with sparse rewards)
+- Validated CFR output, action probabilities, and debug traces (see cfr_policy.txt)
+- Known: CFR learning flat without win seeding or oracle setup (planned next)
+- Next: Add oracle CFR test (controlled near-win states to verify CFR can learn)
