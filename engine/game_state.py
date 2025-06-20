@@ -5,11 +5,6 @@ from engine.player import Player
 from engine import action_space
 
 
-from engine.wall import generate_wall
-from engine.player import Player
-from engine import action_space
-
-
 class GameState:
     def __init__(self):
         self.wall = generate_wall()
