@@ -235,10 +235,7 @@ All meld-related CFR actions now:
 - Are verified via unit tests that assert regret updates
 
 🧪 All meld action test functions are isolated and pass with:
-```bash
 (python -m unittest tests.test_cfr_trainer)
-
-
 
 ### v1.5.2 – Meld Priority Resolution
 
@@ -308,3 +305,17 @@ Next: win detection, KAN interrupts, or CFR strategy logging
 - Validated CFR output, action probabilities, and debug traces (see cfr_policy.txt)
 - Known: CFR learning flat without win seeding or oracle setup (planned next)
 - Next: Add oracle CFR test (controlled near-win states to verify CFR can learn)
+
+### v1.6.0 – Oracle Self-Draw Win Test
+
+- Implemented `FixedWinGameState_SelfDraw`, a deterministic tenpai scenario for Player 0.
+- Wrote `test_oracle_selfdraw.py` to:
+    - Step through the winning draw
+    - Assert correct win detection (is_terminal == True)
+    - Confirm Player 0 receives reward 1.0
+    - Confirm CFR recognizes and propagates the win at terminal node
+- Debugged hand setup to ensure 4 melds + pair after draw (common source of win check failures).
+- **Lesson learned:** Small mistakes in hand construction (e.g., pair mismatch) will cause false negatives in win detection—unit tests and hand breakdowns are essential.
+- **Test output:** Confirmed hand, melds, and win state as expected.
+- **Result:** Stable, reproducible baseline for all future oracle/curriculum CFR tests.
+- **Next planned feature:** Oracle Ron/discard win state and test.
