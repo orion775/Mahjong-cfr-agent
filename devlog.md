@@ -328,3 +328,15 @@ Next: win detection, KAN interrupts, or CFR strategy logging
 - Confirmed terminality and correct reward propagation in both self-draw and Ron scenarios.
 - Learned: Manual hacks are fine for reward logic, but environment should support explicit Ron action for true gameplay realism.
 - Next: Add oracle CHI/PON win scenarios and begin design of full interrupt/claim actions.
+### v1.6.2 – Oracle CHI Win Test
+
+- Added and passed a deterministic oracle test for CHI win scenario.
+- Validated CFR, meld interrupt, and win reward logic for Player 0 winning by CHI on a discard from their left.
+- Environment is now bulletproof for self-draw, Ron, and CHI-based wins.
+- Next: PON win scenario, real interrupt/call action system, curriculum for deeper CFR learning.
+
+### v1.6.3 – Full Oracle Meld Win Coverage
+
+- Added and passed oracle CFR tests for all core meld-based wins (self-draw, Ron, CHI, PON).
+- Proved that all meld claim and reward logic is CFR-compatible and bug-free for single-step wins.
+- Foundation is set for curriculum, reward shaping, or true reaction/interrupt agent actions.

@@ -91,3 +91,92 @@ class FixedWinGameState_Ron(GameState):
         self.last_discarded_by = None
         if hasattr(self, "_terminal"):
             del self._terminal
+
+
+class FixedWinGameState_CHI(GameState):
+    """
+    Player 0 (South) is in tenpai and can win by CHI on Player 3's discard.
+    """
+    def __init__(self):
+        super().__init__()
+
+        for player in self.players:
+            player.hand.clear()
+            player.melds.clear()
+
+        # Player 0: Needs Man 3 for the meld (will win after CHI on Man 3)
+        self.players[0].hand = [
+            Tile("Man", 1, 0), Tile("Man", 2, 1),  # Can CHI with Man 3
+            Tile("Pin", 2, 10), Tile("Pin", 3, 11), Tile("Pin", 4, 12),
+            Tile("Sou", 4, 21), Tile("Sou", 5, 22), Tile("Sou", 6, 23),
+            Tile("Man", 4, 3), Tile("Man", 5, 4), Tile("Man", 6, 5),
+            Tile("Pin", 1, 9), Tile("Pin", 1, 9)   # Pair
+        ]
+
+        # Player 3 (East): Has one tile, Man 3, to discard
+        self.players[3].hand = [Tile("Man", 3, 2)]
+        self.players[3].melds.clear()
+
+        # Other players: empty hands
+        self.players[1].hand.clear()
+        self.players[2].hand.clear()
+        self.players[1].melds.clear()
+        self.players[2].melds.clear()
+
+        # Wall: empty
+        self.wall.clear()
+
+        self.discards = {seat: [] for seat in ["East", "South", "West", "North"]}
+
+        # Set turn: Player 3 (East) must discard Man 3
+        self.turn_index = 3  # East
+        self.awaiting_discard = True
+
+        self.last_discard = None
+        self.last_discarded_by = None
+        if hasattr(self, "_terminal"):
+            del self._terminal
+
+
+class FixedWinGameState_PON(GameState):
+    """
+    Player 0 (South) is in tenpai and can win by calling PON on Player 2's discard.
+    """
+    def __init__(self):
+        super().__init__()
+
+        for player in self.players:
+            player.hand.clear()
+            player.melds.clear()
+
+        # Player 0 (South): two Man 3s in hand, needs a third for PON to win
+        self.players[0].hand = [
+            Tile("Man", 3, 2), Tile("Man", 3, 2),  # two Man 3s
+            Tile("Man", 1, 0), Tile("Man", 2, 1),  # Man 1, 2
+            Tile("Pin", 2, 10), Tile("Pin", 3, 11), Tile("Pin", 4, 12),
+            Tile("Sou", 4, 21), Tile("Sou", 5, 22), Tile("Sou", 6, 23),
+            Tile("Man", 4, 3), Tile("Man", 5, 4), Tile("Man", 6, 5),
+            Tile("Pin", 1, 9), Tile("Pin", 1, 9)  # Pair
+        ][:13]  # Ensure only 13 tiles
+
+        # Player 2 (West): will discard Man 3
+        self.players[2].hand = [Tile("Man", 3, 2)]
+        self.players[2].melds.clear()
+
+        # Other players: empty
+        self.players[1].hand.clear()
+        self.players[3].hand.clear()
+        self.players[1].melds.clear()
+        self.players[3].melds.clear()
+
+        self.wall.clear()
+        self.discards = {seat: [] for seat in ["East", "South", "West", "North"]}
+
+        # Turn: Player 2 (West) must discard Man 3
+        self.turn_index = 2  # West
+        self.awaiting_discard = True
+
+        self.last_discard = None
+        self.last_discarded_by = None
+        if hasattr(self, "_terminal"):
+            del self._terminal
