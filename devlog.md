@@ -319,3 +319,12 @@ Next: win detection, KAN interrupts, or CFR strategy logging
 - **Test output:** Confirmed hand, melds, and win state as expected.
 - **Result:** Stable, reproducible baseline for all future oracle/curriculum CFR tests.
 - **Next planned feature:** Oracle Ron/discard win state and test.
+
+
+### v1.6.1 – Oracle Ron Win Test
+
+- Implemented and tested `FixedWinGameState_Ron`.
+- Simulated Ron by manually appending the winning discard to Player 0’s hand.
+- Confirmed terminality and correct reward propagation in both self-draw and Ron scenarios.
+- Learned: Manual hacks are fine for reward logic, but environment should support explicit Ron action for true gameplay realism.
+- Next: Add oracle CHI/PON win scenarios and begin design of full interrupt/claim actions.
