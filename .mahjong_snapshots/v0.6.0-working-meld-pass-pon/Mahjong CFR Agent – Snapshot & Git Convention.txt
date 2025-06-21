@@ -1,0 +1,61 @@
+This file documents the official procedures for snapshotting and versioning the project.
+
+    Local Snapshotting (Manual Versioned Folder Copy)
+
+We use manual, non-zipped folder copies to save project snapshots under .mahjong_snapshots/. Each snapshot is named using a semantic version tag and short description.
+
+PowerShell Snapshot Script Format
+
+$snapshotName = "v0.5.0-step-draw-discard-pass"
+$target = ".\.mahjong_snapshots\$snapshotName"
+
+New-Item -ItemType Directory -Force -Path $target
+Copy-Item -Recurse -Path .\* -Exclude ".git", ".mahjong_snapshots", "mahjong_snapshots" -Destination $target
+
+Notes
+
+Always change $snapshotName to match the current milestone.
+
+This system avoids Git clutter and retains all working code.
+
+Snapshots include all files, including uncommitted experimental changes.
+
+    Git Workflow (Commit + Push)
+
+For stable, working features, we commit changes to Git manually by specifying only relevant files.
+
+Git Command Template
+
+git add engine/game_state.py tests/test_game_state.py
+git commit -m "Add PASS action support in GameState with test"
+git push origin main
+
+Guidelines
+
+Do not use git add . to avoid pushing unintended debug code.
+
+Use clear, meaningful commit messages.
+
+Always commit only stable, tested code.
+
+Example Version Names
+
+Version
+
+Description
+
+v0.1.0-init
+
+Initial tile class and action space
+
+v0.3.0-pon-tested
+
+PON logic implemented and passing
+
+v0.5.0-pass-added
+
+PASS logic and unit test added
+
+This file must be uploaded when resuming work in a new session to keep snapshot and Git rules consistent.
+
+Last updated after v0.5.0 snapshot (PASS implementation)
