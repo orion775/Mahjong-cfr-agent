@@ -1,3 +1,6 @@
+#tests\test_oracle_scenarios.py
+
+
 import unittest
 from engine.cfr_trainer import CFRTrainer
 from engine.oracle_states import FixedWinGameState_SelfDraw

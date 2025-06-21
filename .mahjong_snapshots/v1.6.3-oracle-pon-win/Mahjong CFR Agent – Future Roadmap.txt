@@ -1,0 +1,117 @@
+1. Oracle Curriculum & Isolated CFR Tests (v1.6.x → v1.7.x)
+
+    Goal: Prove the engine and CFR logic are flawless for all “win” types, including rare and interrupt cases.
+
+    Actions:
+
+        Maintain and extend oracle states for: self-draw, Ron, CHI, PON, KAN, Shominkan, etc.
+
+        Ensure each test is deterministic, interpretable, and checks both terminality and reward.
+
+        Use these as regression tests for all future engine/CFR refactoring.
+
+    Milestone: All “oracle” win conditions covered and pass in isolation.
+
+2. Reverse Curriculum Learning (v1.7.x → v1.8.x)
+
+    Goal: Teach the agent to win from increasingly complex states, working backwards from the finish line.
+
+    Actions:
+
+        For each curriculum level, create a class of states N-steps-from-win (e.g., 1, 2, 3, …).
+
+        Require agent to “solve” easier curriculum before advancing.
+
+        Use oracle tests at each stage to check expected value propagation.
+
+        Document and analyze how generalization improves as curriculum expands.
+
+    Milestone: Agent reliably solves not only immediate wins, but also learns policies from several steps back.
+
+3. Realistic Interrupt/Claim Actions (v1.9.x)
+
+    Goal: Replace test-only hacks with a full game mechanic for claiming Ron, PON, CHI, KAN, etc., as real actions.
+
+    Actions:
+
+        Extend action space and GameState.step() to allow and handle interrupt actions (reaction windows).
+
+        Implement and test priority arbitration (e.g., multiple players may be able to claim a tile—PON > CHI > Ron, etc.).
+
+        Update CFR to handle branching on these interrupts (multi-agent value propagation).
+
+        Add corresponding tests for reaction/claim scenarios.
+
+    Milestone: Engine supports full legal gameplay, including interrupts and meld claims, and CFR can train on real play trajectories.
+
+4. Full Self-Play and Partial Reward Design (v2.0.x)
+
+    Goal: CFR learns from full random deals, not just oracles; agent receives and learns from partial hand improvements.
+
+    Actions:
+
+        Enable CFR rollouts from any legal game state (not just controlled or curriculum positions).
+
+        Design partial/shape rewards (for melds formed, efficiency, tenpai, etc.)—optionally add shanten/yaku-based signals.
+
+        Test for stable learning and check for “emergent” sensible play from scratch.
+
+    Milestone: Agent learns non-trivial strategies from scratch in multi-agent self-play.
+
+5. Info Set Abstraction & CFR+ (v2.1.x+)
+
+    Goal: Make the state/action space tractable for real Mahjong (not just toy tabular).
+
+    Actions:
+
+        Enhance get_info_set() for richer, more human-like abstraction (open melds, visible discards, wind, etc.).
+
+        Explore and integrate CFR+ or similar regret-matching enhancements for faster, more stable convergence.
+
+        Add abstraction research experiments (bucketization, function approximation, etc.).
+
+    Milestone: Info sets and CFR scale well; learning remains stable and interpretable.
+
+6. Deep Learning Integration (v3.0.x+)
+
+    Goal: Move from tabular CFR to Deep CFR or offline neural approximation.
+
+    Actions:
+
+        Implement neural regret/value networks for large-scale or online play (e.g., as in Suphx, AlphaZero for Mahjong).
+
+        Mix function approximation into CFR rollouts and policy distillation.
+
+        Run large-scale experiments, integrate with TensorBoard/logging.
+
+        Optionally, build minimal online/interactive UI for human-vs-agent play.
+
+    Milestone: Deep CFR agent that learns online from self-play and can play at a strong level in real settings.
+
+7. Ongoing/Continuous
+
+    Testing & Debugging:
+
+        Every engine/CFR refactor must be covered by existing and new oracle/curriculum regression tests.
+
+        All fragile, tricky, or new logic documented in devlog.
+
+    Devlog & Version Tracking:
+
+        Document what works, what’s hard, what broke and how it was fixed.
+
+        Track feature/bug/test coverage at every step.
+
+Visual Summary Table
+Phase	What’s Learned/Added	Optimal Trigger
+Oracle CFR	All win types/interrupts	Now (done/doing)
+Reverse Curriculum	Stepwise learning, generalization	Once oracles pass
+Real Interrupts	Full action/reaction gameplay	When basic CFR stable
+Self-Play	Full games, partial rewards	Engine robust
+Abstraction	Info set/strategy compression	Full-game too large
+Deep CFR	Neural/large-scale learning	After tabular CFR
+
+This roadmap keeps you always building on proven code and never rushing into complexity before the foundation is stable.
+When ready for each next phase, you’ll have a clear path and fully regression-tested engine behind you.
+
+Let me know if you want any section detailed, reformatted, or saved for README/devlog!

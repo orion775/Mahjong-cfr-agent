@@ -1,342 +1,252 @@
-Last Milestone: v1.3.0-kan-ankan-only
+# Mahjong CFR Agent – Devlog
 
-Status: All core meld types (CHI, PON, Ankan) implemented with legal action generation and CFR compatibility.
+---
+
+## Last Milestone: v1.3.0-kan-ankan-only
+
+**Status:**  
+All core meld types (CHI, PON, Ankan) implemented with legal action generation and CFR compatibility.
 
 | Component             | Description                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------- |
-| `Tile` System         | All tile types (suits, winds, dragons) implemented with ID, equality, hash            |
-| `Action Space`        | Covers 124 actions: Discard (0–33), PON (34–67), PASS (68), CHI (69–89), KAN (90–123) |
-| `Player` Class        | Supports draw, discard, CHI, PON, KAN (Ankan only)                                    |
-| `GameState`           | Turn cycle with draw, discard, and meld handling                                      |
-| `get_legal_actions()` | Dynamically returns legal CHI, PON, and KAN actions                                   |
-| `CFRTrainer`          | Working regret-matching, info set tracking, average strategy export                   |
-| `FixedTrainer`        | Used for deterministic CFR tests (regret update, KAN eligibility, etc.)               |
-| `Unit Tests`          | 30+ tests cover all logic: player behavior, meld calls, CFR integrity                 |
+| Tile System           | All tile types (suits, winds, dragons) implemented with ID, equality, hash            |
+| Action Space          | Covers 124 actions: Discard (0–33), PON (34–67), PASS (68), CHI (69–89), KAN (90–123) |
+| Player Class          | Supports draw, discard, CHI, PON, KAN (Ankan only)                                    |
+| GameState             | Turn cycle with draw, discard, and meld handling                                      |
+| get_legal_actions()   | Dynamically returns legal CHI, PON, and KAN actions                                   |
+| CFRTrainer            | Working regret-matching, info set tracking, average strategy export                   |
+| FixedTrainer          | Used for deterministic CFR tests (regret update, KAN eligibility, etc.)               |
+| Unit Tests            | 30+ tests cover all logic: player behavior, meld calls, CFR integrity                 |
 
-Tests
+### Tests
 
-All tests passing as of v1.3.0. CFR confirmed to:
+All tests passing as of v1.3.0.  
+CFR confirmed to:
+- Learn from CHI and PON actions
+- Detect and sample KAN (Ankan) actions when available
+- Maintain valid regret and strategy tables of length 124
 
-    Learn from CHI and PON actions
+### Short-Term Simplifications
 
-    Detect and sample KAN (Ankan) actions when available
-
-    Maintain valid regret and strategy tables of length 124
-
- Short-Term Simplifications (To Be Replaced)
-
- | Component       | Description                                                             | Target Fix Version |
+| Component       | Description                                                             | Target Fix Version |
 | --------------- | ----------------------------------------------------------------------- | ------------------ |
-| `is_terminal()` | Game ends if a player has 4 melds                                       | `v1.4.x`           |
-| `get_reward()`  | Returns 1.0 for the first player with 4 melds, 0.0 for others           | `v1.4.x`           |
-| Meld Priority   | No priority enforcement (PON vs CHI vs KAN) — first match always taken  | `v1.5.x`           |
-| Ankan Logic     | No bonus tile drawn yet after KAN                                       | `v1.3.1`           |
-| Shominkan       | No upgrade from PON → KAN                                               | `v1.4.x`           |
-| Minkan          | Open KAN (on discard) not yet supported                                 | `v1.4.0`           |
+| is_terminal()   | Game ends if a player has 4 melds                                       | v1.4.x             |
+| get_reward()    | Returns 1.0 for first player with 4 melds, 0.0 for others               | v1.4.x             |
+| Meld Priority   | No priority enforcement (PON vs CHI vs KAN); first match always taken   | v1.5.x             |
+| Ankan Logic     | No bonus tile drawn after KAN                                           | v1.3.1             |
+| Shominkan       | No upgrade from PON to KAN                                              | v1.4.x             |
+| Minkan          | Open KAN (on discard) not supported                                     | v1.4.0             |
 | Win Detection   | No yaku/win check, only meld count                                      | Phase 3            |
-| Info Set Format | `get_info_set()` includes only hand, discards, turn — not full game obs | `v1.5.x`           |
+| Info Set Format | get_info_set() includes only hand, discards, turn; not full game obs    | v1.5.x             |
 
+### Known Tricky Areas
 
-Known Tricky Areas (Tracked)
+- Meld matching in CHI/PON requires exact Tile.tile_id alignment.
+- CFR tests originally failed when action space was too small ([0.0] * 90); now fixed to [0.0] * 124.
+- KAN actions not visible in exported policy until threshold set to 0.0.
+- Unit test for KAN required full hand overwrite to stabilize.
 
-Meld matching in CHI/PON requires exact Tile.tile_id alignment — caused test failures if Tile() objects didn’t match by ID or instance
-
-CFR tests originally failed when action space was too small ([0.0] * 90) — now fixed to [0.0] * 124
-
-KAN actions were not visible in exported policy until the threshold was set to 0.0
-
-Unit test for KAN (test_cfr_learns_ankan) required full hand overwrite (clear() + extend()) to stabilize
-
-Planned Short-Term Milestones
+### Planned Short-Term Milestones
 
 | Version                   | Goal                                 |
 | ------------------------- | ------------------------------------ |
-| `v1.3.1-kan-bonus-draw`   | Add bonus tile draw after closed KAN |
-| `v1.4.0-kan-minkan`       | Add support for open KAN via discard |
-| `v1.4.1-shominkan`        | Upgrade PON to KAN during turn       |
-| `v1.5.0-terminal-correct` | Real win detection and reward logic  |
-| `v1.6.x`                  | Priority system (PON > CHI > PASS)   |
+| v1.3.1-kan-bonus-draw     | Add bonus tile draw after closed KAN |
+| v1.4.0-kan-minkan         | Add support for open KAN via discard |
+| v1.4.1-shominkan          | Upgrade PON to KAN during turn       |
+| v1.5.0-terminal-correct   | Real win detection and reward logic  |
+| v1.6.x                    | Priority system (PON > CHI > PASS)   |
 
-v1.4.0 – Add Minkan (Open KAN via Discard)
+---
 
-What Was Added
+## v1.4.0 – Add Minkan (Open KAN via Discard)
 
-    Implemented Minkan detection in GameState.step() using the same KAN_<tile_id> action ID.
+**Summary:**  
+Implemented Minkan detection in GameState. Valid Minkan requires player to hold 3 matching tiles and last_discard to match tile_id. Discard is removed from original player's pile. Meld uses 3 tiles from hand and 1 from discard. Bonus draw is triggered after any KAN. Player continues with a discard.
 
-    Valid Minkan requires:
+**Known Limitations:**  
+- No distinction between open/closed KAN in meld encoding yet.
+- Shominkan (PON → KAN upgrade) not yet implemented.
+- No priority conflict logic between CHI/PON/KAN callers.
 
-        last_discard.tile_id == tile_id
+**Tests:**  
+- test_minkan_action_successful  
+- test_minkan_bonus_draw  
+- test_minkan_removes_discard  
+- test_minkan_fails_with_less_than_3
 
-        Player holds 3 matching tiles
+---
 
-    Discard is removed from the original player’s discard pile.
+## v1.4.1 – Add Shominkan (Upgrade PON to KAN)
 
-    Meld registered with 3 tiles from hand + 1 from discard.
+**Summary:**  
+Added Shominkan logic to GameState to allow upgrade from PON to KAN if player holds 4th matching tile and already has a PON meld. On upgrade: remove 4th tile from hand, replace PON with a KAN meld, bonus tile is drawn, and player discards.
 
-    Bonus draw is automatically triggered after any KAN (open or closed).
+**Known Limitations:**  
+- No priority conflict resolution; other players cannot block upgrade.
+- Meld type (open/closed) not encoded explicitly in meld string.
 
-    Player must then discard.
+**Tests:**  
+- test_shominkan_upgrade_successful  
+- test_shominkan_removes_tile_from_hand  
+- test_shominkan_replaces_meld_type  
+- test_shominkan_bonus_draw_after_upgrade  
+- test_shominkan_illegal_if_no_pon  
+- test_shominkan_illegal_if_tile_not_in_hand
 
-Known Limitations
+---
 
-    No distinction between open/closed KAN in meld encoding yet (we just use ("KAN", [...])).
+## v1.4.2 – Shominkan/CHI/KAN Fixes Complete
 
-    Shominkan (upgrade from PON → KAN) is not yet implemented.
+**Summary:**  
+Resolved critical issues with CHI and KAN melds, including Shominkan and Minkan edge cases. Fixed action resolution, tile tracking, and meld registration logic.
 
-    No priority conflict logic between CHI/PON/KAN callers.
+**Changes:**  
+- Fixed can_chi() to restrict to left-seat only.
+- CHI action now removes exactly two tiles from hand and removes claimed tile from discard.
+- Shominkan validates exact PON match and presence of 4th tile before upgrade.
+- Minkan verifies 3 matching tiles in hand plus last discard.
+- Added error handling for illegal melds (missing tiles, no matching melds).
+- Cleaned up test cases to compare meld content by string representation.
+- 100% test pass: 51 tests.
 
-Tests
+**Bug Fixes:**  
+- CHI tile mismatch failures.
+- Discard not removed after meld.
+- No exception for bad CHI/KAN attempts.
+- Meld object mismatch in step/CHI actions.
 
-    test_minkan_action_successful
+**Known Limitations:**  
+- Meld encoding/decoding not type-safe.
+- Meld registration logic could be abstracted (e.g., resolve_chi_meld()).
+- No CHI interrupt or priority handling—atomic resolution only.
 
-    test_minkan_bonus_draw
+**Future Impact:**  
+- Stabilizes action logic for downstream CFR.
+- Refactor opportunities to unify meld logic.
+- Melds are now traceable for replay/visualization.
 
-    test_minkan_removes_discard
-
-    test_minkan_fails_with_less_than_3
-
-v1.4.1 – Add Shominkan (Upgrade PON to KAN)
-
-What Was Added
-
-    Added Shominkan logic to GameState.step() to detect and allow upgrade from PON to KAN.
-
-    Player must:
-
-        Have an existing ("PON", [...]) meld
-
-        Hold the 4th matching tile in hand
-
-    On upgrade:
-
-        The 4th tile is removed from hand
-
-        PON meld is replaced in-place with a ("KAN", [...]) meld
-
-        A bonus tile is drawn from the wall
-
-        Player continues with a discard
-
-Known Limitations
-
-    No priority conflict resolution yet (i.e. other players cannot block the upgrade)
-
-    Meld type (open/closed) is not encoded explicitly in the meld string
-
-Tests
-
-    test_shominkan_upgrade_successful
-
-    test_shominkan_removes_tile_from_hand
-
-    test_shominkan_replaces_meld_type
-
-    test_shominkan_bonus_draw_after_upgrade
-
-    test_shominkan_illegal_if_no_pon
-
-    test_shominkan_illegal_if_tile_not_in_hand
-
-## v1.4.2-shominkan-fix-complete
-
-### Summary
-This patch resolves critical issues around CHI and KAN meld behavior, including Shominkan and Minkan edge cases. It corrects action resolution, tile tracking, and meld registration logic.
-
-### Changes
-- ✅ Fixed `can_chi()` to properly restrict CHI to left-seat only
-- ✅ CHI action now:
-  - Removes exactly two tiles from hand (excluding the claimed tile)
-  - Constructs meld using correct `Tile` objects
-  - Removes claimed tile from discard pile
-- ✅ Shominkan (upgrade PON to KAN) now:
-  - Checks for exact PON match before allowing upgrade
-  - Validates 4th tile exists in hand
-  - Replaces PON with a 4-tile KAN meld
-- ✅ Minkan fixes:
-  - Verifies 3 matching tiles in hand + last discard
-  - Ensures correct meld structure and discard cleanup
-- ✅ Added robust error handling for illegal melds (CHI with missing tiles, KAN with no matching melds)
-- ✅ Cleaned up test cases to assert meld content using string representation (prevents object identity mismatch)
-- ✅ 100% test pass: 51 tests
-
-### Bug Fixes
-- CHI tile mismatch caused test failures
-- Discard not removed after meld (test_chi_removes_discard_from_pile)
-- No exception raised for bad CHI or KAN attempts
-- Meld object mismatch in `test_step_handles_chi_action`
-
-### Known Limitations
-- Meld encoding/decoding is not yet fully type-safe
-- Meld registration logic could be abstracted to reduce duplication (e.g., `resolve_chi_meld()` helper)
-- No CHI interrupt or priority handling — assume atomic resolution for now
-
-### Future Impact
-- 🧠 These changes stabilize action logic for downstream CFR updates (where info sets depend on visible melds)
-- 🧪 Refactor opportunities: unify meld resolution logic (CHI, PON, KAN) into a helper
-- 📦 Useful for later stage: visualization of melds + replay tools, since melds are now fully traceable
+---
 
 ## v1.5.0 – terminal-fixes-full-pass (2025-06-18)
 
-### Summary
+**Summary:**  
+Terminal handling is fully working (wall depletion, win detection). CFR training is stable and exports strategy output. All tests, including meld and discard transitions, now pass.
 
-This version finalizes the transition from a partially stubbed terminal system to a fully working draw-discard CFR cycle. The main loop now properly terminates after the wall depletes or a player completes 4 melds. CFR training produces strategy output. Major test passes confirm system-wide stability, including melds and discard transitions.
+**Key Changes Since v1.4.2:**  
+- Fixed endless loop with wall exhaustion and `_terminal`.
+- Defensive recursion depth limit.
+- Test suite stabilization (melds, discard logic, deep copies, attribute errors).
+- CFR now terminates correctly on wins.
+- Info sets encode melds and tile vectors.
+- CFR export outputs to `cfr_policy.txt`.
+- All major bugs fixed.
 
-### Key Changes Since v1.4.2
+**Known Limitations:**  
+- No hand validation logic for true yaku/win.
+- Meld conflicts and priority still stubbed.
+- Some tests use manual hand setup.
 
-- 🔧 **Terminal State Handling**:
-  - Fixed endless loop by detecting wall exhaustion (`wall == []`) and setting `_terminal = True`.
-  - Added defensive logic in `step()` to prevent recursion depth runaway.
+**Next Steps:**  
+- Meld resolution priority (PON > CHI, interrupt).
+- Reward shaping for partial melds/tile efficiency.
+- Deep CFR baseline.
+- Add snapshot tagging post-run.
 
-- 🧪 **Test Suite Stabilization**:
-  - Fixed `test_chi_only_from_left_seat` by ensuring correct `turn_index` and `last_discarded_by` setup.
-  - Validated melds (CHI, PON, KAN) with real hands/discards during tests.
-  - Converted CHI/PON discard cleanup to handle corner cases (e.g. empty discard piles).
-
-- 🧠 **CFR Functionality**:
-  - `cfr()` now terminates recursion correctly and handles reward collection on terminal states.
-  - `get_info_set()` includes meld summaries and correctly encodes tile vectors.
-  - CFR export outputs to `cfr_policy.txt` and avoids loops on invalid `step()` transitions.
-
-- 🐛 **Bugs Fixed**:
-  - Fixed `AttributeError` on `cfr_debug_counter` by initializing in `GameState`.
-  - Corrected deep copy logic of state (`clone_state`) to avoid mutation side-effects.
-  - Rewrote several `FixedTrainer` subclasses in test files to support `depth=` kwargs.
-
-- 📈 **Output Inspection**:
-  - `cfr_policy.txt` now correctly shows non-uniform strategies, confirming learning is occurring.
-
-### Known Limitations
-
-- No hand validation logic (e.g. true win conditions).
-- Meld conflicts and priority resolution are still stubbed.
-- Some tests bypass full game logic (e.g. using manual `step()` and hand setup).
-
-### Next Steps
-
-- Revisit meld resolution priority (PON > CHI, interrupt flow).
-- Integrate reward shaping for partial melds or tile efficiency.
-- Begin deep CFR baseline (e.g., CFR+ or regret matching with smoothing).
-- Add full snapshot tagging via PowerShell post-run script.
+---
 
 ## v1.5.1 – Meld Action CFR Tests
 
-✅ CFR Regret Table Learning for Meld Actions
+**Summary:**  
+CFR regret table learning for meld actions now tested.  
+CHI, PON, and KAN action tests pass. Regrets for all meld types are updated and visible in policy exports.
 
-| Component     | Description                                      |
-|---------------|--------------------------------------------------|
-| CHI Meld Test | `FixedTrainerWithCHIRegret` injects regret       |
-| PON Meld Test | `FixedTrainerWithPONRegret` injects regret       |
-| KAN Meld Test | Previously tested via `test_cfr_learns_ankan`    |
-| Action IDs    | All tested via encode/decode or fixed mapping    |
+---
 
-All meld-related CFR actions now:
-- Can appear in strategy output
-- Can be tested independently of random game state
-- Are verified via unit tests that assert regret updates
+## v1.5.2 – Meld Priority Resolution
 
-🧪 All meld action test functions are isolated and pass with:
-(python -m unittest tests.test_cfr_trainer)
+**Summary:**  
+Implemented priority arbitration in `resolve_meld_priority()` (PON > CHI). Only one meld proceeds. Melds registered with correct tile structure.  
+Tested with `test_chi_blocked_by_pon`.
 
-### v1.5.2 – Meld Priority Resolution
-
-✅ PON > CHI arbitration now functional
-
-Implemented `resolve_meld_priority()` inside `GameState`:
-- Collects all potential meld claimers for the last discard
-- Enforces that only one meld proceeds, based on priority rules
-- Removes discard from discarder’s pile upon successful meld
-- Meld (PON or CHI) is registered with correct tile structure
-
-🧪 Test: `test_chi_blocked_by_pon`
-- Player 1 has CHI
-- Player 2 has PON on same tile
-- Confirm PON is chosen and CHI is blocked
-
-📌 Next:
-- Add KAN priority
-- Meld contest resolution for simultaneous PON callers (future CFR support)
-- Integrate `resolve_meld_priority()` into main `step()` loop
+---
 
 ## v1.5.3 – Meld Ownership & Turn Reassignment
 
-✔ Meld player now gains control of the turn
+**Summary:**  
+Turn now passes to meld claimer after interrupt.  
+`resolve_meld_priority()` returns new owner and integrates with main loop.  
+Enables multi-agent CFR to model interrupts and ownership changes.
 
-We updated `resolve_meld_priority(tile)` to:
-- Return player ID of meld claimer (instead of True/False)
-- Allow `step()` to redirect turn ownership
-
-✅ Tested with:
-- `test_turn_passes_to_meld_claimer`
-- `test_step_auto_resolves_pon`
-
-📌 This now allows CFR to:
-- Model interrupts realistically
-- Track ownership and future expected values properly
-- Safely simulate meld sequences in multi-agent settings
-
-Next: win detection, KAN interrupts, or CFR strategy logging
+---
 
 ## v1.5.4 – Meld Priority Bug: CHI overriding PON (Fixed)
 
-- Problem: `resolve_meld_priority()` was matching tiles by `tile_id` only, causing PON to fail if hand tiles had different `tile_id`s than the discard.
-- Fix: Now PON checks match by `category` and `value`, allowing logically identical tiles to be used.
-- Impact: Resolved rare but critical nondeterministic test failures (`test_chi_blocked_by_pon`)
+**Summary:**  
+Fixed bug in meld matching logic (PON now matches by category and value, not just tile_id).  
+Prevents CHI overriding valid PON melds in rare cases.
 
-## v1.5.5-flaky-tests-fixed
+---
 
-### Summary
-- Removed two unreliable tests (`test_pon_action`, `test_step_auto_resolves_pon`) that assumed perfect tile ID control during meld interrupts.
-- All critical meld behavior (PON, CHI, KAN) is already validated in realistic flow tests and CFR simulations.
-- Verified full suite is deterministic and stable across multiple runs.
+## v1.5.5 – Flaky Tests Fixed
 
-### Key Notes
-- CFR action space only supports tile IDs 0–33; using higher tile_ids (e.g. 42) breaks action mapping.
-- Test logic that tries to fake meld triggers by manually editing `last_discard` often fails silently.
-- All interrupt meld logic is now validated via `test_call_meld`, `test_turn_passes_to_meld_claimer`, and CFR episodes.
+**Summary:**  
+Removed two unreliable tests.  
+All meld logic validated in flow and CFR simulation.  
+Suite is now deterministic and stable.
 
-### Next Planned Feature
-- Reward signal adjustment based on meld value
-- Win detection / scoring
+**Key Notes:**  
+- CFR action space supports tile IDs 0–33 only.
+- Manual edits of last_discard for test hacks are unreliable.
+- All interrupt meld logic validated via core tests.
 
-## v1.5.7 - Baseline CFR Policy & Win Detection Integrated
+**Next Feature:**  
+- Reward signal adjustment by meld value.
+- Win detection/scoring.
 
-- All tests pass (including meld logic, terminal check, win detection, CFR integration)
-- Ran CFR for 1000 iterations; observed nearly uniform policy (no clear learning as expected with sparse rewards)
-- Validated CFR output, action probabilities, and debug traces (see cfr_policy.txt)
-- Known: CFR learning flat without win seeding or oracle setup (planned next)
-- Next: Add oracle CFR test (controlled near-win states to verify CFR can learn)
+---
 
-### v1.6.0 – Oracle Self-Draw Win Test
+## v1.5.7 – Baseline CFR Policy & Win Detection Integrated
 
-- Implemented `FixedWinGameState_SelfDraw`, a deterministic tenpai scenario for Player 0.
-- Wrote `test_oracle_selfdraw.py` to:
-    - Step through the winning draw
-    - Assert correct win detection (is_terminal == True)
-    - Confirm Player 0 receives reward 1.0
-    - Confirm CFR recognizes and propagates the win at terminal node
-- Debugged hand setup to ensure 4 melds + pair after draw (common source of win check failures).
-- **Lesson learned:** Small mistakes in hand construction (e.g., pair mismatch) will cause false negatives in win detection—unit tests and hand breakdowns are essential.
-- **Test output:** Confirmed hand, melds, and win state as expected.
-- **Result:** Stable, reproducible baseline for all future oracle/curriculum CFR tests.
-- **Next planned feature:** Oracle Ron/discard win state and test.
+**Summary:**  
+All tests pass, including meld logic, terminal, and win detection.  
+CFR run for 1000 iterations (flat learning as expected with sparse rewards).  
+CFR output, action probabilities, and debug traces validated.  
+Next: Oracle CFR test for near-win state.
 
+---
 
-### v1.6.1 – Oracle Ron Win Test
+## v1.6.0 – Oracle Self-Draw Win Test
 
-- Implemented and tested `FixedWinGameState_Ron`.
-- Simulated Ron by manually appending the winning discard to Player 0’s hand.
-- Confirmed terminality and correct reward propagation in both self-draw and Ron scenarios.
-- Learned: Manual hacks are fine for reward logic, but environment should support explicit Ron action for true gameplay realism.
-- Next: Add oracle CHI/PON win scenarios and begin design of full interrupt/claim actions.
-### v1.6.2 – Oracle CHI Win Test
+**Summary:**  
+Implemented deterministic self-draw win scenario and test.  
+Confirmed stable, reproducible CFR for oracle/curriculum testing.
 
-- Added and passed a deterministic oracle test for CHI win scenario.
-- Validated CFR, meld interrupt, and win reward logic for Player 0 winning by CHI on a discard from their left.
-- Environment is now bulletproof for self-draw, Ron, and CHI-based wins.
-- Next: PON win scenario, real interrupt/call action system, curriculum for deeper CFR learning.
+---
 
-### v1.6.3 – Full Oracle Meld Win Coverage
+## v1.6.1 – Oracle Ron Win Test
 
-- Added and passed oracle CFR tests for all core meld-based wins (self-draw, Ron, CHI, PON).
-- Proved that all meld claim and reward logic is CFR-compatible and bug-free for single-step wins.
-- Foundation is set for curriculum, reward shaping, or true reaction/interrupt agent actions.
+**Summary:**  
+Added deterministic Ron win scenario and test.  
+Terminal state, reward propagation confirmed.  
+Next: Add oracle CHI/PON win scenarios, begin full interrupt/claim actions.
+
+---
+
+## v1.6.2 – Oracle CHI Win Test
+
+**Summary:**  
+Oracle test for CHI win passes.  
+Validates meld interrupt and win logic for CHI.  
+Environment stable for self-draw, Ron, and CHI-based wins.  
+Next: PON scenario, real interrupt system, curriculum learning.
+
+---
+
+## v1.6.3 – Full Oracle Meld Win Coverage
+
+**Summary:**  
+Oracle CFR tests pass for all meld-based wins (self-draw, Ron, CHI, PON).  
+All meld claim/reward logic now CFR-compatible and bug-free for single-step wins.  
+Ready for curriculum, reward shaping, and full interrupt action system.
+
+---

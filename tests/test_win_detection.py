@@ -1,3 +1,5 @@
+#tests\test_win_detection.py
+
 import unittest
 from engine.tile import Tile
 from engine.game_state import is_winning_hand

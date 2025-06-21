@@ -1,3 +1,5 @@
+#tests\test_cfr_debug.py
+
 import unittest
 from engine.cfr_trainer import CFRTrainer
 from engine.game_state import GameState
