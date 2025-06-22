@@ -38,41 +38,45 @@ class TestOracleSelfDraw(unittest.TestCase):
 
 class TestOracleRon(unittest.TestCase):
     def test_cfr_learns_to_ron_win(self):
+        from engine.cfr_trainer import CFRTrainer
+        from engine.game_state import GameState
+        from engine.tile import Tile
+
         trainer = CFRTrainer()
-        state = FixedWinGameState_Ron()
+        state = GameState()
 
-        # --- Step 1: Player 1 discards their only tile (Pin 1) ---
-        player1 = state.players[1]
-        discard_tile = player1.hand[0]
-        
+        # Setup: clear hands and melds
+        for p in state.players:
+            p.hand.clear()
+            p.melds.clear()
+
+        # Player 1 discards Pin 1
+        state.players[1].hand.append(Tile("Pin", 1, 9))
+
+        # Player 0: 13-tile tenpai (ready) hand, needs Pin 1 for win
+        state.players[0].hand.extend([
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            Tile("Man", 2, 1), Tile("Man", 2, 1), Tile("Man", 2, 1),
+            Tile("Man", 3, 2), Tile("Man", 3, 2), Tile("Man", 3, 2),
+            Tile("Man", 4, 3), Tile("Man", 4, 3), Tile("Man", 4, 3),
+            Tile("Pin", 1, 9)
+        ])
+
+        state.turn_index = 1
+        state.awaiting_discard = True
+
+        discard_tile = state.players[1].hand[0]
         state.step(discard_tile.tile_id)
-        # Simulate Player 0 calling Ron by picking up the discard
-        player0 = state.players[0]
-        player0.hand.append(state.last_discard)
 
-        print("Player 0 hand (after Ron):", [str(t) for t in player0.hand])
-        print("Hand length (after Ron):", len(player0.hand))
+        print("Player 0 hand (after Ron):", [str(t) for t in state.players[0].hand])
+        print("Hand length (after Ron):", len(state.players[0].hand))
         print("is_terminal() (after Ron):", state.is_terminal())
+        print("DEBUG: _terminal =", getattr(state, "_terminal", None))
 
-        # Now test terminal and reward
         self.assertTrue(state.is_terminal(), "State should be terminal after Player 0 claims Ron.")
         reward = state.get_reward(0)
         self.assertEqual(reward, 1.0, "Player 0 should receive reward for winning on discard (Ron).")
 
-        # Check that the discard was registered correctly
-        self.assertEqual(state.last_discard.tile_id, discard_tile.tile_id)
-        self.assertEqual(state.last_discarded_by, 1)
-
-        # --- Step 2: Player 0's turn to react ---
-        # Now, Player 0 (East) should be able to win with this tile
-        # (In a real Mahjong engine, Ron would trigger; here, we'll check terminal state and reward)
-        # Simulate that Player 0 picks up the discard for a win (if you have Ron support, otherwise check is_terminal)
-        self.assertTrue(state.is_terminal(), "State should be terminal after Player 0 wins by Ron.")
-
-        reward = state.get_reward(0)
-        self.assertEqual(reward, 1.0, "Player 0 should receive reward for winning on discard (Ron).")
-
-        # CFR utility check (optional)
         utility = trainer.cfr(state, [1.0]*4, player_id=0)
         self.assertEqual(utility, 1.0, "CFR should immediately return win reward from Ron terminal state.")
     

@@ -274,3 +274,15 @@ Ready for curriculum, reward shaping, and full interrupt action system.
 - Expand info set and reward structure for next curriculum phase.
 
 ---
+## v1.7.2 — Meld Arbitration & Meld Removal Fixes
+
+- Meld claim resolution now uses `collect_and_arbitrate_claims`, supporting full priority: Ron > Kan > Pon > Chi.
+- Fixed double-removal bug: only `call_meld()` removes tiles for melds.
+- Deprecated `resolve_meld_priority`; codebase now fully uses claim arbitration.
+- Improved debugging output in `step()` and meld arbitration logic.
+- Added/updated tests:
+  - `test_chi_blocked_by_pon`
+  - `test_claim_arbitration_ron_over_pon_and_chi`
+- Confirmed CFR and oracle test stability.
+
+---

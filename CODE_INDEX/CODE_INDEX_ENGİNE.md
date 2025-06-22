@@ -1,9 +1,15 @@
 ## engine/action_space.py
 
+*Updates:** 
+- Updated: game_state.py — replaced `resolve_meld_priority` with `collect_and_arbitrate_claims`, claim logic now enforces correct priority for melds and Ron.
+- Updated: player.py — now `call_meld` handles all meld tile removals, fixes double-removal bug.
+
+---
+
+
 **Purpose:**  
 Defines the action space for the Mahjong engine. Handles encoding, decoding, and lookup of all possible actions (discard, PON, KAN, CHI, PASS), including their unique action IDs and human-readable names. Central utility for agent, environment, and CFR logic.
 
----
 
 ### Contents:
 
