@@ -2,6 +2,7 @@
 
 import unittest
 from engine.game_state import GameState
+from engine.game_state import is_winning_hand
 SEAT_ORDER = ["East", "South", "West", "North"]  # Module-level or class-level constant
 
 class TestGameState(unittest.TestCase):
@@ -922,15 +923,14 @@ class TestGameState(unittest.TestCase):
         from engine.game_state import GameState
 
         state = GameState()
-        state.players[0].hand = [Tile("Man", 3, 1)]
-
-        # South: left of East (seat), can CHI
-        state.players[1].hand = [Tile("Man", 2, 2), Tile("Man", 4, 3)]
-
-        # West: can PON — we'll match tile_id to make it valid
+        # Make East's hand contain the discardable tile (tile_id=4)
         tile_to_claim = Tile("Man", 3, 4)
-        state.players[2].hand = [Tile("Man", 3, 4), Tile("Man", 3, 5)]
+        state.players[0].hand = [tile_to_claim]
 
+        # South: left of East (seat), can CHI if not blocked
+        state.players[1].hand = [Tile("Man", 2, 2), Tile("Man", 4, 3)]
+        # West: can PON (should take priority)
+        state.players[2].hand = [Tile("Man", 3, 4), Tile("Man", 3, 4)]
         state.players[3].hand = []
 
         # Assign correct seats
@@ -939,17 +939,40 @@ class TestGameState(unittest.TestCase):
         state.players[2].seat = "West"
         state.players[3].seat = "North"
 
-        state.last_discarded_by = 0
-        state.discards[state.players[0].seat].append(tile_to_claim)
+        # Prepare for discard step
+        state.turn_index = 0  # East's turn
+        state.awaiting_discard = True
+        state.last_discarded_by = None  # Not needed before first discard
+        state.last_discard = None
 
-        state.resolve_meld_priority(tile_to_claim)
+        # --- DEBUG PRINT before discard ---
+        print("BEFORE DISCARD:")
+        print("East hand:", [str(t) for t in state.players[0].hand])
+        print("South hand:", [str(t) for t in state.players[1].hand])
+        print("West hand:", [str(t) for t in state.players[2].hand])
 
-        # ✅ CHI should be blocked
-        self.assertEqual(len(state.players[1].melds), 0)
+        # Monkeypatch to print claims in arbitration
+        orig_claims_func = state.collect_and_arbitrate_claims
+        def debug_collect_and_arbitrate_claims(tile):
+            claims = orig_claims_func(tile)
+            print("DEBUG: Claims considered:", claims)
+            return claims
+        state.collect_and_arbitrate_claims = debug_collect_and_arbitrate_claims
 
-        # ✅ PON should be accepted
+        # East discards tile_to_claim
+        state.step(tile_to_claim.tile_id)
+
+        # --- DEBUG PRINT after discard ---
+        print("AFTER DISCARD AND CLAIMS:")
+        print("South melds:", state.players[1].melds)
+        print("West melds:", state.players[2].melds)
+        print("South hand:", [str(t) for t in state.players[1].hand])
+        print("West hand:", [str(t) for t in state.players[2].hand])
+
+        # Now claims are processed inside step (PON should block CHI)
+        self.assertEqual(len(state.players[1].melds), 0, "CHI should be blocked")
+        self.assertTrue(len(state.players[2].melds) > 0, "West should have a meld")
         self.assertEqual(state.players[2].melds[0][0], "PON")
-
 
     # TEST DISABLED – Flaky due to meld interrupt not triggering with forced setup
     # This test assumes PON is legal via tile_id match + last_discard setup
@@ -1045,6 +1068,71 @@ class TestGameState(unittest.TestCase):
         self.assertTrue(gs.is_terminal())
         self.assertEqual(gs.get_reward(0), 1.0)
         self.assertEqual(gs.get_reward(1), 0.0)
+    
+
+    def test_claim_arbitration_ron_over_pon_and_chi(self):
+        """
+        Test that Ron (winning on discard) takes priority over PON and CHI.
+        This simulates a real discard by East, claimed as Ron by South and PON by West.
+        """
+        from engine.tile import Tile
+        from engine.game_state import GameState, is_winning_hand
+
+        state = GameState()
+        discard_tile = Tile("Man", 3, 2)  # The tile that will be discarded
+
+        # Setup: clear all hands/melds
+        for p in state.players:
+            p.hand.clear()
+            p.melds.clear()
+
+        # East (player 0) will discard Man 3
+        east = state.players[0]
+        east.hand.extend([
+            Tile("Pin", 1, 9), Tile("Sou", 9, 26),
+            discard_tile  # The tile to discard
+        ])
+        # East needs at least one tile to discard
+        state.turn_index = 0  # East's turn
+
+        # South (player 1) is in tenpai for Ron, with 13 tiles; the discard makes 14 and is a win
+        south = state.players[1]
+        south.hand.extend([
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            Tile("Man", 2, 1), Tile("Man", 2, 1), Tile("Man", 2, 1),
+            Tile("Man", 3, 2), Tile("Man", 3, 2),  # With the discard, that's a triplet
+            Tile("Man", 4, 3), Tile("Man", 4, 3), Tile("Man", 4, 3),
+            Tile("Pin", 1, 9), Tile("Pin", 1, 9)
+        ])
+        # Confirm: hand is 13, Ron with discard is a win
+        full_hand = south.hand[:] + [discard_tile]
+        print("RON player hand before:", [str(t) for t in south.hand])
+        print("Tile to claim:", str(discard_tile))
+        print("Is winning hand?", is_winning_hand(full_hand))
+
+        # West (player 2) can PON
+        west = state.players[2]
+        west.hand.extend([
+            Tile("Man", 3, 2), Tile("Man", 3, 2),
+            Tile("Pin", 1, 9)
+        ])
+
+        # Simulate the game to discard phase
+        state.awaiting_discard = True  # We're in discard phase
+
+        # East discards Man 3 (tile_id=2), triggers claim logic
+        state.step(discard_tile.tile_id)
+
+        # After step, Ron must be detected, game is terminal
+        print("DEBUG: _terminal =", getattr(state, "_terminal", None))
+        print("DEBUG: is_terminal() returns", state.is_terminal())
+        print("DEBUG: South hand after Ron:", [str(t) for t in south.hand])
+        print("DEBUG: last_discard =", state.last_discard)
+
+        # Test: Ron takes priority, game is terminal
+        self.assertTrue(getattr(state, "_terminal", False), "Game should be terminal after Ron.")
+        self.assertTrue(state.is_terminal(), "is_terminal() should return True after Ron.")
+        self.assertTrue(is_winning_hand(south.hand), "South should have a winning hand after Ron.")
 
 if __name__ == "__main__":
     unittest.main()

@@ -80,10 +80,73 @@ class GameState:
             self.awaiting_discard = False
 
             # 🔥 New: Try to resolve melds from other players
-            meld_owner = self.resolve_meld_priority(tile_to_discard)
-            if meld_owner is not None:
-                self.turn_index = meld_owner
-                return  # Give meld claimer the next move
+            claims = self.collect_and_arbitrate_claims(tile_to_discard)
+            if claims:
+                # RON claims
+                for claim in claims:
+                    pid, claim_type, info = claim
+                    if claim_type == "RON":
+                        player = self.players[pid]
+                        player.hand.append(tile_to_discard)
+                        self.last_discard = None
+                        self.last_discarded_by = None
+                        self._terminal = True
+                        print("DEBUG: Ron claim processed for player", pid)
+                        return
+                    elif claim_type == "KAN":
+                        player = self.players[pid]
+                        # Minkan (open KAN)
+                        kan_tiles = [t for t in player.hand if t.tile_id == tile_to_discard.tile_id]
+                        for t in kan_tiles:
+                            player.hand.remove(t)
+                        player.call_meld("KAN", kan_tiles + [tile_to_discard], include_discard=True)
+                        self.discards[self.players[self.last_discarded_by].seat] = [
+                            t for t in self.discards[self.players[self.last_discarded_by].seat]
+                            if t.tile_id != tile_to_discard.tile_id
+                        ]
+                        self.turn_index = pid
+                        self.last_discard = None
+                        self.last_discarded_by = None
+                        self.awaiting_discard = True
+                        return
+                    elif claim_type == "PON":
+                        player = self.players[pid]
+                        pon_tiles = [t for t in player.hand if t.tile_id == tile_to_discard.tile_id]
+                        # DO NOT remove tiles manually here!
+                        player.call_meld("PON", pon_tiles + [tile_to_discard], include_discard=True)
+                        self.discards[self.players[self.last_discarded_by].seat] = [
+                            t for t in self.discards[self.players[self.last_discarded_by].seat]
+                            if t.tile_id != tile_to_discard.tile_id
+                        ]
+                        self.turn_index = pid
+                        self.last_discard = None
+                        self.last_discarded_by = None
+                        self.awaiting_discard = True
+                        return
+                    elif claim_type == "CHI":
+                        player = self.players[pid]
+                        # For now, pick the first available CHI meld (could allow agent to select)
+                        meld_ids = info["melds"][0]
+                        # Remove two tiles (not the claimed one)
+                        to_remove = [tid for tid in meld_ids if tid != tile_to_discard.tile_id]
+                        for tid in to_remove:
+                            match = next((t for t in player.hand if t.tile_id == tid), None)
+                            if match:
+                                player.hand.remove(match)
+                        full_meld = [next((t for t in player.hand if t.tile_id == tid), tile_to_discard) for tid in meld_ids]
+                        player.melds.append(("CHI", full_meld))
+                        self.discards[self.players[self.last_discarded_by].seat] = [
+                            t for t in self.discards[self.players[self.last_discarded_by].seat]
+                            if t.tile_id != tile_to_discard.tile_id
+                        ]
+                        self.turn_index = pid
+                        self.last_discard = None
+                        self.last_discarded_by = None
+                        self.awaiting_discard = True
+                        return
+            else:
+                self.turn_index = (self.turn_index + 1) % 4
+                return
 
             # No melds → rotate turn
             self.turn_index = (self.turn_index + 1) % 4
@@ -323,39 +386,25 @@ class GameState:
         # Info set string (used as CFR table key)
         return f"{player.seat}|H:{','.join(map(str, hand_vec))}|L:{last_tile_id}|BY:{last_seat}|M:{meld_str}"
     
-    def can_chi(self, tile):
-        """Returns a list of valid CHI melds the current player could call on this tile, if eligible."""
+    def can_chi(self, tile, player=None):
         if self.last_discarded_by is None:
             return []
-
-        current = self.get_current_player()
+        if player is None:
+            player = self.get_current_player()
         discarder = self.players[self.last_discarded_by]
-        #print("[DEBUG] Current player seat:", current.seat)
-        #print("[DEBUG] Discarder seat:", discarder.seat)
-        #print("[DEBUG] Seat diff mod 4:", (self.seat_index(current.seat) - self.seat_index(discarder.seat)) % 4)
-        # CHI is only allowed from the player to the LEFT of the discarder
-        if (self.seat_index(current.seat) - self.seat_index(discarder.seat)) % 4 != 1:
-            #print("[DEBUG] CHI not allowed: not left of discarder")
+        if (self.seat_index(player.seat) - self.seat_index(discarder.seat)) % 4 != 1:
             return []
-
         if tile.category not in ["Man", "Pin", "Sou"]:
             return []
-
-        hand_ids = [t.tile_id for t in current.hand]
+        hand_ids = [t.tile_id for t in player.hand]
         id = tile.tile_id
-
         candidates = []
-
-        # Try (tile-2, tile-1, tile)
         if id >= 2 and (id - 1 in hand_ids) and (id - 2 in hand_ids):
             candidates.append([id - 2, id - 1, id])
-        # Try (tile-1, tile, tile+1)
         if id >= 1 and id + 1 < 34 and (id - 1 in hand_ids) and (id + 1 in hand_ids):
             candidates.append([id - 1, id, id + 1])
-        # Try (tile, tile+1, tile+2)
         if id + 2 < 34 and (id + 1 in hand_ids) and (id + 2 in hand_ids):
             candidates.append([id, id + 1, id + 2])
-
         return candidates
     
     def is_terminal(self):
@@ -387,56 +436,58 @@ class GameState:
                 return 1.0 if i == player_id else 0.0
         return 0.0
 
-    def resolve_meld_priority(self, tile):
+    def collect_and_arbitrate_claims(self, tile):
         """
-        Enforces meld priority: PON > CHI > PASS.
-        Only one meld call can succeed.
-        Returns player index (pid) if a meld was claimed, else None.
+        Checks all possible claims (Ron, KAN, PON, CHI) from players other than the discarder,
+        applies priority, and returns the (player_index, claim_type, extra_data).
+        If no claim, returns None.
         """
-        discarder_seat = self.players[self.last_discarded_by].seat
+        claims = []
 
-        # ----- Step 1: Try PON for any player except discarder
+        # Loop through all players except the discarder
         for i, player in enumerate(self.players):
             if i == self.last_discarded_by:
                 continue
-            pon_tiles = [t for t in player.hand if t.category == tile.category and t.value == tile.value]
-            if len(pon_tiles) >= 2:
-                print(f"[DEBUG] Player {i} claims PON on tile: {tile}")
-                for t in pon_tiles[:2]:
-                    player.hand.remove(t)
-                player.melds.append(("PON", pon_tiles[:2] + [tile]))
-                self.discards[self.players[self.last_discarded_by].seat] = [
-                    t for t in self.discards[self.players[self.last_discarded_by].seat]
-                    if t.tile_id != tile.tile_id
-                ]
-                return i
 
-        # ----- Step 2: Try CHI for the left player only
-        chi_candidate = (self.last_discarded_by + 1) % 4
-        chi_player = self.players[chi_candidate]
-        if chi_player.can_chi(tile, discarder_seat):
-            print(f"[DEBUG] Player {chi_candidate} claims CHI on tile: {tile}")
-            v = tile.value
-            needed = []
-            for offset in [-2, -1, 1, 2]:
-                val = v + offset
-                for t in chi_player.hand:
-                    if t.category == tile.category and t.value == val:
-                        needed.append(t)
-                        break
-                if len(needed) == 2:
-                    break
-            for t in needed:
-                chi_player.hand.remove(t)
-            chi_player.melds.append(("CHI", needed + [tile]))
-            self.discards[discarder_seat] = [
-                t for t in self.discards[discarder_seat]
-                if t.tile_id != tile.tile_id
-            ]
-            return chi_candidate
+            # RON (win on discard): must come first
+            full_hand = player.hand[:] + [tile]
+            if is_winning_hand(full_hand):
+                claims.append((i, "RON", {}))
+                continue  # Ron always highest priority; but multiple Ron is possible
 
+            # KAN (Minkan only): must have 3 in hand
+            kan_tiles = [t for t in player.hand if t.tile_id == tile.tile_id]
+            if len(kan_tiles) == 3:
+                claims.append((i, "KAN", {"tile": tile}))
+
+            # PON: must have 2 in hand
+            pon_tiles = [t for t in player.hand if t.tile_id == tile.tile_id]
+            if len(pon_tiles) == 2:
+                claims.append((i, "PON", {"tile": tile}))
+
+        # CHI: only left player
+        chi_index = (self.last_discarded_by + 1) % 4
+        if chi_index != self.last_discarded_by:
+            chi_player = self.players[chi_index]
+            melds = self.can_chi(tile, player=chi_player)
+            if melds:
+                claims.append((chi_index, "CHI", {"melds": melds, "tile": tile}))
+
+        # Now resolve claims by Mahjong priority
+        # If multiple Ron, all win (for now, Japanese rules: all can win on Ron)
+        ron_claims = [c for c in claims if c[1] == "RON"]
+        if ron_claims:
+            # For now, return all RON claimers (you may want to support multiple Ron wins)
+            return ron_claims
+
+        # Otherwise, find highest priority single claim
+        for kind in ("KAN", "PON", "CHI"):
+            for c in claims:
+                if c[1] == kind:
+                    return [c]
+
+        # No claim
         return None
-    pass
 
 def is_winning_hand(hand_tiles):
     """
