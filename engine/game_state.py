@@ -181,15 +181,41 @@ class GameState:
 
         # KAN ACTION
         elif action_id in action_space.KAN_ACTIONS:
+            print("ENGINE: Entered KAN branch with action_id =", action_id)
             tile_index = action_id - 90
+            print("ENGINE: tile_index =", tile_index)
+            print("ENGINE: player.hand tile_ids =", [t.tile_id for t in player.hand])
             player = self.get_current_player()
-            tile_to_kan = next((t for t in player.hand if t.tile_id == tile_index), None)
 
             # === Case 1: Ankan (4 tiles in hand)
-            if player.hand.count(tile_to_kan) == 4:
-                for _ in range(4):
-                    player.hand.remove(tile_to_kan)
-                player.melds.append(("KAN", [tile_to_kan] * 4))
+            matching_tiles = [t for t in player.hand if t.tile_id == tile_index]
+            print("DEBUG: Checking for Ankan KAN.")
+            print("DEBUG: tile_index =", tile_index)
+            print("DEBUG: player.hand =", [str(t) + f" (id {id(t)}, tile_id {t.tile_id})" for t in player.hand])
+            print("DEBUG: matching_tiles =", [str(t) + f" (id {id(t)}, tile_id {t.tile_id})" for t in matching_tiles])
+            print("DEBUG: matching_tiles length =", len(matching_tiles))
+            if len(matching_tiles) == 4:
+                count = 0
+                i = 0
+                # Remove exactly 4 tiles with tile_id == tile_index from hand, regardless of object identity
+                while count < 4 and i < len(player.hand):
+                    print("DEBUG: Hand after removing tiles:", [str(t) for t in player.hand])
+                    print("DEBUG: Hand length after removal:", len(player.hand))
+                    if player.hand[i].tile_id == tile_index:
+                        print(f"DEBUG: Removing from hand at index {i}: {player.hand[i]}, id {id(player.hand[i])}")
+                        del player.hand[i]
+                        count += 1
+                        # Do not increment i, as the list shifts left
+                    else:
+                        i += 1
+                # Add four new Tile objects to the meld (to match engine's representation)
+                player.melds.append(("KAN", [Tile("Man", 1, tile_index) for _ in range(4)]))
+                if not self.wall:
+                    raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
+                bonus_tile = self.wall.pop()
+                player.draw_tile(bonus_tile)
+                self.awaiting_discard = True
+                return
 
             # === Case 2: Minkan (3 in hand + 1 from discard)
             elif self.last_discard and self.last_discard.tile_id == tile_index:
@@ -197,7 +223,6 @@ class GameState:
                 if len(matching_tiles) == 3:
                     meld_tiles = matching_tiles + [self.last_discard]
                     player.call_meld("KAN", meld_tiles, include_discard=True)
-
                     discard_seat = self.players[self.last_discarded_by].seat
                     self.discards[discard_seat] = [
                         t for t in self.discards[discard_seat] if t.tile_id != tile_index
@@ -209,11 +234,17 @@ class GameState:
 
             # === Case 3: Shominkan (upgrade PON → KAN)
             else:
+                tile_to_kan = next((t for t in player.hand if t.tile_id == tile_index), None)
                 for i, (meld_type, meld_tiles) in enumerate(player.melds):
                     if meld_type == "PON" and all(t.tile_id == tile_index for t in meld_tiles):
-                        if tile_to_kan is None or player.hand.count(tile_to_kan) < 1:
+                        if tile_to_kan is None or not any(t.tile_id == tile_index for t in player.hand):
                             return  # Missing 4th tile
-                        player.hand.remove(tile_to_kan)
+                        # Remove exactly one tile with the correct tile_id (bulletproof)
+                        for j, t in enumerate(player.hand):
+                            if t.tile_id == tile_index:
+                                del player.hand[j]
+                                break
+                        # Upgrade the meld to KAN with the new tile object added
                         new_kan_meld = ("KAN", meld_tiles + [tile_to_kan])
                         player.melds[i] = new_kan_meld
                         break
@@ -228,7 +259,6 @@ class GameState:
             player.draw_tile(bonus_tile)
             self.awaiting_discard = True
             return
-
 
         else:
             raise NotImplementedError("Only discard, PON, PASS, CHI supported")

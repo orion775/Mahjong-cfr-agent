@@ -2,26 +2,71 @@
 
 import unittest
 from engine.game_state import GameState
-
+SEAT_ORDER = ["East", "South", "West", "North"]  # Module-level or class-level constant
 
 class TestGameState(unittest.TestCase):
+
     def seat_index(self, seat):
-        return ["East", "South", "West", "North"].index(seat)
+        """
+        Returns the index (0–3) of a Mahjong seat given its string name.
+
+        Args:
+            seat (str): One of "East", "South", "West", "North".
+
+        Returns:
+            int: The index of the seat (East=0, South=1, etc.)
+
+        Raises:
+            ValueError: If the seat is not recognized.
+        """
+        if seat not in SEAT_ORDER:
+            raise ValueError(f"Unknown seat '{seat}'. Valid seats: {SEAT_ORDER}")
+        return SEAT_ORDER.index(seat)
     
     def test_initial_state(self):
+        """
+        Test that a new GameState initializes with 4 players, each with 13 tiles,
+        the correct wall size, and turn index set to 0 (East).
+        """
+        import random
+        random.seed(42)  # Ensures deterministic wall and hand dealing for this test
+
         state = GameState()
-        self.assertEqual(len(state.players), 4)
+        self.assertEqual(len(state.players), 4, "Game should have exactly 4 players.")
+
         for player in state.players:
-            self.assertEqual(len(player.hand), 13)
-        self.assertEqual(len(state.wall), 136 - (4 * 13))
-        self.assertEqual(state.turn_index, 0)
+            self.assertEqual(len(player.hand), 13, f"Player {player.seat} should have 13 tiles at start.")
+
+        expected_wall_size = 136 - (4 * 13)
+        self.assertEqual(len(state.wall), expected_wall_size, f"Wall should have {expected_wall_size} tiles after dealing.")
+
+        self.assertEqual(state.turn_index, 0, "East (index 0) should start.")
+
+        # Optional: check for unique hands across all players (no tile overlap)
+        # all_tiles = [tile for p in state.players for tile in p.hand]
+        # self.assertEqual(len(all_tiles), len(set(all_tiles)), "All dealt tiles should be unique across all hands.")
     
     def test_get_current_player(self):
+        """
+        Test that get_current_player returns the correct player (East, index 0) at game start.
+        """
+        import random
+        random.seed(42)  # Ensures deterministic game state for this test
+
         state = GameState()
         current = state.get_current_player()
-        self.assertEqual(current.seat, "East")
+        self.assertEqual(current.seat, "East", "At game start, current player should be East (seat 0).")
 
     def test_step_discard(self):
+        """
+        Test a full draw and discard step: after discarding,
+        - player's hand returns to 13 tiles,
+        - the discard is recorded in their discard pile,
+        - the turn passes to the next player.
+        """
+        import random
+        random.seed(42)  # Deterministic wall and hands for this test
+
         from engine import action_space
 
         state = GameState()
@@ -31,9 +76,10 @@ class TestGameState(unittest.TestCase):
         # Step 1: Draw
         state.step()  # player draws → 13 → 14
 
-        # Ensure we're in discard phase
-        state.awaiting_discard = True  # ✅ Required to enable discard logic
-        # Prevent other players from stealing the discard
+        # Ensure in discard phase
+        state.awaiting_discard = True  # Required to enable discard logic
+
+        # Prevent other players from interfering (hand cleared)
         for i, p in enumerate(state.players):
             if i != state.turn_index:
                 p.hand.clear()
@@ -41,14 +87,23 @@ class TestGameState(unittest.TestCase):
         # Step 2: Discard
         state.step(tile.tile_id)  # 14 → 13
 
-        self.assertEqual(len(player.hand), 13)
+        self.assertEqual(len(player.hand), 13, "After discard, player hand should be back to 13.")
         self.assertTrue(
             any(t.tile_id == tile.tile_id for t in state.discards[player.seat]),
             "Expected discarded tile not found in player's discard pile"
         )
-        self.assertEqual(state.turn_index, 1)
+        self.assertEqual(state.turn_index, 1, "Turn should pass to next player after discard.")
     
     def test_draw_then_discard(self):
+        """
+        Test that after a player draws and discards:
+        - hand size returns to original,
+        - discard phase status updates,
+        - turn passes correctly (if discard remains).
+        """
+        import random
+        random.seed(42)  # Ensure deterministic wall order for test
+
         from engine import action_space
 
         state = GameState()
@@ -57,87 +112,128 @@ class TestGameState(unittest.TestCase):
 
         # Step 1: Player draws
         state.step()
-        self.assertEqual(len(player.hand), initial_hand_size + 1)
-        self.assertTrue(state.awaiting_discard)
+        self.assertEqual(len(player.hand), initial_hand_size + 1, "Player should have drawn a tile.")
+        self.assertTrue(state.awaiting_discard, "Player should be required to discard after drawing.")
 
         # Step 2: Player discards
         tile = player.hand[0]
         state.step(tile.tile_id)
-        self.assertEqual(len(player.hand), initial_hand_size)
-        self.assertFalse(state.awaiting_discard)
-        # Turn might pass to another player if meld was claimed — check only if discard remains
+        self.assertEqual(len(player.hand), initial_hand_size, "Player's hand size should return to original after discard.")
+        self.assertFalse(state.awaiting_discard, "Not awaiting discard after discarding.")
+
+        # If discard remains in player's pile, turn should have advanced
         if any(d.tile_id == tile.tile_id for d in state.discards[player.seat]):
-            self.assertEqual(state.turn_index, 1)
+            self.assertEqual(state.turn_index, 1, "Turn index should be 1 after discard if no meld is claimed.")
 
     def test_pass_action(self):
-        from engine import action_space
+        """
+        Test that passing (instead of discarding) after a draw:
+        - does not discard a tile,
+        - does not reduce hand size,
+        - advances the turn,
+        - disables discard phase.
+        """
+        import random
+        random.seed(42)  # Deterministic for test
 
-        state = GameState()
-        player = state.get_current_player()
-
-        # Step 1: draw
-        state.step()
-        self.assertTrue(state.awaiting_discard)
-
-        # Step 2: pass instead of discard
-        state.step(action_space.PASS)
-
-        self.assertFalse(state.awaiting_discard)
-        self.assertEqual(state.turn_index, 1)  # Turn advances
-        self.assertEqual(len(state.discards[player.seat]), 0)  # No tile discarded
-        self.assertEqual(len(player.hand), 14)  # Still holding 14
-
-    def test_get_legal_actions_after_draw(self):
         from engine import action_space
 
         state = GameState()
         player = state.get_current_player()
 
         # Step 1: Draw a tile
-        state.step()  # player draws, hand becomes 14
+        state.step()
+        self.assertTrue(state.awaiting_discard, "Should be awaiting discard after drawing.")
+
+        # Step 2: Player chooses PASS instead of discard
+        state.step(action_space.PASS)
+
+        self.assertFalse(state.awaiting_discard, "Should not be awaiting discard after passing.")
+        self.assertEqual(state.turn_index, 1, "Turn should advance to the next player after pass.")
+        self.assertEqual(len(state.discards[player.seat]), 0, "No tile should be discarded on pass.")
+        self.assertEqual(len(player.hand), 14, "Player should still hold 14 tiles after passing.")
+
+    def test_get_legal_actions_after_draw(self):
+        """
+        Test that after drawing, legal actions include:
+        - one DISCARD action for each unique tile in hand,
+        - PASS action,
+        - and the correct total number of actions.
+        """
+        import random
+        random.seed(42)  # Deterministic setup
+
+        from engine import action_space
+
+        state = GameState()
+        player = state.get_current_player()
+
+        # Step 1: Draw a tile (hand goes from 13 to 14)
+        state.step()
 
         # Step 2: Get legal actions
         legal = state.get_legal_actions()
         tile_ids = {tile.tile_id for tile in player.hand}
 
-        # Test: each tile in hand has a corresponding DISCARD action
+        # Each unique tile in hand should have a corresponding DISCARD action
         for tid in tile_ids:
-            self.assertIn(tid, legal)
+            self.assertIn(tid, legal, f"Tile ID {tid} should be a legal discard action.")
 
-        # Test: PASS is always allowed
-        self.assertIn(action_space.PASS, legal)
+        # PASS is always allowed
+        self.assertIn(action_space.PASS, legal, "PASS action should always be legal after drawing.")
 
         # Total actions = unique tiles in hand + PASS
-        self.assertEqual(len(legal), len(tile_ids) + 1)
+        self.assertEqual(len(legal), len(tile_ids) + 1, "Legal actions should match hand + PASS.")
 
     def test_last_discard_tracking(self):
+        """
+        Test that after a player discards:
+        - state.last_discard is not None,
+        - state.last_discard.tile_id matches the discarded tile,
+        - state.last_discarded_by records the discarding player index.
+        """
+        import random
+        random.seed(42)  # Deterministic setup
+
         state = GameState()
-        state.step()  # draw
+        state.step()  # Player draws
         player = state.get_current_player()
         tile = player.hand[0]
-        state.step(tile.tile_id)  # discard
+        state.step(tile.tile_id)  # Player discards
 
-        self.assertIsNotNone(state.last_discard)
-        self.assertEqual(state.last_discard.tile_id, tile.tile_id)
-        self.assertEqual(state.last_discarded_by, 0)
+        self.assertIsNotNone(state.last_discard, "last_discard should not be None after a discard.")
+        self.assertEqual(state.last_discard.tile_id, tile.tile_id, "last_discard tile_id should match discarded tile.")
+        self.assertEqual(state.last_discarded_by, 0, "last_discarded_by should be 0 (East) after first discard.")
 
     def test_get_info_set_format(self):
+        """
+        Test that the info set string from GameState includes all required keys and the current seat.
+        """
+        import random
+        random.seed(42)  # Deterministic setup
+
         state = GameState()
-        state.step()  # draw phase
+        state.step()  # Enter draw phase (player has 14 tiles)
         info = state.get_info_set()
 
-        self.assertIn("H:", info)
-        self.assertIn("L:", info)
-        self.assertIn("BY:", info)
-        self.assertIn("M:", info)
-        self.assertIn(state.get_current_player().seat, info)
+        self.assertIn("H:", info, "Info set should contain hand vector (H:).")
+        self.assertIn("L:", info, "Info set should contain last tile ID (L:).")
+        self.assertIn("BY:", info, "Info set should contain last discarder seat (BY:).")
+        self.assertIn("M:", info, "Info set should contain meld info (M:).")
+        self.assertIn(state.get_current_player().seat, info, "Info set should include current player seat.")
     
     def test_can_chi_detects_valid_melds(self):
+        """
+        Test that can_chi correctly identifies valid CHI melds when South can claim a discard from West.
+        """
+        import random
+        random.seed(42)  # Deterministic setup
+
         from engine.tile import Tile
 
         state = GameState()
 
-        # Simulate a discard from West to South (valid CHI direction)
+        # Simulate a discard from West (index 3) to South (index 0)
         state.turn_index = 3  # West
         state.step()  # West draws
         discard_tile = Tile("Man", 3, 2)  # ID = 2 (Man 3)
@@ -147,7 +243,7 @@ class TestGameState(unittest.TestCase):
         # South's turn
         state.turn_index = 0  # South
 
-        # Give South a hand that can form a CHI with Man 3
+        # Give South a hand that can form a CHI with Man 3 (tile_id=2)
         state.players[0].hand = [
             Tile("Man", 1, 0),  # ID 0
             Tile("Man", 2, 1),  # ID 1
@@ -156,83 +252,102 @@ class TestGameState(unittest.TestCase):
         ] + state.players[0].hand[4:]
 
         result = state.can_chi(discard_tile)
-        expected = [[0, 1, 2], [1, 2, 3], [2, 3, 4]]  # depending on the tile IDs
+        # There should be at least one meld option
+        self.assertTrue(any(result), "can_chi should return at least one valid meld.")
 
-        self.assertTrue(any(result))  # At least one meld returned
+        # At least the meld (1, 2, 3) should be present (Man 2, 3, 4)
         flat = [tuple(m) for m in result]
-        self.assertIn((1, 2, 3), flat)  # (Man 2, 3, 4)
+        self.assertIn((1, 2, 3), flat, "Expected meld (Man 2, 3, 4) should be in can_chi result.")
 
     def test_step_handles_chi_action(self):
+        """
+        Test that CHI action works:
+        - correct meld is added to player's melds,
+        - discard is removed from correct pile,
+        - correct tiles are removed from hand,
+        - player is required to discard next.
+        """
+        import random
+        random.seed(42)  # Deterministic for reproducibility
+
         from engine.tile import Tile
         from engine import action_space
 
         state = GameState()
-        from engine.tile import Tile
 
+        # Prepare East hand, but test focuses on South (turn_index 0 after West discards)
         east = state.players[0]
         east.hand = [
             Tile("Man", 2, 1), Tile("Man", 3, 2), Tile("Man", 4, 3),
             Tile("Sou", 9, 26), Tile("Pin", 9, 17)
-]
+        ]
 
         # Simulate West's discard of Man 3 (tile_id=2)
         discard_tile = Tile("Man", 3, 2)
         state.last_discard = discard_tile
-        state.last_discarded_by = 3
+        state.last_discarded_by = 3  # West
         state.discards["North"].append(discard_tile)
         state.awaiting_discard = True
-        
+
         # Set turn to South (next player after West)
         state.turn_index = 0  # South
         player = state.get_current_player()
 
-        # Give South a hand that completes CHI with Man 2 (1) and Man 4 (3)
+        # Give South a hand to complete CHI with Man 2 (1) and Man 4 (3)
         player.hand = [Tile("Man", 2, 1), Tile("Man", 4, 3)] + player.hand[2:]
 
-        # Verify everything lines up
-        assert discard_tile.tile_id == 2  # Man 3
-        chi_action = action_space.encode_chi([1, 2, 3])  # [Man 2, Man 3, Man 4]
+        # Action encoding for CHI (Man 2, 3, 4)
+        chi_action = action_space.encode_chi([1, 2, 3])
 
-        # Take CHI action
-        print("[DEBUG] chi_action =", chi_action)
-        print("[DEBUG] action_space.CHI_ACTIONS =", action_space.CHI_ACTIONS)
-        print("[DEBUG TEST] player.melds =", player.melds)
-        state.awaiting_discard = True
+        # Execute CHI action
         state.step(chi_action)
-        print("[DEBUG TEST] player.melds =", player.melds)
 
         # Check meld added
         self.assertIn(
             ("CHI", ["Man 2", "Man 3", "Man 4"]),
-            [("CHI", [str(t) for t in meld[1]]) for meld in player.melds]
-    )
-        print("[DEBUG TEST] player.melds =", player.melds)
-        
+            [("CHI", [str(t) for t in meld[1]]) for meld in player.melds],
+            "CHI meld should be added with correct tiles."
+        )
 
         # Check discard removed by tile_id
-        self.assertFalse(any(t.tile_id == 2 for t in state.discards["West"]))
-
-        # Check removed from hand
-        hand_ids = [t.tile_id for t in player.hand]
+        self.assertFalse(any(t.tile_id == 2 for t in state.discards["West"]), "Discarded tile should be removed from West's pile.")
 
         # Player must now discard
-        self.assertTrue(state.awaiting_discard)
+        self.assertTrue(state.awaiting_discard, "Player should be required to discard after CHI.")
+
     
     def test_terminal_win_check(self):
+        from engine.tile import Tile
+
         state = GameState()
         player = state.players[0]
 
-        # Simulate winning by creating 4 melds
-        for _ in range(4):
-            player.melds.append(("PON", ["Man 1", "Man 1", "Man 1"]))
+        # Give player 4 triplets (PON) and a pair for a winning hand (true Mahjong structure)
+        player.melds.clear()
+        player.hand.clear()
+        # 4 triplets
+        player.melds.append(("PON", [Tile("Man", 1, 0)] * 3))
+        player.melds.append(("PON", [Tile("Man", 2, 1)] * 3))
+        player.melds.append(("PON", [Tile("Man", 3, 2)] * 3))
+        player.melds.append(("PON", [Tile("Pin", 4, 12)] * 3))
+        # pair
+        player.hand.extend([Tile("Sou", 9, 26), Tile("Sou", 9, 26)])
 
         self.assertTrue(state.is_terminal())
         self.assertEqual(state.get_reward(0), 1.0)
-
         for pid in range(1, 4):
             self.assertEqual(state.get_reward(pid), 0.0)
     
     def test_ankan_action(self):
+        """
+        Test that performing a closed KAN (Ankan) meld:
+        - removes all four tiles from hand,
+        - adds a KAN meld of four tiles,
+        - keeps awaiting_discard True for the bonus draw.
+        """
+        import random
+        random.seed(42)  # Deterministic setup
+
         from engine.tile import Tile
         from engine import action_space
         from engine.game_state import GameState
@@ -240,21 +355,37 @@ class TestGameState(unittest.TestCase):
         state = GameState()
         player = state.get_current_player()
 
-        # Force hand to contain only 4 of the same tile
+        # Clean up any prior state
         player.hand.clear()
+        player.melds.clear()
+        state.discards = {seat: [] for seat in ["East", "South", "West", "North"]}
+        state.last_discard = None
+        state.last_discarded_by = None
+
+        # Force hand to contain only 4 of the same tile (e.g., Man 1, tile_id=0)
         player.hand.extend([Tile("Man", 1, 0) for _ in range(4)])
 
         state.awaiting_discard = True
         kan_action = action_space.ACTION_NAME_TO_ID["KAN_0"]
         state.step(kan_action)
+        print("Hand after KAN (in test):", [str(t) for t in player.hand])
 
-        self.assertEqual(len(player.melds), 1)
-        self.assertEqual(player.melds[0][0], "KAN")
-        self.assertEqual(len(player.melds[0][1]), 4)
-        self.assertTrue(state.awaiting_discard)
+        self.assertEqual(len(player.melds), 1, "There should be one meld after Ankan.")
+        self.assertEqual(player.melds[0][0], "KAN", "Meld type should be KAN.")
+        self.assertEqual(len(player.melds[0][1]), 4, "KAN meld should have four tiles.")
+        self.assertTrue(state.awaiting_discard, "Player should be required to discard after bonus draw (awaiting_discard).")
 
         
     def test_bonus_draw_after_ankan(self):
+        """
+        Test that after an Ankan (closed KAN), the player:
+        - loses 4 tiles from hand,
+        - gains 1 bonus tile (hand = hand_size_before - 4 + 1),
+        - is still in discard phase (awaiting_discard True).
+        """
+        import random
+        random.seed(42)  # Deterministic setup
+
         from engine.tile import Tile
         from engine import action_space
         from engine.game_state import GameState
@@ -262,8 +393,14 @@ class TestGameState(unittest.TestCase):
         state = GameState()
         player = state.get_current_player()
 
-        # Give player 4 matching tiles (e.g., tile_id = 0)
+        # Reset all state
         player.hand.clear()
+        player.melds.clear()
+        state.discards = {seat: [] for seat in ["East", "South", "West", "North"]}
+        state.last_discard = None
+        state.last_discarded_by = None
+
+        # Give player 4 matching tiles (e.g., tile_id = 0)
         tile = Tile("Man", 1, 0)
         player.hand.extend([tile] * 4)
         hand_size_before = len(player.hand)
@@ -273,10 +410,28 @@ class TestGameState(unittest.TestCase):
         state.awaiting_discard = True  # simulate discard phase
         state.step(kan_action)
 
-        self.assertEqual(len(player.hand), hand_size_before - 4 + 1)  # -4 tiles + 1 bonus draw
-        self.assertTrue(state.awaiting_discard)
+        self.assertEqual(
+            len(player.hand),
+            hand_size_before - 4 + 1,
+            "Hand should lose 4 tiles for KAN, gain 1 for bonus draw."
+        )
+        self.assertEqual(
+            len(state.wall),
+            wall_size_before - 1,
+            "Wall should decrease by 1 after bonus draw."
+        )
+        self.assertTrue(
+            state.awaiting_discard,
+            "Player should be required to discard after bonus draw (awaiting_discard)."
+        )
 
     def test_wall_decreases_after_bonus_draw(self):
+        """
+        Test that after an Ankan (closed KAN), the wall decreases by 1 (bonus draw).
+        """
+        import random
+        random.seed(42)  # Deterministic wall for test
+
         from engine.tile import Tile
         from engine import action_space
         from engine.game_state import GameState
@@ -284,7 +439,13 @@ class TestGameState(unittest.TestCase):
         state = GameState()
         player = state.get_current_player()
 
+        # Clear hand for controlled setup
         player.hand.clear()
+        player.melds.clear()
+        state.discards = {seat: [] for seat in ["East", "South", "West", "North"]}
+        state.last_discard = None
+        state.last_discarded_by = None
+
         tile = Tile("Man", 1, 0)
         player.hand.extend([tile] * 4)
 
@@ -294,36 +455,55 @@ class TestGameState(unittest.TestCase):
         state.step(kan_action)
         wall_after = len(state.wall)
 
-        self.assertEqual(wall_after, wall_before - 1)
+        self.assertEqual(
+            wall_after, wall_before - 1,
+            "Wall should decrease by 1 after bonus draw from KAN."
+        )
 
     def test_bonus_tile_goes_to_correct_player(self):
+        """
+        Test that after performing an Ankan (closed KAN),
+        the player receives a bonus tile (hand increases by 1 after losing 4 tiles).
+        """
+        import random
+        random.seed(42)
+
         from engine.tile import Tile
         from engine.action_space import ACTION_NAME_TO_ID
 
         state = GameState()
         player = state.players[0]
-        tile = Tile("Man", 1, 0)
 
-        # Set up a hand that allows Ankan
+        # Clean state
         player.hand.clear()
-        player.hand.extend([tile, tile, tile, tile])
+        player.melds.clear()
+        state.discards = {seat: [] for seat in ["East", "South", "West", "North"]}
+        state.last_discard = None
+        state.last_discarded_by = None
 
-        # Set turn and phase
+        # Confirm hand is truly empty before test
+        assert len(player.hand) == 0, f"Hand not empty after clear! Hand = {[str(t) for t in player.hand]}"
+
+        # Add 4 distinct Tile objects (all same tile_id)
+        player.hand.extend([Tile("Man", 1, 0) for _ in range(4)])
+        print("Hand before KAN:", [str(t) for t in player.hand])
+        print("Hand length before KAN:", len(player.hand))
+
         state.turn_index = 0
-        state.awaiting_discard = False
+        state.awaiting_discard = True
 
-        # Record hand length before
         before = len(player.hand)
-
-        # Execute KAN
         kan_action = ACTION_NAME_TO_ID["KAN_0"]
         state.step(kan_action)
-
-        # Confirm hand increased (bonus tile drawn)
         after = len(player.hand)
 
-        self.assertGreater(after, before - 4, "Expected a bonus tile to be drawn after KAN")
-    
+        print("Hand after KAN:", [str(t) for t in player.hand])
+        print("Hand length after KAN:", len(player.hand))
+
+        self.assertEqual(
+            after, 1,
+            "After Ankan, player hand should contain ONLY the bonus tile (length 1)."
+        )
     def test_minkan_action_successful(self):
         from engine.tile import Tile
         from engine import action_space
