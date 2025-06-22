@@ -250,3 +250,27 @@ All meld claim/reward logic now CFR-compatible and bug-free for single-step wins
 Ready for curriculum, reward shaping, and full interrupt action system.
 
 ---
+
+## v1.7.1 – Phase-Gated KAN (Ankan), Test Determinism, and Documentation Rule
+
+**Status:**  
+- All KAN actions (especially Ankan/closed KAN) now require the phase (`awaiting_discard = True`), preventing accidental engine skips.
+- Test logic fully phase-aware: all meld, draw, and discard tests explicitly set phase/turn variables.
+- Deterministic, reliable pass on all engine/test runs (no more intermittent KAN bugs).
+
+**Process Update:**  
+- New rule: *Before every git commit or snapshot, `README.md`, `devlog.md`, and all `CODE_INDEX` files are updated to reflect the current version, features, fixes, and navigation. No code is versioned or snapshotted unless documentation matches code.*
+
+**Tests:**  
+- `test_bonus_tile_goes_to_correct_player` and all KAN/Ankan tests pass with strict phase checks.
+- All meld, reward, and turn logic verified stable for CFR integration.
+
+**Known Tricky Areas:**  
+- If any test fails intermittently, check and set phase/turn variables in the test (no hidden state allowed).
+- KAN, CHI, and other melds are sensitive to phase; engine is now robust to these transitions.
+
+**Next:**  
+- Repeat this phase-check pattern for all meld types.
+- Expand info set and reward structure for next curriculum phase.
+
+---
