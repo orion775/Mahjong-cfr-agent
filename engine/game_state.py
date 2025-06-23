@@ -52,6 +52,11 @@ class GameState:
         self.cfr_debug_counter += 1
         if self.cfr_debug_counter > 5:
             self._terminal = True
+            if self._terminal:
+                # Print which player(s) have a winning hand
+                for i, player in enumerate(self.players):
+                    if is_winning_hand(player.hand):
+                        print(f"[DEBUG] Player {i} ({player.seat}) wins with hand {[str(t) for t in player.hand]}")
             return
         player = self.get_current_player()
 
@@ -59,6 +64,11 @@ class GameState:
         if not self.awaiting_discard:
             if not self.wall:
                 self._terminal = True
+                if self._terminal:
+                    # Print which player(s) have a winning hand
+                    for i, player in enumerate(self.players):
+                        if is_winning_hand(player.hand):
+                            print(f"[DEBUG] Player {i} ({player.seat}) wins with hand {[str(t) for t in player.hand]}")
                 return
             drawn_tile = self.wall.pop()
             player.draw_tile(drawn_tile)
@@ -91,6 +101,11 @@ class GameState:
                         self.last_discard = None
                         self.last_discarded_by = None
                         self._terminal = True
+                        if self._terminal:
+                            # Print which player(s) have a winning hand
+                            for i, player in enumerate(self.players):
+                                if is_winning_hand(player.hand):
+                                    print(f"[DEBUG] Player {i} ({player.seat}) wins with hand {[str(t) for t in player.hand]}")
                         print("DEBUG: Ron claim processed for player", pid)
                         return
                     elif claim_type == "KAN":
