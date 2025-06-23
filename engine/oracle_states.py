@@ -181,3 +181,67 @@ class FixedWinGameState_PON(GameState):
         self.last_discarded_by = None
         if hasattr(self, "_terminal"):
             del self._terminal
+
+class FixedWinGameState_2StepsFromWin(GameState):
+    """
+    Player 0 needs two optimal moves to win. All other hands are empty; wall is set for a forced sequence.
+    Used for curriculum tests.
+    """
+    def __init__(self):
+        super().__init__()
+        from engine.tile import Tile
+
+        # Example: Player 0 has 12 tiles forming three melds and a pair, needs to draw/discard to tenpai, then win.
+        # Player 0's hand (example): [1m,2m,3m] [4m,5m,6m] [7m,8m,9m] [1p,1p]
+        # Wall: [2p, 3p] (needs to draw 2p, then 3p to win with 1p pair)
+        self.players[0].hand = [
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),
+            Tile("Man", 4, 3), Tile("Man", 5, 4), Tile("Man", 6, 5),
+            Tile("Man", 7, 6), Tile("Man", 8, 7), Tile("Man", 9, 8),
+            Tile("Pin", 1, 9), Tile("Pin", 1, 9),
+            Tile("Pin", 2, 10) # Needs to draw Pin 3, will win with [2p,3p,1p,1p] as pair
+        ]
+        self.players[1].hand = []
+        self.players[2].hand = []
+        self.players[3].hand = []
+        # Only two tiles in wall, must draw both in sequence
+        self.wall = [Tile("Pin", 3, 11)]
+        self.turn_index = 0
+        self.awaiting_discard = False
+        self._terminal = False
+        self.last_discard = None
+        self.discard_pile = [[] for _ in range(4)]
+        for p in self.players:
+            p.melds = []
+
+
+class FixedWinGameState_3StepsFromWin(GameState):
+    """
+    Curriculum state: Player 0 must make three correct moves to win. Only draw/discard actions are possible.
+    """
+    def __init__(self):
+        super().__init__()
+        from engine.tile import Tile
+        # Player 0: 11 tiles, needs to draw three tiles (from wall) to complete hand and win
+        self.players[0].hand = [
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),
+            Tile("Man", 4, 3), Tile("Man", 5, 4), Tile("Man", 6, 5),
+            Tile("Man", 7, 6), Tile("Man", 8, 7), Tile("Man", 9, 8),
+            Tile("Pin", 2, 10), Tile("Pin", 3, 11)
+        ]
+        self.players[1].hand = []
+        self.players[2].hand = []
+        self.players[3].hand = []
+        # Wall contains three required tiles to form melds/pair (the sequence to win)
+        self.wall = [
+            Tile("Pin", 4, 12),
+            Tile("Pin", 5, 13),
+            Tile("Pin", 5, 13)
+        ]
+        self.turn_index = 0
+        self.awaiting_discard = False
+        self._terminal = False
+        self.last_discard = None
+        self.discard_pile = [[] for _ in range(4)]
+        for p in self.players:
+            p.melds = []

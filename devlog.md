@@ -286,3 +286,14 @@ Ready for curriculum, reward shaping, and full interrupt action system.
 - Confirmed CFR and oracle test stability.
 
 ---
+
+
+### v1.8.0 – Curriculum Multi-Step Win States (2025-06-22)
+
+- **Added**: `FixedWinGameState_2StepsFromWin` and `FixedWinGameState_3StepsFromWin` for deterministic curriculum-based CFR testing.
+- **Added**: Unittest coverage for both curriculum states (see `tests/test_curriculum_learning.py`).
+- **Fixed**: Prior bug where illegal meld actions could be attempted in curriculum states, causing exceptions during CFR recursion. Now all curriculum states use unique tiles only, so only legal actions are possible.
+- **Notes**: Print debug output is suppressed during passing unittests (normal). To view debug, run failing tests or run curriculum logic outside unittest.
+- **Next**: Expand curriculum depth, consider meld-based curriculum, and prep for full self-play agent training.
+
+---
