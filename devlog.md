@@ -311,3 +311,18 @@ Fixed a long-standing rules issue: the PASS action was mistakenly included in th
 - Impact:
 - Tighter rule adherence, prevents skipped turns, avoids teaching agent illegal habits.
 - No strategy/learning logic affected; all oracle and CFR tests continue to pass.
+
+---
+
+## v1.8.2 — Discard Phase Turn Rotation Bug Fixed
+
+**Summary:**  
+Fixed a long-standing engine bug where the turn index was incremented twice when no claims were made after a discard. This resulted in the next player being skipped in some cases, leading to illegal turn order and failing some sequence-based tests.
+
+- **What changed:**  
+  - Removed redundant turn increment/return in `GameState.step` after the discard branch.
+- **Why:**  
+  - The fix ensures the game engine always hands off the turn correctly after a discard, in compliance with the real game flow.
+- **Impact:**  
+  - All sequential and meld logic now function correctly; game never skips a player.
+  - All tests (including edge/curriculum/oracle) now pass.

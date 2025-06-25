@@ -1,9 +1,11 @@
 ## engine/action_space.py
 
+
 *Updates:** 
 - Updated: game_state.py — replaced `resolve_meld_priority` with `collect_and_arbitrate_claims`, claim logic now enforces correct priority for melds and Ron.
 - Updated: player.py — now `call_meld` handles all meld tile removals, fixes double-removal bug.
 - v1.8.1: Remove PASS from discard phase legal actions, update test and documentation for rule accuracy
+- Updated v1.8.2 : game_state.py — Fixed bug in discard phase where the turn would advance twice if no claims were made. Now, after a discard with no meld claims, the turn passes only once to the next player.
 
 ---
 
