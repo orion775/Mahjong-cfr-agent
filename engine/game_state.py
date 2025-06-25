@@ -53,7 +53,6 @@ class GameState:
         if self.cfr_debug_counter > 5:
             self._terminal = True
             if self._terminal:
-                # Print which player(s) have a winning hand
                 for i, player in enumerate(self.players):
                     if is_winning_hand(player.hand):
                         print(f"[DEBUG] Player {i} ({player.seat}) wins with hand {[str(t) for t in player.hand]}")
@@ -65,7 +64,6 @@ class GameState:
             if not self.wall:
                 self._terminal = True
                 if self._terminal:
-                    # Print which player(s) have a winning hand
                     for i, player in enumerate(self.players):
                         if is_winning_hand(player.hand):
                             print(f"[DEBUG] Player {i} ({player.seat}) wins with hand {[str(t) for t in player.hand]}")
@@ -73,7 +71,7 @@ class GameState:
             drawn_tile = self.wall.pop()
             player.draw_tile(drawn_tile)
             self.awaiting_discard = True
-            return  # No further action this step
+            return
 
         # DISCARD PHASE
         elif action_id in action_space.get_all_discard_actions():
@@ -84,12 +82,11 @@ class GameState:
             player.discard_tile(tile_to_discard)
             self.discards[player.seat].append(tile_to_discard)
 
-            # Track discard
             self.last_discard = tile_to_discard
             self.last_discarded_by = self.turn_index
             self.awaiting_discard = False
 
-            # 🔥 New: Try to resolve melds from other players
+            # 🔥 Meld/claim logic
             claims = self.collect_and_arbitrate_claims(tile_to_discard)
             if claims:
                 # RON claims
@@ -102,7 +99,6 @@ class GameState:
                         self.last_discarded_by = None
                         self._terminal = True
                         if self._terminal:
-                            # Print which player(s) have a winning hand
                             for i, player in enumerate(self.players):
                                 if is_winning_hand(player.hand):
                                     print(f"[DEBUG] Player {i} ({player.seat}) wins with hand {[str(t) for t in player.hand]}")
@@ -110,7 +106,6 @@ class GameState:
                         return
                     elif claim_type == "KAN":
                         player = self.players[pid]
-                        # Minkan (open KAN)
                         kan_tiles = [t for t in player.hand if t.tile_id == tile_to_discard.tile_id]
                         for t in kan_tiles:
                             player.hand.remove(t)
@@ -127,7 +122,6 @@ class GameState:
                     elif claim_type == "PON":
                         player = self.players[pid]
                         pon_tiles = [t for t in player.hand if t.tile_id == tile_to_discard.tile_id]
-                        # DO NOT remove tiles manually here!
                         player.call_meld("PON", pon_tiles + [tile_to_discard], include_discard=True)
                         self.discards[self.players[self.last_discarded_by].seat] = [
                             t for t in self.discards[self.players[self.last_discarded_by].seat]
@@ -140,9 +134,7 @@ class GameState:
                         return
                     elif claim_type == "CHI":
                         player = self.players[pid]
-                        # For now, pick the first available CHI meld (could allow agent to select)
                         meld_ids = info["melds"][0]
-                        # Remove two tiles (not the claimed one)
                         to_remove = [tid for tid in meld_ids if tid != tile_to_discard.tile_id]
                         for tid in to_remove:
                             match = next((t for t in player.hand if t.tile_id == tid), None)
@@ -162,11 +154,6 @@ class GameState:
             else:
                 self.turn_index = (self.turn_index + 1) % 4
                 return
-
-            # No melds → rotate turn
-            self.turn_index = (self.turn_index + 1) % 4
-            return
-        
         # PASS action
         elif action_id == action_space.PASS:
             self.awaiting_discard = False
