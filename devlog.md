@@ -326,3 +326,5 @@ Fixed a long-standing engine bug where the turn index was incremented twice when
 - **Impact:**  
   - All sequential and meld logic now function correctly; game never skips a player.
   - All tests (including edge/curriculum/oracle) now pass.
+
+  ---
