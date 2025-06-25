@@ -71,6 +71,8 @@ class GameState:
             drawn_tile = self.wall.pop()
             player.draw_tile(drawn_tile)
             self.awaiting_discard = True
+            if self.is_terminal():
+                return
             return
 
         # DISCARD PHASE
@@ -260,26 +262,15 @@ class GameState:
             print("DEBUG: matching_tiles =", [str(t) + f" (id {id(t)}, tile_id {t.tile_id})" for t in matching_tiles])
             print("DEBUG: matching_tiles length =", len(matching_tiles))
             if len(matching_tiles) == 4:
-                count = 0
-                i = 0
-                # Remove exactly 4 tiles with tile_id == tile_index from hand, regardless of object identity
-                while count < 4 and i < len(player.hand):
-                    print("DEBUG: Hand after removing tiles:", [str(t) for t in player.hand])
-                    print("DEBUG: Hand length after removal:", len(player.hand))
-                    if player.hand[i].tile_id == tile_index:
-                        print(f"DEBUG: Removing from hand at index {i}: {player.hand[i]}, id {id(player.hand[i])}")
-                        del player.hand[i]
-                        count += 1
-                        # Do not increment i, as the list shifts left
-                    else:
-                        i += 1
-                # Add four new Tile objects to the meld (to match engine's representation)
-                player.melds.append(("KAN", [Tile("Man", 1, tile_index) for _ in range(4)]))
+                tiles_to_remove = [t for t in player.hand if t.tile_id == tile_index][:4]
+                player.call_meld("KAN", tiles_to_remove)
                 if not self.wall:
                     raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
                 bonus_tile = self.wall.pop()
                 player.draw_tile(bonus_tile)
                 self.awaiting_discard = True
+                if self.is_terminal():
+                    return
                 return
 
             # === Case 2: Minkan (3 in hand + 1 from discard)
@@ -323,6 +314,8 @@ class GameState:
             bonus_tile = self.wall.pop()
             player.draw_tile(bonus_tile)
             self.awaiting_discard = True
+            if self.is_terminal():
+                return
             return
 
         else:
