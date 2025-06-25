@@ -328,3 +328,12 @@ Fixed a long-standing engine bug where the turn index was incremented twice when
   - All tests (including edge/curriculum/oracle) now pass.
 
   ---
+
+## v1.8.3 — KAN/Ankan Meld Removal Consistency
+
+**Summary:**  
+Fixed a major logic bug where closed KAN (Ankan) actions removed tiles manually in the engine before calling `call_meld`, resulting in errors and failing all related tests. Now, all tile removal for melds is delegated to `call_meld`, ensuring future consistency and correct hand mutation.
+
+- **Impact:**  
+  - All meld logic now flows through a single, robust interface.
+  - All CFR, oracle, and bonus tile tests for KAN/Ankan pass.
