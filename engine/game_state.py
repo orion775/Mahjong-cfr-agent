@@ -379,7 +379,8 @@ class GameState:
                 kan_action = action_space.ACTION_NAME_TO_ID[f"KAN_{tile_id}"]
                 legal.append(kan_action)
 
-        legal.append(action_space.PASS)
+        # NOTE: PASS action REMOVED from discard phase per bugfix
+
         return sorted(legal)
 
     def get_info_set(self):

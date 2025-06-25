@@ -297,3 +297,17 @@ Ready for curriculum, reward shaping, and full interrupt action system.
 - **Next**: Expand curriculum depth, consider meld-based curriculum, and prep for full self-play agent training.
 
 ---
+
+### v1.8.1 — Discard Phase PASS Fix
+
+Summary:
+Fixed a long-standing rules issue: the PASS action was mistakenly included in the discard phase legal actions. After a player draws, their only legal actions are to discard a tile or declare closed KAN (if eligible). PASS is now only permitted during the meld/reaction phase (in response to another player’s discard).
+
+- What changed:
+- Removed PASS from discard phase in get_legal_actions.
+- Updated test_get_legal_actions_after_draw to require PASS not be present after a draw.
+- Why:
+- This fix aligns with real Mahjong rules and eliminates a possible illegal engine state.
+- Impact:
+- Tighter rule adherence, prevents skipped turns, avoids teaching agent illegal habits.
+- No strategy/learning logic affected; all oracle and CFR tests continue to pass.

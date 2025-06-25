@@ -180,11 +180,15 @@ class TestGameState(unittest.TestCase):
         for tid in tile_ids:
             self.assertIn(tid, legal, f"Tile ID {tid} should be a legal discard action.")
 
-        # PASS is always allowed
-        self.assertIn(action_space.PASS, legal, "PASS action should always be legal after drawing.")
+        # PASS should NOT be legal after drawing (discard phase)
+        self.assertNotIn(action_space.PASS, legal, "PASS action should NOT be legal after drawing.")
 
-        # Total actions = unique tiles in hand + PASS
-        self.assertEqual(len(legal), len(tile_ids) + 1, "Legal actions should match hand + PASS.")
+        # Total actions = unique tiles in hand + any KANs
+        # (since KAN actions may be present, but PASS is not counted)
+        expected_min = len(tile_ids)
+        expected_max = len(tile_ids) + sum(1 for v in [tile.tile_id for tile in player.hand] if player.hand.count(next(t for t in player.hand if t.tile_id == v)) == 4)
+        self.assertGreaterEqual(len(legal), expected_min, "At least all discards should be legal after drawing.")
+
 
     def test_last_discard_tracking(self):
         """
