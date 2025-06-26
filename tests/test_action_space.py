@@ -2,6 +2,7 @@
 
 import unittest
 from engine import action_space
+from engine.action_space import tile_id_from_action
 
 class TestActionSpace(unittest.TestCase):
     def test_discard_action_ids(self):
@@ -57,6 +58,23 @@ class TestActionSpace(unittest.TestCase):
         self.assertEqual(kan[-1], 123)
         self.assertEqual(action_space.ACTION_ID_TO_NAME[90], "KAN_0")
         self.assertEqual(action_space.ACTION_NAME_TO_ID["KAN_0"], 90)
+    
+    def test_tile_id_from_action(self):
+        # Discards
+        self.assertEqual(tile_id_from_action(0), 0)
+        self.assertEqual(tile_id_from_action(33), 33)
+
+        # PON
+        self.assertEqual(tile_id_from_action(34), 0)
+        self.assertEqual(tile_id_from_action(67), 33)
+
+        # KAN
+        self.assertEqual(tile_id_from_action(90), 0)
+        self.assertEqual(tile_id_from_action(123), 33)
+
+        # Out of range
+        with self.assertRaises(ValueError):
+            tile_id_from_action(124)
 
 if __name__ == '__main__':
     unittest.main()
