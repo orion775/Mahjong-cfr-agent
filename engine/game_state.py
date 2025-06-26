@@ -91,26 +91,24 @@ class GameState:
             # 🔥 Meld/claim logic
             claims = self.collect_and_arbitrate_claims(tile_to_discard)
             if claims:
-                # RON claims
+                # Handle any RON claims first
+                ron_claims = [claim for claim in claims if claim[1] == "RON"]
+                if ron_claims:
+                    self.winners = [pid for (pid, _, _) in ron_claims]
+                    # Add the discarded tile to the winning player's hand
+                    for pid in self.winners:
+                        self.players[pid].hand.append(tile_to_discard)
+                    self._terminal = True
+                    print(f"[DEBUG] Multiple RON claims: {self.winners}")
+                    return
+
+                # Otherwise process single meld claims as before (KAN, PON, CHI)
                 for claim in claims:
                     pid, claim_type, info = claim
-                    if claim_type == "RON":
-                        player = self.players[pid]
-                        player.hand.append(tile_to_discard)
-                        self.last_discard = None
-                        self.last_discarded_by = None
-                        self._terminal = True
-                        if self._terminal:
-                            for i, player in enumerate(self.players):
-                                if is_winning_hand(player.hand):
-                                    print(f"[DEBUG] Player {i} ({player.seat}) wins with hand {[str(t) for t in player.hand]}")
-                        print("DEBUG: Ron claim processed for player", pid)
-                        return
-                    elif claim_type == "KAN":
+                    if claim_type == "KAN":
                         player = self.players[pid]
                         kan_tiles = [t for t in player.hand if t.tile_id == tile_to_discard.tile_id]
-                        for t in kan_tiles:
-                            player.hand.remove(t)
+                        # Let call_meld handle the tile removal
                         player.call_meld("KAN", kan_tiles + [tile_to_discard], include_discard=True)
                         self.discards[self.players[self.last_discarded_by].seat] = [
                             t for t in self.discards[self.players[self.last_discarded_by].seat]
@@ -137,13 +135,17 @@ class GameState:
                     elif claim_type == "CHI":
                         player = self.players[pid]
                         meld_ids = info["melds"][0]
-                        to_remove = [tid for tid in meld_ids if tid != tile_to_discard.tile_id]
-                        for tid in to_remove:
-                            match = next((t for t in player.hand if t.tile_id == tid), None)
-                            if match:
-                                player.hand.remove(match)
-                        full_meld = [next((t for t in player.hand if t.tile_id == tid), tile_to_discard) for tid in meld_ids]
-                        player.melds.append(("CHI", full_meld))
+                        # Collect tiles for the meld
+                        meld_tiles = []
+                        for tid in meld_ids:
+                            if tid == tile_to_discard.tile_id:
+                                meld_tiles.append(tile_to_discard)
+                            else:
+                                match = next((t for t in player.hand if t.tile_id == tid), None)
+                                if match:
+                                    meld_tiles.append(match)
+                        # Let call_meld handle the tile removal
+                        player.call_meld("CHI", meld_tiles, include_discard=True)
                         self.discards[self.players[self.last_discarded_by].seat] = [
                             t for t in self.discards[self.players[self.last_discarded_by].seat]
                             if t.tile_id != tile_to_discard.tile_id
@@ -207,38 +209,27 @@ class GameState:
             if seat_order[left_index] != player.seat:
                 raise ValueError("Illegal CHI: can only CHI from left player's discard")
 
-            # Remove + collect the two tiles from hand (not the discarded one)
-            tiles_to_add = []
-            tiles_to_remove = [tid for tid in meld_ids if tid != tile_to_claim.tile_id]
-            print("[DEBUG] Meld IDs:", meld_ids)
-            for tid in tiles_to_remove:
-                match = next((t for t in player.hand if t.tile_id == tid and t not in tiles_to_add), None)
-                if match:
-                    print("[DEBUG] Removed from hand:", match)
-                    print("[DEBUG] Remaining hand after removal:", [str(t) for t in player.hand])       
-                    player.hand.remove(match)
-                    tiles_to_add.append(match)
-                else:
-                    raise ValueError("CHI failed: missing required tile in hand")
-
-            # Build meld using actual tile objects
-            full_meld = []
+            # Collect tiles for the meld
+            meld_tiles = []
             for tid in meld_ids:
                 if tid == tile_to_claim.tile_id:
-                    print("[DEBUG] Adding to meld (claimed tile):", tile_to_claim)
-                    full_meld.append(tile_to_claim)
+                    meld_tiles.append(tile_to_claim)
                 else:
-                    added = tiles_to_add.pop(0)
-                    print("[DEBUG] Adding to meld (from hand):", added)
-                    full_meld.append(added)
-            player.melds.append(("CHI", full_meld))
+                    match = next((t for t in player.hand if t.tile_id == tid), None)
+                    if match:
+                        meld_tiles.append(match)
+                    else:
+                        raise ValueError("CHI failed: missing required tile in hand")
 
-            # Remove discard from the correct seat’s discard pile
+            # Let call_meld handle the tile removal
+            player.call_meld("CHI", meld_tiles, include_discard=True)
+
+            # Remove discard from the correct seat's discard pile
             discard_seat = self.players[self.last_discarded_by].seat
             print("[DEBUG] Before discard removal:", self.discards[discard_seat])
             self.discards[discard_seat] = [
-            t for t in self.discards[discard_seat] if t.tile_id != tile_to_claim.tile_id
-        ]
+                t for t in self.discards[discard_seat] if t.tile_id != tile_to_claim.tile_id
+            ]
             print("[DEBUG] After discard removal:", self.discards[discard_seat])
             self.last_discard = None
             self.last_discarded_by = None
@@ -262,8 +253,8 @@ class GameState:
             print("DEBUG: matching_tiles =", [str(t) + f" (id {id(t)}, tile_id {t.tile_id})" for t in matching_tiles])
             print("DEBUG: matching_tiles length =", len(matching_tiles))
             if len(matching_tiles) == 4:
-                tiles_to_remove = [t for t in player.hand if t.tile_id == tile_index][:4]
-                player.call_meld("KAN", tiles_to_remove)
+                # Let call_meld handle the tile removal to avoid double removal
+                player.call_meld("KAN", matching_tiles)
                 if not self.wall:
                     raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
                 bonus_tile = self.wall.pop()
@@ -295,11 +286,13 @@ class GameState:
                     if meld_type == "PON" and all(t.tile_id == tile_index for t in meld_tiles):
                         if tile_to_kan is None or not any(t.tile_id == tile_index for t in player.hand):
                             return  # Missing 4th tile
-                        # Remove exactly one tile with the correct tile_id (bulletproof)
+                        
+                        # Remove the 4th tile from hand manually
                         for j, t in enumerate(player.hand):
                             if t.tile_id == tile_index:
                                 del player.hand[j]
                                 break
+                        
                         # Upgrade the meld to KAN with the new tile object added
                         new_kan_meld = ("KAN", meld_tiles + [tile_to_kan])
                         player.melds[i] = new_kan_meld
@@ -325,31 +318,46 @@ class GameState:
         from engine import action_space
         if self.is_terminal():
             return []
+        
         legal_actions = []
-
         player = self.get_current_player()
 
-        # Not discard phase (i.e., just drew), only meld reactions allowed
+        # REACTION PHASE: Not awaiting discard (responding to another player's discard)
         if not self.awaiting_discard:
-            chi_melds = self.can_chi(self.last_discard)
-            for meld in chi_melds:
-                try:
-                    action_id = action_space.encode_chi(meld)
-                    legal_actions.append(action_id)
-                except ValueError:
-                    continue
-
+            if self.last_discard is not None:
+                # CHI actions (only from left player)
+                chi_melds = self.can_chi(self.last_discard)
+                for meld in chi_melds:
+                    try:
+                        action_id = action_space.encode_chi(meld)
+                        legal_actions.append(action_id)
+                    except ValueError:
+                        continue
+                
+                # PON actions (any player except discarder can PON)
+                if self.turn_index != self.last_discarded_by:
+                    pon_tiles = [t for t in player.hand if t.tile_id == self.last_discard.tile_id]
+                    if len(pon_tiles) >= 2:
+                        pon_action = action_space.ACTION_NAME_TO_ID[f"PON_{self.last_discard.tile_id}"]
+                        legal_actions.append(pon_action)
+                
+                # KAN actions (Minkan - any player except discarder can KAN if they have 3 matching)
+                if self.turn_index != self.last_discarded_by:
+                    kan_tiles = [t for t in player.hand if t.tile_id == self.last_discard.tile_id]
+                    if len(kan_tiles) >= 3:
+                        kan_action = action_space.ACTION_NAME_TO_ID[f"KAN_{self.last_discard.tile_id}"]
+                        legal_actions.append(kan_action)
+            
+            # PASS is always legal in reaction phase
             legal_actions.append(action_space.PASS)
             return sorted(legal_actions)
 
-        # Discard phase — player just drew
-        legal = []
-
+        # DISCARD PHASE: Player just drew and must discard or declare closed KAN
         tile_ids_in_hand = {tile.tile_id for tile in player.hand}
         for tile_id in tile_ids_in_hand:
-            legal.append(tile_id)  # discards are direct tile_id
+            legal_actions.append(tile_id)  # Discard actions
 
-        # === Closed KAN detection ===
+        # Closed KAN detection (Ankan)
         tile_counts = {}
         for tile in player.hand:
             tile_counts[tile.tile_id] = tile_counts.get(tile.tile_id, 0) + 1
@@ -357,12 +365,20 @@ class GameState:
         for tile_id, count in tile_counts.items():
             if count == 4:
                 kan_action = action_space.ACTION_NAME_TO_ID[f"KAN_{tile_id}"]
-                legal.append(kan_action)
+                legal_actions.append(kan_action)
 
-        # NOTE: PASS action REMOVED from discard phase per bugfix
+        # Shominkan (upgrade PON to KAN)
+        for meld_type, meld_tiles in player.melds:
+            if meld_type == "PON":
+                pon_tile_id = meld_tiles[0].tile_id
+                # Check if player has the 4th tile in hand
+                if any(t.tile_id == pon_tile_id for t in player.hand):
+                    kan_action = action_space.ACTION_NAME_TO_ID[f"KAN_{pon_tile_id}"]
+                    if kan_action not in legal_actions:  # Avoid duplicates
+                        legal_actions.append(kan_action)
 
-        return sorted(legal)
-
+        # THIS WAS THE MISSING LINE!
+        return sorted(legal_actions)
     def get_info_set(self):
         player = self.get_current_player()
 
@@ -409,27 +425,37 @@ class GameState:
             return True
 
         # Check for real win (any player with valid winning hand)
-        for player in self.players:
-            # Combine hand + all tiles from open melds (flattened)
-            full_hand = player.hand[:]
-            for meld_type, meld_tiles in getattr(player, "melds", []):
-                full_hand.extend(meld_tiles)
-            if is_winning_hand(full_hand):
+        for i, player in enumerate(self.players):
+            if self.check_player_win(player):
+                # Set the winners attribute for reward calculation
+                if not hasattr(self, 'winners'):
+                    self.winners = []
+                if i not in self.winners:
+                    self.winners.append(i)
+                self._terminal = True
                 return True
+        
+        # Check for wall exhaustion
+        if not self.wall:
+            self._terminal = True
+            return True
+            
         return False
+    def check_player_win(self, player):
+        """
+        Check if a player has a winning hand by combining hand tiles with meld tiles.
+        Returns True if the player has a valid Mahjong win.
+        """
+        # Combine hand + all tiles from open melds (flattened)
+        full_hand = player.hand[:]
+        for meld_type, meld_tiles in getattr(player, "melds", []):
+            full_hand.extend(meld_tiles)
+        
+        return is_winning_hand(full_hand)
 
     def get_reward(self, player_id):
-        """
-        Returns 1.0 if player_id has a valid winning hand, else 0.0.
-        Only the player with a true winning hand gets 1.0; others get 0.0.
-        """
-        for i, player in enumerate(self.players):
-            # Combine hand and melds (flattened) to check for a real win
-            full_hand = player.hand[:]
-            for meld_type, meld_tiles in getattr(player, "melds", []):
-                full_hand.extend(meld_tiles)
-            if is_winning_hand(full_hand):
-                return 1.0 if i == player_id else 0.0
+        if hasattr(self, 'winners'):
+            return 1.0 if player_id in self.winners else 0.0
         return 0.0
 
     def collect_and_arbitrate_claims(self, tile):
@@ -488,7 +514,7 @@ class GameState:
 def is_winning_hand(hand_tiles):
     """
     Check if the hand can be split into 4 melds (3 tiles each) and a pair.
-    Only works for closed hands with 14 tiles, no honor hand/yaku check.
+    Works for any combination of closed/open melds with 14 tiles total.
     """
     from collections import Counter
 
@@ -496,6 +522,7 @@ def is_winning_hand(hand_tiles):
         return False
 
     counts = Counter((t.category, t.value) for t in hand_tiles)
+    
     # Try every possible pair
     for pair, n in counts.items():
         if n >= 2:
@@ -508,17 +535,21 @@ def is_winning_hand(hand_tiles):
                     removed += 1
                     if removed == 2:
                         break
+            
             if _can_form_melds(remaining):
                 return True
     return False
 
 def _can_form_melds(tiles):
+    """Helper function to check if remaining tiles can form valid melds."""
     from collections import Counter
     if not tiles:
         return True
+    
     tiles = sorted(tiles, key=lambda t: (t.category, t.value))
     first = tiles[0]
-    # Pong
+    
+    # Try Pong (triplet)
     if sum(1 for t in tiles if t.category == first.category and t.value == first.value) >= 3:
         remaining = []
         removed = 0
@@ -529,7 +560,8 @@ def _can_form_melds(tiles):
                 remaining.append(t)
         if _can_form_melds(remaining):
             return True
-    # Chi (sequence, only for suits)
+    
+    # Try Chi (sequence, only for suits)
     if first.category in ["Man", "Pin", "Sou"]:
         val2 = first.value + 1
         val3 = first.value + 2
@@ -543,8 +575,5 @@ def _can_form_melds(tiles):
             remaining = [t for i, t in enumerate(tiles) if i not in [0, i2, i3]]
             if _can_form_melds(remaining):
                 return True
+    
     return False
-
-
-        
-        
