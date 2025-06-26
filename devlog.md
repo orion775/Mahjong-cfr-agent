@@ -337,3 +337,48 @@ Fixed a major logic bug where closed KAN (Ankan) actions removed tiles manually 
 - **Impact:**  
   - All meld logic now flows through a single, robust interface.
   - All CFR, oracle, and bonus tile tests for KAN/Ankan pass.
+
+
+---
+
+## v1.9.1 — Critical Legal Actions Bug Fix & Test Suite Stabilization (2025-06-26)
+
+**Summary:**  
+Fixed a critical engine bug where `get_legal_actions()` returned `None` instead of a list during the discard phase, breaking all CFR training and game logic. Enhanced legal action detection to include all meld types during reaction phase.
+
+**Critical Bug Fixed:**  
+- **Issue**: `get_legal_actions()` method was missing `return sorted(legal_actions)` at the end of the discard phase logic
+- **Symptoms**: 
+  - `TypeError: argument of type 'NoneType' is not iterable` in CFR training
+  - Test failures in `test_cfr_learns_ankan`, `test_train_forces_regret_update_with_known_state`, `test_get_legal_actions_after_draw`
+  - CFR never learned PON/KAN strategies on other players' discards
+- **Root Cause**: Missing return statement caused implicit `None` return from method
+- **Fix**: Added proper return statement and enhanced meld detection logic
+
+**Enhanced Legal Actions Logic:**  
+- **Reaction Phase** (`awaiting_discard = False`): Now correctly returns CHI, PON, Minkan KAN, and PASS actions when `last_discard` exists
+- **Discard Phase** (`awaiting_discard = True`): Returns all discardable tiles + Ankan (closed KAN) + Shominkan (PON→KAN upgrade)
+- **Rule Compliance**: PASS only legal during reaction phase, never after drawing
+
+**Impact:**  
+- CFR can now learn complete meld strategy space (previously limited to CHI only)
+- All 65 tests pass consistently
+- Engine behavior matches real Mahjong rules
+- Foundation ready for advanced curriculum and self-play training
+
+**Tests Updated/Fixed:**  
+- All CFR trainer tests now pass with correct legal action detection
+- Meld reaction tests validate PON/KAN interrupt logic
+- Oracle and curriculum tests maintain stability
+
+**Known Limitations Still Present:**  
+- Info set abstraction uses full hand vectors (scalability concern for large CFR)
+- Meld priority arbitration could be more sophisticated
+- No partial reward shaping yet (only terminal wins rewarded)
+
+**Next Steps:**  
+- Begin oracle-guided curriculum training with stable legal actions
+- Implement info set abstraction for scalable CFR
+- Add partial rewards for hand improvement and strategic play
+
+---

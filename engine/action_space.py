@@ -143,10 +143,10 @@ def decode_chi(action_id):
 
 def tile_id_from_action(action_id: int) -> int:
     """Extract tile_id from an action_id if it's a tile-based action (e.g., discard, meld)."""
-    if 0 <= action_id < 34:
-        return action_id  # Discard action maps directly
-    elif 34 <= action_id < 124:
-        # For melds (PON, CHI, etc.), strip off encoding
-        return action_id % 34  # Assumes meld encoding uses multiples of 34
-    else:
-        raise ValueError(f"Cannot extract tile_id from action_id: {action_id}")
+    if 0 <= action_id < 34:        # Discard
+        return action_id
+    elif 34 <= action_id < 68:     # PON
+        return action_id - 34
+    elif 90 <= action_id < 124:    # KAN
+        return action_id - 90
+    raise ValueError(f"Cannot extract tile_id from action_id: {action_id}")

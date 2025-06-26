@@ -144,7 +144,7 @@ class CFRTrainer:
         self.assertGreater(avg[2], avg[0])
         self.assertEqual(avg[3], 0.0)  # illegal action
     
-    def export_strategy_table(self, filename="strategy_table.txt", threshold=0.01):
+    def export_strategy_table(self, filename="strategy_table.txt", threshold=0.001):
         with open(filename, "w") as f:
             for info_set, strategy_sum in self.strategy_table.items():
                 legal_actions = [a for a, p in enumerate(strategy_sum) if p > 0]
