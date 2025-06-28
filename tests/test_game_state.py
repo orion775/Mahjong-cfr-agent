@@ -414,16 +414,15 @@ class TestGameState(unittest.TestCase):
         kan_action = action_space.ACTION_NAME_TO_ID["KAN_0"]
         state.awaiting_discard = True  # simulate discard phase
         state.step(kan_action)
-
         self.assertEqual(
             len(player.hand),
-            hand_size_before - 4 + 1,
-            "Hand should lose 4 tiles for KAN, gain 1 for bonus draw."
+            hand_size_before - 4,
+            "Hand should lose 4 tiles for KAN, no bonus tile in Chinese rules."
         )
         self.assertEqual(
             len(state.wall),
-            wall_size_before - 1,
-            "Wall should decrease by 1 after bonus draw."
+            wall_size_before,
+            "Wall should NOT change (no bonus draw in Chinese rules)."
         )
         self.assertTrue(
             state.awaiting_discard,
@@ -461,14 +460,14 @@ class TestGameState(unittest.TestCase):
         wall_after = len(state.wall)
 
         self.assertEqual(
-            wall_after, wall_before - 1,
-            "Wall should decrease by 1 after bonus draw from KAN."
+        wall_after, wall_before,
+        "Wall should remain unchanged after KAN in Chinese rules (no bonus draw)."
         )
 
-    def test_bonus_tile_goes_to_correct_player(self):
+    def test_ankan_no_bonus_tile_chinese_rules(self):
         """
-        Test that after performing an Ankan (closed KAN),
-        the player receives a bonus tile (hand increases by 1 after losing 4 tiles).
+        Test that after performing an Ankan (closed KAN) in Chinese rules,
+        the player does NOT receive a bonus tile (hand becomes empty after losing 4 tiles).
         """
         import random
         random.seed(42)
@@ -505,10 +504,18 @@ class TestGameState(unittest.TestCase):
         print("Hand after KAN:", [str(t) for t in player.hand])
         print("Hand length after KAN:", len(player.hand))
 
+        # Chinese rules: No bonus tile after Ankan
         self.assertEqual(
-            after, 1,
-            "After Ankan, player hand should contain ONLY the bonus tile (length 1)."
+            after, 0,
+            "After Ankan in Chinese rules, player hand should be empty (no bonus tile)."
         )
+        
+        # Verify the KAN meld was created
+        self.assertEqual(len(player.melds), 1, "Player should have one KAN meld")
+        self.assertEqual(player.melds[0][0], "KAN", "Meld should be KAN type")
+        self.assertEqual(len(player.melds[0][1]), 4, "KAN meld should have 4 tiles")
+
+
     def test_minkan_action_successful(self):
         from engine.tile import Tile
         from engine import action_space
@@ -540,7 +547,7 @@ class TestGameState(unittest.TestCase):
         self.assertEqual(len(player.melds[0][1]), 4)
         self.assertTrue(state.awaiting_discard)
 
-    def test_minkan_bonus_draw(self):
+    def test_minkan_no_bonus_chinese_rules(self):
         from engine.tile import Tile
         from engine import action_space
         from engine.game_state import GameState
@@ -559,8 +566,9 @@ class TestGameState(unittest.TestCase):
         state.awaiting_discard = True
         state.step(action_space.ACTION_NAME_TO_ID["KAN_22"])
 
-        self.assertEqual(len(state.wall), wall_before - 1)
-        self.assertEqual(len(player.hand), 0 + 1)  # -3 + 1 = 1
+        # Chinese rules: No bonus draw after Minkan
+        self.assertEqual(len(state.wall), wall_before)
+        self.assertEqual(len(player.hand), 0)  # -3 tiles, no bonus = 0
 
     def test_minkan_removes_discard(self):
         from engine.tile import Tile
@@ -671,7 +679,7 @@ class TestGameState(unittest.TestCase):
         self.assertEqual(len(player.melds), 1)
         self.assertEqual(player.melds[0][0], "KAN")
 
-    def test_shominkan_bonus_draw_after_upgrade(self):
+    def test_shominkan_no_bonus_chinese_rules(self):
         from engine.tile import Tile
         from engine import action_space
         from engine.game_state import GameState
@@ -687,7 +695,9 @@ class TestGameState(unittest.TestCase):
         wall_before = len(state.wall)
         state.awaiting_discard = True
         state.step(action_space.ACTION_NAME_TO_ID["KAN_27"])
-        self.assertEqual(len(state.wall), wall_before - 1)
+        
+        # Chinese rules: No bonus draw after Shominkan (PON to KAN upgrade)
+        self.assertEqual(len(state.wall), wall_before)
 
     def test_shominkan_illegal_if_no_pon(self):
         from engine.tile import Tile
@@ -770,38 +780,33 @@ class TestGameState(unittest.TestCase):
 
         self.assertIn(action_id, legal_actions, f"Expected CHI action {action_id} in legal_actions={legal_actions}")
 
-    def test_chi_fails_from_wrong_seat(self):
+    def test_chi_succeeds_from_any_seat(self):
         from engine.tile import Tile
         from engine.action_space import encode_chi
         from engine.game_state import GameState
-
         state = GameState()
         tile = Tile("Sou", 6, 23)  # Discarded tile
-
         # Discarder is West (index 2)
         state.last_discarded_by = 2
         state.players[2].seat = "West"
-
-        # Current player is East (index 0)
+        # Current player is East (index 0) - Chinese rules: any player can CHI
         state.turn_index = 0
         state.players[0].seat = "East"
-
         player = state.get_current_player()
         player.hand.clear()
         player.hand.extend([
             Tile("Sou", 5, 22),
             Tile("Sou", 7, 24),
         ])
-
         state.last_discard = tile
         state.discards["West"].append(tile)
-
+        state.awaiting_discard = False  # Important: must be in reaction phase
         action_id = encode_chi([22, 23, 24])
         legal_actions = state.get_legal_actions()
-
         print("[DEBUG] Legal actions:", legal_actions)
         print("[DEBUG] Trying to assert action_id:", action_id)
-        self.assertNotIn(action_id, legal_actions)
+        # Chinese rules: CHI should be legal from any seat (except discarder)
+        self.assertIn(action_id, legal_actions)
 
     def test_chi_removes_two_tiles_from_hand(self):
         from engine.tile import Tile

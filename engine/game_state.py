@@ -203,11 +203,9 @@ class GameState:
                 raise ValueError("Invalid CHI: discarded tile not in meld.")
 
             player = self.get_current_player()
-            discarder = self.players[self.last_discarded_by]
-            seat_order = ["East", "South", "West", "North"]
-            left_index = (seat_order.index(discarder.seat) + 1) % 4
-            if seat_order[left_index] != player.seat:
-                raise ValueError("Illegal CHI: can only CHI from left player's discard")
+            # Chinese rules: Any player (except discarder) can CHI
+            if self.turn_index == self.last_discarded_by:
+                raise ValueError("Illegal CHI: cannot CHI your own discard")
 
             # Collect tiles for the meld
             meld_tiles = []
@@ -247,23 +245,16 @@ class GameState:
 
             # === Case 1: Ankan (4 tiles in hand)
             matching_tiles = [t for t in player.hand if t.tile_id == tile_index]
-            print("DEBUG: Checking for Ankan KAN.")
-            print("DEBUG: tile_index =", tile_index)
-            print("DEBUG: player.hand =", [str(t) + f" (id {id(t)}, tile_id {t.tile_id})" for t in player.hand])
-            print("DEBUG: matching_tiles =", [str(t) + f" (id {id(t)}, tile_id {t.tile_id})" for t in matching_tiles])
-            print("DEBUG: matching_tiles length =", len(matching_tiles))
             if len(matching_tiles) == 4:
                 # Let call_meld handle the tile removal to avoid double removal
                 player.call_meld("KAN", matching_tiles)
-                if not self.wall:
-                    raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
-                bonus_tile = self.wall.pop()
-                player.draw_tile(bonus_tile)
+                # Chinese rules: No bonus draw after KAN
                 self.awaiting_discard = True
                 if self.is_terminal():
                     return
                 return
 
+            # === Case 2: Minkan (3 in hand + 1 from discard)
             # === Case 2: Minkan (3 in hand + 1 from discard)
             elif self.last_discard and self.last_discard.tile_id == tile_index:
                 matching_tiles = [t for t in player.hand if t.tile_id == tile_index]
@@ -276,9 +267,14 @@ class GameState:
                     ]
                     self.last_discard = None
                     self.last_discarded_by = None
+                    # Chinese rules: No bonus draw after Minkan
+                    self.awaiting_discard = True
+                    if self.is_terminal():
+                        return
+                    return
                 else:
                     return  # Invalid Minkan — skip
-
+                
             # === Case 3: Shominkan (upgrade PON → KAN)
             else:
                 tile_to_kan = next((t for t in player.hand if t.tile_id == tile_index), None)
@@ -299,17 +295,6 @@ class GameState:
                         break
                 else:
                     return  # No valid PON upgrade
-
-            # === Bonus draw after valid KAN
-            if not self.wall:
-                raise RuntimeError("Wall is empty — cannot draw bonus tile after KAN")
-
-            bonus_tile = self.wall.pop()
-            player.draw_tile(bonus_tile)
-            self.awaiting_discard = True
-            if self.is_terminal():
-                return
-            return
 
         else:
             raise NotImplementedError("Only discard, PON, PASS, CHI supported")
@@ -379,6 +364,8 @@ class GameState:
 
         # THIS WAS THE MISSING LINE!
         return sorted(legal_actions)
+    
+
     def get_info_set(self):
         player = self.get_current_player()
 
@@ -403,9 +390,11 @@ class GameState:
             return []
         if player is None:
             player = self.get_current_player()
-        discarder = self.players[self.last_discarded_by]
-        if (self.seat_index(player.seat) - self.seat_index(discarder.seat)) % 4 != 1:
+        
+        # Chinese rules: Any player except discarder can CHI
+        if player == self.players[self.last_discarded_by]:
             return []
+        
         if tile.category not in ["Man", "Pin", "Sou"]:
             return []
         hand_ids = [t.tile_id for t in player.hand]
@@ -418,7 +407,6 @@ class GameState:
         if id + 2 < 34 and (id + 1 in hand_ids) and (id + 2 in hand_ids):
             candidates.append([id, id + 1, id + 2])
         return candidates
-    
     def is_terminal(self):
         # Allow manual override with _terminal (for forced ends, e.g. exhaustive draw)
         if hasattr(self, "_terminal") and self._terminal:
@@ -441,6 +429,8 @@ class GameState:
             return True
             
         return False
+    
+    
     def check_player_win(self, player):
         """
         Check if a player has a winning hand by combining hand tiles with meld tiles.
@@ -457,6 +447,111 @@ class GameState:
         if hasattr(self, 'winners'):
             return 1.0 if player_id in self.winners else 0.0
         return 0.0
+    
+    def get_hand_score(self, player):
+        """
+        Calculate Chinese Mahjong hand score (points).
+        Returns integer score based on hand composition and win type.
+        """
+        if not self.check_player_win(player):
+            return 0
+        
+        score = 2  # Base score for any win
+        hand = player.hand[:]
+        
+        # Add meld tiles to full hand for analysis
+        for meld_type, meld_tiles in player.melds:
+            hand.extend(meld_tiles)
+        
+        # Basic scoring rules (simplified Chinese system)
+        
+        # 1. All one suit (清一色) - high value
+        suits = set(t.category for t in hand if t.category in ["Man", "Pin", "Sou"])
+        if len(suits) == 1:
+            score += 6  # All one suit bonus
+        
+        # 2. All terminals and honors (老头) 
+        terminals_honors = all(
+            (t.category in ["Wind", "Dragon"]) or 
+            (t.category in ["Man", "Pin", "Sou"] and t.value in [1, 9])
+            for t in hand
+        )
+        if terminals_honors:
+            score += 4
+        
+        # 3. No terminals or honors (断幺九)
+        no_terminals = all(
+            t.category in ["Man", "Pin", "Sou"] and t.value not in [1, 9]
+            for t in hand
+        )
+        if no_terminals:
+            score += 1
+        
+        # 4. Bonus for each KAN
+        kan_count = sum(1 for meld_type, _ in player.melds if meld_type == "KAN")
+        score += kan_count * 2
+        
+        # 5. All CHI (no PON/KAN) - sequence hand
+        has_only_chi = all(meld_type == "CHI" for meld_type, _ in player.melds)
+        if has_only_chi and len(player.melds) > 0:
+            score += 1
+        
+        return max(score, 2)  # Minimum 2 points for any win
+    
+    def get_game_summary(self, filename="game_summary.txt"):
+        """
+        Write a detailed game summary to a text file including:
+        - Final player states (hands, melds, scores)
+        - CFR rewards vs Chinese scores
+        - Game statistics
+        """
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write("=== MAHJONG GAME SUMMARY ===\n")
+            f.write(f"Game Terminal: {self.is_terminal()}\n")
+            f.write(f"Wall Remaining: {len(self.wall)} tiles\n\n")
+            
+            # Player summaries
+            for i, player in enumerate(self.players):
+                f.write(f"=== PLAYER {i}: {player.seat} ===\n")
+                f.write(f"Hand ({len(player.hand)} tiles): {[str(t) for t in player.hand]}\n")
+                f.write(f"Melds ({len(player.melds)}): {[(mtype, [str(t) for t in tiles]) for mtype, tiles in player.melds]}\n")
+                
+                # Scoring
+                chinese_score = self.get_hand_score(player)
+                cfr_reward = self.get_reward(i)
+                is_winner = i in getattr(self, 'winners', [])
+                
+                f.write(f"Chinese Score: {chinese_score} points\n")
+                f.write(f"CFR Reward: {cfr_reward}\n")
+                f.write(f"Winner: {is_winner}\n")
+                
+                if is_winner:
+                    f.write(">>> WIN ANALYSIS <<<\n")
+                    if chinese_score >= 8:
+                        f.write("HIGH VALUE HAND!\n")
+                    elif chinese_score >= 4:
+                        f.write("Good scoring hand\n")
+                    else:
+                        f.write("Basic win\n")
+                
+                f.write(f"Discards: {[str(t) for t in self.discards.get(player.seat, [])]}\n")
+                f.write("\n")
+            
+            # Game statistics
+            f.write("=== GAME STATISTICS ===\n")
+            total_chinese_score = sum(self.get_hand_score(p) for p in self.players)
+            total_cfr_reward = sum(self.get_reward(i) for i in range(4))
+            
+            f.write(f"Total Chinese Points: {total_chinese_score}\n")
+            f.write(f"Total CFR Rewards: {total_cfr_reward}\n")
+            f.write(f"Highest Scoring Player: Player {max(range(4), key=lambda i: self.get_hand_score(self.players[i]))}\n")
+            
+            if hasattr(self, 'winners'):
+                f.write(f"Winners: {[self.players[i].seat for i in self.winners]}\n")
+            
+            f.write("\n=== END SUMMARY ===\n")
+        
+        print(f"Game summary written to {filename}")
 
     def collect_and_arbitrate_claims(self, tile):
         """
@@ -487,13 +582,13 @@ class GameState:
             if len(pon_tiles) == 2:
                 claims.append((i, "PON", {"tile": tile}))
 
-        # CHI: only left player
-        chi_index = (self.last_discarded_by + 1) % 4
-        if chi_index != self.last_discarded_by:
-            chi_player = self.players[chi_index]
-            melds = self.can_chi(tile, player=chi_player)
+        # CHI: any player except discarder (Chinese rules)
+        for i, player in enumerate(self.players):
+            if i == self.last_discarded_by:
+                continue  # Skip discarder
+            melds = self.can_chi(tile, player=player)
             if melds:
-                claims.append((chi_index, "CHI", {"melds": melds, "tile": tile}))
+                claims.append((i, "CHI", {"melds": melds, "tile": tile}))
 
         # Now resolve claims by Mahjong priority
         # If multiple Ron, all win (for now, Japanese rules: all can win on Ron)
@@ -575,5 +670,7 @@ def _can_form_melds(tiles):
             remaining = [t for i, t in enumerate(tiles) if i not in [0, i2, i3]]
             if _can_form_melds(remaining):
                 return True
+                
     
     return False
+

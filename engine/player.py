@@ -20,12 +20,8 @@ class Player:
         return self.hand.count(tile) >= 2
     
     def can_chi(self, tile, source_seat):
-        seat_order = ["East", "South", "West", "North"]
-        my_index = seat_order.index(self.seat)
-        right_index = (my_index - 1) % 4  # <-- CHI from the right
-        if seat_order[right_index] != source_seat:
-            return False
-
+        # Chinese rules: Any player can CHI (remove seat restriction)
+        
         if tile.category not in ["Man", "Pin", "Sou"]:
             return False
 
