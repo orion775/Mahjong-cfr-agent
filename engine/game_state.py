@@ -49,14 +49,6 @@ class GameState:
 
     def step(self, action_id=None):
         from engine.tile import Tile
-        self.cfr_debug_counter += 1
-        if self.cfr_debug_counter > 5:
-            self._terminal = True
-            if self._terminal:
-                for i, player in enumerate(self.players):
-                    if is_winning_hand(player.hand):
-                        print(f"[DEBUG] Player {i} ({player.seat}) wins with hand {[str(t) for t in player.hand]}")
-            return
         player = self.get_current_player()
 
         # DRAW PHASE
@@ -135,15 +127,31 @@ class GameState:
                     elif claim_type == "CHI":
                         player = self.players[pid]
                         meld_ids = info["melds"][0]
+                        
+                        # VALIDATE the meld before processing
+                        # Re-check can_chi to ensure this is still valid
+                        valid_melds = self.can_chi(tile_to_discard, player=player)
+                        if meld_ids not in valid_melds:
+                            continue  # Skip invalid CHI
+                        
                         # Collect tiles for the meld
                         meld_tiles = []
                         for tid in meld_ids:
                             if tid == tile_to_discard.tile_id:
                                 meld_tiles.append(tile_to_discard)
                             else:
+                                # Find tile by tile_id - but ensure it matches the sequence
                                 match = next((t for t in player.hand if t.tile_id == tid), None)
                                 if match:
                                     meld_tiles.append(match)
+                                else:
+                                    # Missing tile - skip this CHI
+                                    continue
+                        
+                        # Only proceed if we have exactly 3 tiles
+                        if len(meld_tiles) != 3:
+                            continue
+                            
                         # Let call_meld handle the tile removal
                         player.call_meld("CHI", meld_tiles, include_discard=True)
                         self.discards[self.players[self.last_discarded_by].seat] = [
@@ -390,22 +398,36 @@ class GameState:
             return []
         if player is None:
             player = self.get_current_player()
-        
+    
         # Chinese rules: Any player except discarder can CHI
         if player == self.players[self.last_discarded_by]:
             return []
-        
+    
         if tile.category not in ["Man", "Pin", "Sou"]:
             return []
+        
         hand_ids = [t.tile_id for t in player.hand]
         id = tile.tile_id
         candidates = []
-        if id >= 2 and (id - 1 in hand_ids) and (id - 2 in hand_ids):
+        
+        # Determine suit boundaries
+        if 0 <= id <= 8:  # Man suit
+            suit_min, suit_max = 0, 8
+        elif 9 <= id <= 17:  # Pin suit  
+            suit_min, suit_max = 9, 17
+        elif 18 <= id <= 26:  # Sou suit
+            suit_min, suit_max = 18, 26
+        else:
+            return []  # Not a suit tile
+        
+        # Check sequences within suit boundaries only
+        if id >= 2 and id - 2 >= suit_min and (id - 1 in hand_ids) and (id - 2 in hand_ids):
             candidates.append([id - 2, id - 1, id])
-        if id >= 1 and id + 1 < 34 and (id - 1 in hand_ids) and (id + 1 in hand_ids):
+        if id >= 1 and id + 1 <= suit_max and (id - 1 in hand_ids) and (id + 1 in hand_ids):
             candidates.append([id - 1, id, id + 1])
-        if id + 2 < 34 and (id + 1 in hand_ids) and (id + 2 in hand_ids):
+        if id + 2 <= suit_max and (id + 1 in hand_ids) and (id + 2 in hand_ids):
             candidates.append([id, id + 1, id + 2])
+        
         return candidates
     def is_terminal(self):
         # Allow manual override with _terminal (for forced ends, e.g. exhaustive draw)
