@@ -382,3 +382,40 @@ Fixed a critical engine bug where `get_legal_actions()` returned `None` instead 
 - Add partial rewards for hand improvement and strategic play
 
 ---
+
+## v1.9.2 – Chinese Mahjong Rules Conversion Complete (2025-06-26)
+
+**Summary:**  
+Successfully converted the entire engine from Japanese to Chinese Mahjong rules through systematic, test-driven changes.
+
+**Major Changes:**
+- **CHI Rule**: Modified `can_chi()` in both `player.py` and `game_state.py` to allow any player to CHI (not just left neighbor)
+- **KAN Bonus Draws**: Removed all bonus tile draws after Ankan, Minkan, and Shominkan actions
+- **Chinese Scoring**: Implemented realistic point system with special hand bonuses (all-one-suit, terminals, KAN bonuses)
+- **Dual Rewards**: CFR training uses simple win/lose (1.0/0.0) while gameplay shows Chinese scores
+
+**Files Modified:**
+- `engine/player.py`: Removed seat restriction in `can_chi()`
+- `engine/game_state.py`: Removed bonus draws, added Chinese scoring methods
+- `tests/test_game_state.py`: Updated tests for Chinese rules
+- `tests/test_player.py`: Updated CHI tests for any-player logic
+- `tests/test_chinese_scoring.py`: New comprehensive test suite
+
+**Testing:**
+- All 71 tests passing
+- Chinese scoring validated with multiple hand types
+- CFR/gameplay reward separation verified
+- File output functionality tested
+
+**Next Steps:**
+- Create 4-agent demo for realistic Chinese gameplay
+- Consider additional Chinese special hands
+- Test CFR learning with current stable system
+
+**Known Benefits:**
+- More authentic Chinese Mahjong experience
+- Stable CFR training foundation maintained
+- Clear separation between learning and scoring systems
+- Comprehensive test coverage for all changes
+
+---
