@@ -5,6 +5,7 @@ class Player:
         self.seat = seat            # "East", "South", "West", "North"
         self.hand = []              # List of Tile objects
         self.melds = []             # List of tuples like ("PON", tile list)
+        self.bonus_tiles = []       # NEW: Store flowers and seasons separately
 
     def draw_tile(self, tile):
         self.hand.append(tile)
@@ -71,3 +72,10 @@ class Player:
         new_player.hand = self.hand[:]
         new_player.melds = [tuple(m) for m in self.melds]
         return new_player
+    
+    def add_bonus_tile(self, tile):
+        """Add a flower/season tile to bonus collection. Returns True if successful."""
+        if tile.is_bonus_tile():
+            self.bonus_tiles.append(tile)
+            return True
+        return False

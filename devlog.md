@@ -434,3 +434,56 @@ Achieved production-quality Chinese Mahjong implementation with complete bug res
 **Technical Details:**
 # Fixed CHI claim processing with validation
 ---
+
+### v2.0.0 — Complete Chinese Mahjong with Flowers & Seasons (2025-06-30)
+
+**MAJOR MILESTONE**: Successfully implemented authentic 144-tile Chinese Mahjong with Flowers & Seasons, advanced scoring, and stable wall and action space upgrades
+
+**Final Implementation Status:**
+- Flowers & Seasons System fully supported. Added all 8 bonus tiles: Plum, Orchid, Chrysanthemum, Bamboo, Spring, Summer, Autumn, Winter. Bonus tiles are not counted toward the 13-tile hand and are stored separately in player.bonus_tiles. When a bonus tile is drawn, it is automatically moved to bonus_tiles and replaced with a new draw, supporting seamless recursive bonus handling.
+- Wall generation now produces 144 tiles, with 4 copies of each regular tile and 1 copy of each bonus tile. All tests and logic updated to expect the 144-tile system.
+- Enhanced Chinese scoring is implemented. Each flower or season tile adds 1 point. Collecting all 4 flowers or all 4 seasons gives a 3-point bonus. CFR reward remains 1.0/0.0, but game display now includes detailed Chinese scoring.
+- Action space is fully overhauled for 42 tile types. Discard actions are 0-41, PON is 42-83, PASS is 84, CHI is 85-105, KAN is 106-147. All previous action ID overlaps have been resolved. Action space logic and extraction methods updated throughout the codebase.
+- Player class now includes a bonus_tiles attribute and add_bonus_tile method with validation. Deep copy (clone) methods now support bonus tiles.
+- Gameplay stability confirmed across all meld types, bonus tile flows, and full 144-tile games with seamless auto-replacement and terminal detection.
+
+**Technical Fixes:**
+- Fixed critical action space bug where KAN and CHI ID ranges overlapped and caused misinterpretation of actions. All ID ranges are now unique and fully validated in tests.
+- Info set vectors and tile_id extraction updated to support all 42 tile types. All tests now use 42-element vectors and expect a 144-tile wall.
+- All tests now clear hands in setup to prevent unwanted meld claims, ensuring full control and reproducibility.
+- Terminal detection enhanced to function correctly with bonus tiles and auto-replacement flows.
+
+**Test Suite Enhancements:**
+- Added tests/test_flowers_seasons.py including:
+  - test_regular_tiles_not_bonus: Validates regular tiles are not treated as bonus
+  - test_flower_tiles_are_bonus: Validates all flower tiles are correctly identified
+  - test_season_tiles_are_bonus: Validates all season tiles are correctly identified
+  - test_wall_contains_144_tiles_with_bonus: Asserts proper wall composition
+  - test_player_bonus_tile_storage: Ensures bonus tiles are correctly stored
+  - test_auto_replacement_mechanism: Tests recursive bonus draw and replacement logic
+  - test_action_space_updated_for_bonus_tiles: Checks all action ranges
+  - test_bonus_tile_scoring: Asserts bonus tile points and bonus point calculation
+- All existing action space, wall, and game state tests updated for 42 tile types and 144-tile wall.
+- Test suite now includes 79 tests, all passing, with comprehensive validation of bonus tile handling, action space logic, and Chinese scoring.
+
+**Demo Game Results:**
+- Automatic bonus tile replacement observed in gameplay, with bonus tiles moving to player.bonus_tiles and replacement tiles drawn recursively until a regular tile is received.
+- Game plays out with the full 144-tile wall, finishing with the correct number of tiles remaining.
+- Melds (CHI, PON) are processed successfully, and win detection is accurate. Sample game: Player 2 wins with 4 melds and a pair and receives 2 points for a basic win.
+- CFR reward system remains in effect: 1.0 for winner, 0.0 for others.
+
+**Statistics:**
+- 79 tests passing, including all flowers, seasons, wall, and bonus tile validation
+- Approximately 200 lines of code added across 6 files
+- 1 new file: tests/test_flowers_seasons.py
+- 7 modified files: action_space, game_state, player, tile, wall, plus updated tests
+
+**Migration from v1.9.3:**
+- Action ID ranges and wall size changed throughout the codebase. All code updated to handle new ranges and wall size.
+- CFR training remains fully compatible; no data migration required as all new features are additive and do not break previous functionality.
+
+**Previous Milestone: v1.9.3 — Chinese Mahjong Engine Complete & Demo-Ready (2025-06-28)**
+- Full Chinese Mahjong implementation with validated gameplay, stable meld processing, and professional demo output
+- CHI validation bug fixed by re-validating all meld sequences in step processing, ensuring no invalid melds are ever created
+
+**Summary:** This release marks the transition from a basic Chinese Mahjong implementation to a complete, production-quality engine with authentic rules, stable advanced scoring, Flowers & Seasons, robust action space, and full support for curriculum and CFR-based AI research.

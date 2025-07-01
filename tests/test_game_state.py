@@ -38,7 +38,7 @@ class TestGameState(unittest.TestCase):
         for player in state.players:
             self.assertEqual(len(player.hand), 13, f"Player {player.seat} should have 13 tiles at start.")
 
-        expected_wall_size = 136 - (4 * 13)
+        expected_wall_size = 144 - (4 * 13)  # 144 tiles - 52 dealt = 92 remaining
         self.assertEqual(len(state.wall), expected_wall_size, f"Wall should have {expected_wall_size} tiles after dealing.")
 
         self.assertEqual(state.turn_index, 0, "East (index 0) should start.")
@@ -104,24 +104,27 @@ class TestGameState(unittest.TestCase):
         """
         import random
         random.seed(42)  # Ensure deterministic wall order for test
-
         from engine import action_space
-
         state = GameState()
         player = state.get_current_player()
         initial_hand_size = len(player.hand)
-
+        
         # Step 1: Player draws
         state.step()
         self.assertEqual(len(player.hand), initial_hand_size + 1, "Player should have drawn a tile.")
         self.assertTrue(state.awaiting_discard, "Player should be required to discard after drawing.")
-
+        
+        # Prevent meld interrupts from other players
+        for i, p in enumerate(state.players):
+            if i != state.turn_index:
+                p.hand.clear()
+        
         # Step 2: Player discards
         tile = player.hand[0]
         state.step(tile.tile_id)
         self.assertEqual(len(player.hand), initial_hand_size, "Player's hand size should return to original after discard.")
         self.assertFalse(state.awaiting_discard, "Not awaiting discard after discarding.")
-
+        
         # If discard remains in player's pile, turn should have advanced
         if any(d.tile_id == tile.tile_id for d in state.discards[player.seat]):
             self.assertEqual(state.turn_index, 1, "Turn index should be 1 after discard if no meld is claimed.")
@@ -199,13 +202,17 @@ class TestGameState(unittest.TestCase):
         """
         import random
         random.seed(42)  # Deterministic setup
-
         state = GameState()
         state.step()  # Player draws
         player = state.get_current_player()
         tile = player.hand[0]
+        
+        # Prevent meld interrupts from other players
+        for i, p in enumerate(state.players):
+            if i != state.turn_index:
+                p.hand.clear()
+        
         state.step(tile.tile_id)  # Player discards
-
         self.assertIsNotNone(state.last_discard, "last_discard should not be None after a discard.")
         self.assertEqual(state.last_discard.tile_id, tile.tile_id, "last_discard tile_id should match discarded tile.")
         self.assertEqual(state.last_discarded_by, 0, "last_discarded_by should be 0 (East) after first discard.")
