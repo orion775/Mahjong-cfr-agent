@@ -19,4 +19,9 @@ class Tile:
     
     def __hash__(self):
         return hash(self.tile_id)
+        
+    def is_bonus_tile(self):
+
+        #"""Returns True if this is a Flower or Season tile (bonus tiles)"""
+        return self.category in ["Flower", "Season"]
 

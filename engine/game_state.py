@@ -60,8 +60,19 @@ class GameState:
                         if is_winning_hand(player.hand):
                             print(f"[DEBUG] Player {i} ({player.seat}) wins with hand {[str(t) for t in player.hand]}")
                 return
+                
             drawn_tile = self.wall.pop()
-            player.draw_tile(drawn_tile)
+            
+            # NEW: Handle bonus tiles (flowers/seasons) with auto-replacement
+            if drawn_tile.is_bonus_tile():
+                player.add_bonus_tile(drawn_tile)
+                # Immediately draw replacement if wall has tiles
+                if self.wall:
+                    self.step()  # Recursive call to draw again
+                return
+            else:
+                player.draw_tile(drawn_tile)
+                
             self.awaiting_discard = True
             if self.is_terminal():
                 return
@@ -246,7 +257,7 @@ class GameState:
         # KAN ACTION
         elif action_id in action_space.KAN_ACTIONS:
             print("ENGINE: Entered KAN branch with action_id =", action_id)
-            tile_index = action_id - 90
+            tile_index = action_id - 106  
             print("ENGINE: tile_index =", tile_index)
             print("ENGINE: player.hand tile_ids =", [t.tile_id for t in player.hand])
             player = self.get_current_player()
@@ -378,7 +389,7 @@ class GameState:
         player = self.get_current_player()
 
         # Vectorized hand representation (count of each tile_id 0–33)
-        hand_vec = [0] * 34
+        hand_vec = [0] * 42
         for t in player.hand:
             hand_vec[t.tile_id] += 1
 
@@ -517,8 +528,23 @@ class GameState:
         has_only_chi = all(meld_type == "CHI" for meld_type, _ in player.melds)
         if has_only_chi and len(player.melds) > 0:
             score += 1
+
+        # 6. Bonus tile scoring (flowers and seasons)
+        flower_count = sum(1 for t in player.bonus_tiles if t.category == "Flower")
+        season_count = sum(1 for t in player.bonus_tiles if t.category == "Season")
+
+        # 1 point per flower/season
+        score += flower_count + season_count
+
+        # Special bonuses
+        if flower_count == 4:
+            score += 3  # "Four Flowers" bonus
+        if season_count == 4:
+            score += 3  # "Four Seasons" bonus
+
         
         return max(score, 2)  # Minimum 2 points for any win
+    
     
     def get_game_summary(self, filename="game_summary.txt"):
         """

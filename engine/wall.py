@@ -29,6 +29,17 @@ def generate_wall():
 
     # Flowers and Seasons (optional for now)
     # Skipping for now — you can add them later
+    # Flowers: Plum, Orchid, Chrysanthemum, Bamboo
+    flowers = ["Plum", "Orchid", "Chrysanthemum", "Bamboo"]
+    for i, flower in enumerate(flowers):
+        tile_id = 34 + i
+        wall.append(Tile("Flower", flower, tile_id))
+
+    # Seasons: Spring, Summer, Autumn, Winter
+    seasons = ["Spring", "Summer", "Autumn", "Winter"]
+    for i, season in enumerate(seasons):
+        tile_id = 38 + i
+        wall.append(Tile("Season", season, tile_id))
 
     random.shuffle(wall)
     return wall

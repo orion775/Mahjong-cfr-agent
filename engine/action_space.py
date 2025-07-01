@@ -4,17 +4,21 @@
 # Tile constants
 # -----------------------------
 
-NUM_TILE_TYPES = 34  # Man (0–8), Pin (9–17), Sou (18–26), Winds (27–30), Dragons (31–33)
-
+NUM_TILE_TYPES = 42  # Man (0–8), Pin (9–17), Sou (18–26), Winds (27–30), Dragons (31–33), Flowers (34–37), Seasons (38–41)
 # -----------------------------
 # Action ID Ranges
 # -----------------------------
 
-DISCARD_ACTIONS = list(range(NUM_TILE_TYPES))                        # 0–33
+DISCARD_ACTIONS = list(range(NUM_TILE_TYPES))                        # 0–41
 PON_ACTIONS = list(range(NUM_TILE_TYPES, NUM_TILE_TYPES * 2)) 
-KAN_BASE = 90
-KAN_ACTIONS = list(range(KAN_BASE, KAN_BASE + NUM_TILE_TYPES))  # 90–123
-PASS = NUM_TILE_TYPES * 2                                            # 68
+PASS = NUM_TILE_TYPES * 2      # 84 (42 * 2 = 84)
+# -----------------------------
+# Chi Actions (Sequences)
+# -----------------------------
+CHI_BASE_ID = PASS + 1  # = 85 (84 + 1)
+CHI_ACTIONS = []
+KAN_BASE = CHI_BASE_ID + 21  # 85 + 21 = 106
+KAN_ACTIONS = list(range(KAN_BASE, KAN_BASE + NUM_TILE_TYPES))  # 106–147
 
 ALL_ACTIONS = DISCARD_ACTIONS + PON_ACTIONS + KAN_ACTIONS + [PASS]
 
@@ -62,8 +66,7 @@ def get_all_kan_actions():
 # Chi Actions (Sequences)
 # -----------------------------
 
-CHI_BASE_ID = PASS + 1  # = 69
-CHI_ACTIONS = []
+
 
 # Mapping suit → starting tile_id
 suit_offsets = {
@@ -143,10 +146,10 @@ def decode_chi(action_id):
 
 def tile_id_from_action(action_id: int) -> int:
     """Extract tile_id from an action_id if it's a tile-based action (e.g., discard, meld)."""
-    if 0 <= action_id < 34:        # Discard
+    if 0 <= action_id < 42:        # Discard (was 34, now 42)
         return action_id
-    elif 34 <= action_id < 68:     # PON
-        return action_id - 34
-    elif 90 <= action_id < 124:    # KAN
-        return action_id - 90
+    elif 42 <= action_id < 84:     # PON (was 34-68, now 42-84)
+        return action_id - 42
+    elif 106 <= action_id < 148:   # KAN (was 90-124, now 106-148)
+        return action_id - 106
     raise ValueError(f"Cannot extract tile_id from action_id: {action_id}")
