@@ -487,3 +487,33 @@ Achieved production-quality Chinese Mahjong implementation with complete bug res
 - CHI validation bug fixed by re-validating all meld sequences in step processing, ensuring no invalid melds are ever created
 
 **Summary:** This release marks the transition from a basic Chinese Mahjong implementation to a complete, production-quality engine with authentic rules, stable advanced scoring, Flowers & Seasons, robust action space, and full support for curriculum and CFR-based AI research.
+
+---
+
+## v2.0.1 — Critical Win Detection Bug Discovery (2025-06-30)
+
+## CRITICAL ISSUE IDENTIFIED
+Major flaw discovered in win detection logic. The engine’s meld, turn, and wall handling is robust, but the core _can_form_melds() function contains a critical bug that prevents some legitimate wins from being recognized.
+
+## Issue Summary
+Win check failure: Engine did not recognize some valid winning hands. In several tests, the winner was declared with only 1 tile and 4 melds, omitting the required pair.
+Initial suspicion: First noticed after East was shown as winner with 1 tile in hand and 4 melds (should always be 2 tiles remaining for a pair).
+Function name fix: Corrected a naming error from *can*form_melds to _can_form_melds.
+Debug logging: Added detailed output in is_winning_hand() for all win checks.
+Critical confirmation: Confirmed via debug that North had a valid winning hand (4 melds + 1 pair) that was rejected.
+
+## Evidence
+Game log analysis showed hands with only 1 tile after a "win", which is always invalid.
+Further inspection revealed _can_form_melds() missed valid hand states and returned false negatives.
+
+## Next Steps
+Fully audit and repair _can_form_melds() to correctly identify all legal winning hand structures (4 melds + 1 pair).
+Add targeted tests to guarantee no win state can occur with only 1 tile and 4 melds.
+Re-run all demos and test suite after fixing.
+
+## Status
+Engine is stable for gameplay, meld, and tile flow.
+Win detection is currently broken and under urgent repair.
+Full debug logging and test coverage now in place for continued diagnosis.
+
+Documented: 2025-06-30
