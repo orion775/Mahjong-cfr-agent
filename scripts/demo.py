@@ -47,8 +47,9 @@ def run_demo(max_turns=200):
         if action is None:
             break
         
-        # Track melds
+        # Track melds BEFORE taking action
         melds_before = sum(len(p.melds) for p in state.players)
+        player_melds_before = [len(p.melds) for p in state.players]  # Store individual counts
         
         # Execute action
         try:
@@ -57,9 +58,9 @@ def run_demo(max_turns=200):
             # Show meld creation
             melds_after = sum(len(p.melds) for p in state.players)
             if melds_after > melds_before:
-                # Find which player actually got the new meld
+                # Find which player actually got the new meld by comparing before/after
                 for i, player in enumerate(state.players):
-                    if len(player.melds) > sum(1 for p in state.players[:i] if len(p.melds) > 0):
+                    if len(player.melds) > player_melds_before[i]:
                         print(f" {player.seat} created a meld! (Total: {melds_after})")
                         break
                 else:

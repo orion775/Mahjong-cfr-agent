@@ -20,42 +20,52 @@ class Player:
     def can_pon(self, tile):
         return self.hand.count(tile) >= 2
     
-    def can_chi(self, tile, source_seat):
-        # Chinese rules: Any player can CHI (remove seat restriction)
-        
+    def can_chi(self, tile, source_seat=None):
+        """
+        Returns a list of value-sequences that would complete a CHI with the given tile,
+        enforcing strict suit boundaries (no wraparound like 9-1-2).
+        """
         if tile.category not in ["Man", "Pin", "Sou"]:
-            return False
+            return []
 
-        values = [t.value for t in self.hand if t.category == tile.category]
+        hand_values = sorted([t.value for t in self.hand if t.category == tile.category])
+        candidates = []
         val = tile.value
-        # Check for 3-tile sequences: [val-2, val-1], [val-1, val+1], [val+1, val+2]
-        return (
-            (val - 2 in values and val - 1 in values) or
-            (val - 1 in values and val + 1 in values) or
-            (val + 1 in values and val + 2 in values)
-        )
+        # [val-2, val-1, val]
+        if (val-2 in hand_values and val-1 in hand_values and 1 <= val-2 <= 9):
+            candidates.append([val-2, val-1, val])
+        # [val-1, val, val+1]
+        if (val-1 in hand_values and val+1 in hand_values and 1 <= val-1 <= 9 and 1 <= val+1 <= 9):
+            candidates.append([val-1, val, val+1])
+        # [val, val+1, val+2]
+        if (val+1 in hand_values and val+2 in hand_values and 1 <= val+1 <= 9 and 1 <= val+2 <= 9):
+            candidates.append([val, val+1, val+2])
+        return candidates
     
     def call_meld(self, meld_type, tiles, include_discard=False):
         print(f"[DEBUG] Calling meld: {meld_type} with {[str(t) for t in tiles]}")
         print(f"[DEBUG] Hand before: {[str(t) for t in self.hand]}")
-    
-        removed = 0
+        
+        hand_tiles_to_remove = []
+        discard_skipped = False
+
         for t in tiles:
-            # Find tile by tile_id instead of object equality
             matching_tile = next((hand_tile for hand_tile in self.hand if hand_tile.tile_id == t.tile_id), None)
             if matching_tile:
                 self.hand.remove(matching_tile)
-                removed += 1
+                hand_tiles_to_remove.append(matching_tile)
                 print(f"[DEBUG] Removed {matching_tile} from hand")
-            elif not include_discard:
-                raise ValueError(f"Cannot declare {meld_type}, missing tile: {t}")
-            else:
+            elif include_discard and not discard_skipped:
+                discard_skipped = True
                 print(f"[DEBUG] Skipped removal for {t} (discarded tile)")
-    
-        print(f"[DEBUG] Total removed: {removed}, required: {len(tiles) - 1}")
-        if include_discard and removed < len(tiles) - 1:
-            raise ValueError("Not enough tiles in hand for meld")
-    
+            else:
+                raise ValueError(f"Cannot declare {meld_type}, missing tile: {t}")
+
+        # Safety check: For melds using a discard, only one skipped removal allowed
+        expected_removed = len(tiles) - 1 if include_discard else len(tiles)
+        if len(hand_tiles_to_remove) != expected_removed:
+            raise RuntimeError(f"{meld_type}: expected to remove {expected_removed} from hand, but removed {len(hand_tiles_to_remove)}.")
+
         # Create new tile objects for the meld to avoid sharing references
         from engine.tile import Tile
         meld_tiles_copy = [Tile(t.category, t.value, t.tile_id) for t in tiles]
