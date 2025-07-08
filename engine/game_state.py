@@ -670,16 +670,12 @@ class GameState:
         return None
 
 def is_winning_hand(hand_tiles):
-    print(f"[DEBUG] is_winning_hand called with {len(hand_tiles)} tiles:")
-    print(f"[DEBUG] Tiles: {[(t.category, t.value) for t in hand_tiles]}")
     
     from collections import Counter
     if len(hand_tiles) != 14:
-        print(f"[DEBUG] Wrong tile count: {len(hand_tiles)}")
         return False
         
     counts = Counter((t.category, t.value) for t in hand_tiles)
-    print(f"[DEBUG] Tile counts: {counts}")
     
     # Try every possible pair
     for pair, n in counts.items():
