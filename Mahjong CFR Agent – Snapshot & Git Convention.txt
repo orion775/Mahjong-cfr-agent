@@ -1,93 +1,94 @@
-# Mahjong CFR Agent – Snapshot & Git Convention
+# Mahjong CFR Agent – Saving & Versioning New Releases (Kent & GitHub)
 
-This file documents the official procedures for snapshotting and versioning the project.
-
-## Local Snapshotting (Manual Versioned Folder Copy)
-
-We use manual, non-zipped folder copies to save project snapshots under `.mahjong_snapshots/`. Each snapshot is named using a semantic version tag and short description.
-
-### PowerShell Snapshot Script Format
-
-```powershell
-$snapshotName = "v0.6.0-working-meld-pass-pon"
-$target = ".\.mahjong_snapshots\$snapshotName"
-
-New-Item -ItemType Directory -Force -Path $target
-Copy-Item -Recurse -Path .\* -Exclude ".git", ".mahjong_snapshots", "mahjong_snapshots" -Destination $target
-```
-
-### Notes
-
-* Always change `$snapshotName` to match the current milestone.
-* This system avoids Git clutter and retains all working code.
-* Snapshots include all files, including uncommitted experimental changes.
-
-# Mahjong CFR Agent – Snapshot & Git Convention
-
-This file documents the official procedures for local snapshotting and git version control, supporting both the University Git and personal GitHub remotes.
+This document describes the *exact steps* for snapshotting, committing, and pushing new project versions to both the University (Kent) and GitHub repositories.
 
 -------------------------------------------------------------------------------
 
-## Local Snapshotting (Manual Versioned Folder Copy)
+## 1. Local Snapshotting (Manual Folder Copy)
 
-Project snapshots are manual, non-zipped folder copies under `.mahjong_snapshots/`.  
-Each snapshot folder is named with the current semantic version and a short milestone description.
+Before every version bump or milestone, make a local snapshot as follows:
 
-### PowerShell Snapshot Script Format
-
-$snapshotName = "v1.0.0-major-feature"
+### PowerShell Snapshot Script
+S
+$snapshotName = "vX.Y.Z-some-feature"
 $target = ".\.mahjong_snapshots\$snapshotName"
 
 New-Item -ItemType Directory -Force -Path $target
 Copy-Item -Recurse -Path .\* -Exclude ".git", ".mahjong_snapshots", "mahjong_snapshots" -Destination $target
 
-Notes:
-- Always set `$snapshotName` to match the current milestone/version.
-- Snapshots include all files (including uncommitted/experimental changes).
-- This prevents git clutter and preserves every state.
+**Always update `$snapshotName` with the new version tag and a short description.**
 
 -------------------------------------------------------------------------------
 
-## Git Workflow (Commit + Push to University & GitHub)
+## 2. Git Commit Workflow (University + GitHub)
 
-The project is versioned in two git remotes:
-- `origin` — University Git: https://git.cs.kent.ac.uk/aa2752/mahjong.git
-- `github` — Personal GitHub: https://github.com/orion775/Mahjong-cfr-agent.git
+### Step 1: Stage Only the Files You Want
 
-All stable, tested code must be committed and pushed to both remotes.
+# Example: Stage all main project changes
+git add README.md devlog.md "Mahjong CFR Agent – Snapshot & Git Convention.txt" engine/ tests/ ...
 
-### Standard Commit and Push (for a single branch)
+### Step 2: Commit with a Versioned Message
 
-git add engine/game_state.py tests/test_game_state.py
-git commit -m "v1.0.0: add feature X and passing tests"
+git commit -m "vX.Y.Z: Short, clear message about this version bump or feature"
+
+### Step 3: Push to University Git (origin)
+
+git push origin main
+
+### Step 4: Push to GitHub (github)
+
+git push github main
+
+### Step 5: Push Version Tags (if using tags)
+
+git tag vX.Y.Z
+git push origin vX.Y.Z
+git push github vX.Y.Z
+
+-------------------------------------------------------------------------------
+
+## 3. Quick Checklist
+
+1. **Snapshot** the project before every major version or experiment.
+2. **Stage** only what you want (never use `git add .`).
+3. **Commit** with a semantic versioned message (vX.Y.Z: ...).
+4. **Push** to both `origin` (Kent) and `github`.
+5. **Push tags** to both if using.
+6. **Check** both repositories in the browser for new commit.
+
+-------------------------------------------------------------------------------
+
+## Example Version Bump Commands
+
+# 1. Create snapshot
+$snapshotName = "v2.1.0-feature-abc"
+$target = ".\.mahjong_snapshots\$snapshotName"
+New-Item -ItemType Directory -Force -Path $target
+Copy-Item -Recurse -Path .\* -Exclude ".git", ".mahjong_snapshots", "mahjong_snapshots" -Destination $target
+
+# 2. Stage, commit, push (example for README, engine, tests)
+git add README.md engine/ tests/
+git commit -m "v2.1.0: Add feature ABC and update documentation"
 git push origin main
 git push github main
 
-### Push Tags to Both Remotes
-
-git push origin --tags
-git push github --tags
-
-### For New Branches
-
-git checkout -b my-feature
-git push origin my-feature
-git push github my-feature
-
-Guidelines:
-- Never use `git add .` to avoid committing/pushing debug or temporary files.
-- Use clear, semantic version tags in commit messages.
-- Always push to both remotes to keep them fully synchronized.
-- Only push stable, working code.
+# 3. (optional) Tag version and push tag
+git tag v2.1.0
+git push origin v2.1.0
+git push github v2.1.0
 
 -------------------------------------------------------------------------------
 
-## Multi-Remote Git Setup
+## General Guidelines
 
-To add the GitHub remote if you haven’t already:
+- Never rely on a single remote: **always push to both** for every version bump or milestone.
+- Use snapshots before any risky changes or refactors.
+- Always use semantic versioning and clear commit messages.
+- Do not use `git add .`—add files or folders selectively.
 
-git remote add github https://github.com/orion775/Mahjong-cfr-agent.git
+-------------------------------------------------------------------------------
 
+*Last updated: 2025-07-08 (Full dual-remote + snapshot workflow for Kent & GitHub)*
 To check your current remotes:
 
 git remote -v
