@@ -58,7 +58,7 @@ class TestOracleRon(unittest.TestCase):
             Tile("Man", 3, 2), Tile("Man", 3, 2), Tile("Man", 3, 2),
             Tile("Man", 4, 3), Tile("Man", 4, 3), Tile("Man", 4, 3),
             Tile("Pin", 1, 9)
-        ])
+        ])  
 
         state.turn_index = 1
         state.awaiting_discard = True

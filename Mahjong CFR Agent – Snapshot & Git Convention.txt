@@ -22,37 +22,122 @@ Copy-Item -Recurse -Path .\* -Exclude ".git", ".mahjong_snapshots", "mahjong_sna
 * This system avoids Git clutter and retains all working code.
 * Snapshots include all files, including uncommitted experimental changes.
 
----
+# Mahjong CFR Agent – Snapshot & Git Convention
 
-## Git Workflow (Commit + Push)
+This file documents the official procedures for local snapshotting and git version control, supporting both the University Git and personal GitHub remotes.
 
-For stable, working features, we commit changes to Git manually by specifying only relevant files.
+-------------------------------------------------------------------------------
 
-### Git Command Template
+## Local Snapshotting (Manual Versioned Folder Copy)
 
-```bash
+Project snapshots are manual, non-zipped folder copies under `.mahjong_snapshots/`.  
+Each snapshot folder is named with the current semantic version and a short milestone description.
+
+### PowerShell Snapshot Script Format
+
+$snapshotName = "v1.0.0-major-feature"
+$target = ".\.mahjong_snapshots\$snapshotName"
+
+New-Item -ItemType Directory -Force -Path $target
+Copy-Item -Recurse -Path .\* -Exclude ".git", ".mahjong_snapshots", "mahjong_snapshots" -Destination $target
+
+Notes:
+- Always set `$snapshotName` to match the current milestone/version.
+- Snapshots include all files (including uncommitted/experimental changes).
+- This prevents git clutter and preserves every state.
+
+-------------------------------------------------------------------------------
+
+## Git Workflow (Commit + Push to University & GitHub)
+
+The project is versioned in two git remotes:
+- `origin` — University Git: https://git.cs.kent.ac.uk/aa2752/mahjong.git
+- `github` — Personal GitHub: https://github.com/orion775/Mahjong-cfr-agent.git
+
+All stable, tested code must be committed and pushed to both remotes.
+
+### Standard Commit and Push (for a single branch)
+
 git add engine/game_state.py tests/test_game_state.py
-git commit -m "v0.6.0: finalize working meld flow with PON and PASS"
+git commit -m "v1.0.0: add feature X and passing tests"
 git push origin main
-```
+git push github main
 
-### Guidelines
+### Push Tags to Both Remotes
 
-* Do not use `git add .` to avoid pushing unintended debug code.
-* Use clear, meaningful commit messages.
-* Always commit only stable, tested code.
+git push origin --tags
+git push github --tags
 
----
+### For New Branches
+
+git checkout -b my-feature
+git push origin my-feature
+git push github my-feature
+
+Guidelines:
+- Never use `git add .` to avoid committing/pushing debug or temporary files.
+- Use clear, semantic version tags in commit messages.
+- Always push to both remotes to keep them fully synchronized.
+- Only push stable, working code.
+
+-------------------------------------------------------------------------------
+
+## Multi-Remote Git Setup
+
+To add the GitHub remote if you haven’t already:
+
+git remote add github https://github.com/orion775/Mahjong-cfr-agent.git
+
+To check your current remotes:
+
+git remote -v
+
+You should see:
+
+origin  https://git.cs.kent.ac.uk/aa2752/mahjong.git (fetch)
+origin  https://git.cs.kent.ac.uk/aa2752/mahjong.git (push)
+github  https://github.com/orion775/Mahjong-cfr-agent.git (fetch)
+github  https://github.com/orion775/Mahjong-cfr-agent.git (push)
+
+To remove or rename a remote:
+
+git remote remove github
+git remote rename github somethingelse
+
+-------------------------------------------------------------------------------
 
 ## Example Version Names
 
-| Version                        | Description                                      |
-| ------------------------------ | ------------------------------------------------ |
-| `v0.1.0-init`                  | Initial tile class and action space              |
-| `v0.3.0-pon-tested`            | PON logic implemented and passing                |
-| `v0.5.0-pass-added`            | PASS logic and unit test added                   |
-| `v0.6.0-working-meld-pass-pon` | Full tested meld sequence including PON and PASS |
+Version                        | Description
+------------------------------ | --------------------------------------------------
+v0.1.0-init                    | Initial tile class and action space
+v0.3.0-pon-tested              | PON logic implemented and passing
+v0.5.0-pass-added              | PASS logic and unit test added
+v0.6.0-working-meld-pass-pon   | Full tested meld sequence including PON and PASS
+v1.0.0-github-sync             | First GitHub + University dual remote sync
 
-This file must be uploaded when resuming work in a new session to keep snapshot and Git rules consistent.
+-------------------------------------------------------------------------------
 
-*Last updated after v0.6.0 snapshot (working meld + PASS logic)*
+## Quick Reference Table
+
+Action                     | Command
+-------------------------- | ------------------------------------------------------------
+Add GitHub remote          | git remote add github https://github.com/USER/REPO.git
+Push branch to origin      | git push origin main
+Push branch to GitHub      | git push github main
+Push tags to both          | git push origin --tags  &&  git push github --tags
+Remove a remote            | git remote remove github
+Rename a remote            | git remote rename github newname
+
+-------------------------------------------------------------------------------
+
+## General Guidelines
+
+- Always push to both remotes after each stable commit.
+- Snapshots should be taken before any major commit or refactor, and especially before risky experiments.
+- This file must be uploaded when resuming work in a new session to keep workflow and versioning consistent.
+- Never rely solely on git: regular local snapshots guarantee you can always roll back to any working state, even after large refactors or mistakes.
+
+-------------------------------------------------------------------------------
+
+Last updated after v1.0.0 milestone (multi-remote workflow with University + GitHub).
