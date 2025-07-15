@@ -268,6 +268,13 @@ class GameState:
             matching_tiles = [t for t in player.hand if t.tile_id == tile_index]
             if len(matching_tiles) == 4:
                 player.call_meld("KAN", matching_tiles)
+                
+                # Chinese Mahjong: Draw replacement tile after KAN
+                if self.wall:
+                    replacement_tile = self.wall.pop()
+                    player.draw_tile(replacement_tile)
+                    print(f"[DEBUG] Drew replacement tile after Ankan: {replacement_tile}")
+                
                 self.awaiting_discard = True
                 if self.is_terminal():
                     return
@@ -285,6 +292,13 @@ class GameState:
                     ]
                     self.last_discard = None
                     self.last_discarded_by = None
+                    
+                    # Chinese Mahjong: Draw replacement tile after KAN
+                    if self.wall:
+                        replacement_tile = self.wall.pop()
+                        player.draw_tile(replacement_tile)
+                        print(f"[DEBUG] Drew replacement tile after Minkan: {replacement_tile}")
+                    
                     self.awaiting_discard = True
                     if self.is_terminal():
                         return
@@ -309,6 +323,14 @@ class GameState:
                         new_kan_meld = ("KAN", meld_tiles + [tile_to_kan])
                         player.melds[i] = new_kan_meld
                         print(f"[DEBUG] Shominkan successful: upgraded PON to KAN")
+                        
+                        # Chinese Mahjong: Draw replacement tile after KAN
+                        if self.wall:
+                            replacement_tile = self.wall.pop()
+                            player.draw_tile(replacement_tile)
+                            print(f"[DEBUG] Drew replacement tile after Shominkan: {replacement_tile}")
+                        
+                        self.awaiting_discard = True
                         return
             
             # === ADD THIS: Handle invalid KAN attempts ===

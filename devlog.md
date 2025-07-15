@@ -517,3 +517,23 @@ Win detection is currently broken and under urgent repair.
 Full debug logging and test coverage now in place for continued diagnosis.
 
 Documented: 2025-06-30
+---
+## v2.0.2 — KAN Replacement Tile Fixes Complete (2025-07-14)
+
+**CRITICAL FIX**: Corrected KAN replacement tile draws to comply with Chinese Mahjong rules.
+
+**Changes:**
+- **Fixed all KAN types**: Ankan, Minkan, and Shominkan now correctly draw replacement tiles
+- **Updated test expectations**: Fixed 5 failing tests that had incorrect expectations about Chinese rules
+- **Confirmed rule compliance**: KAN replacement draws are mandatory in Chinese Mahjong
+
+**Files Modified:**
+- `engine/game_state.py`: Added replacement tile draws after all KAN declarations
+- `tests/test_game_state.py`: Updated test expectations to match correct Chinese rules
+
+**Test Results:**
+- All 79 tests passing
+- KAN functionality now 100% compliant with Chinese Mahjong rules
+- Engine ready for special hands implementation
+
+**Next:** Seven Pairs special hand implementation

@@ -423,13 +423,13 @@ class TestGameState(unittest.TestCase):
         state.step(kan_action)
         self.assertEqual(
             len(player.hand),
-            hand_size_before - 4,
-            "Hand should lose 4 tiles for KAN, no bonus tile in Chinese rules."
+            hand_size_before - 3,
+            "Hand should lose 4 tiles for KAN, gain 1 replacement tile = net -3."
         )
         self.assertEqual(
             len(state.wall),
-            wall_size_before,
-            "Wall should NOT change (no bonus draw in Chinese rules)."
+            wall_size_before - 1,
+            "Wall should decrease by 1 (replacement draw in Chinese rules)."
         )
         self.assertTrue(
             state.awaiting_discard,
@@ -467,8 +467,8 @@ class TestGameState(unittest.TestCase):
         wall_after = len(state.wall)
 
         self.assertEqual(
-        wall_after, wall_before,
-        "Wall should remain unchanged after KAN in Chinese rules (no bonus draw)."
+        wall_after, wall_before - 1,
+        "Wall should decrease by 1 after KAN in Chinese rules (replacement draw)."
         )
 
     def test_ankan_no_bonus_tile_chinese_rules(self):
@@ -513,7 +513,7 @@ class TestGameState(unittest.TestCase):
 
         # Chinese rules: No bonus tile after Ankan
         self.assertEqual(
-            after, 0,
+            after, 1,
             "After Ankan in Chinese rules, player hand should be empty (no bonus tile)."
         )
         
@@ -573,9 +573,9 @@ class TestGameState(unittest.TestCase):
         state.awaiting_discard = True
         state.step(action_space.ACTION_NAME_TO_ID["KAN_22"])
 
-        # Chinese rules: No bonus draw after Minkan
-        self.assertEqual(len(state.wall), wall_before)
-        self.assertEqual(len(player.hand), 0)  # -3 tiles, no bonus = 0
+        #Chinese rules: Replacement draw after Minkan
+        self.assertEqual(len(state.wall), wall_before - 1)
+        self.assertEqual(len(player.hand), 1)  # -3 tiles, +1 replacement = 1
 
     def test_minkan_removes_discard(self):
         from engine.tile import Tile
@@ -703,8 +703,8 @@ class TestGameState(unittest.TestCase):
         state.awaiting_discard = True
         state.step(action_space.ACTION_NAME_TO_ID["KAN_27"])
         
-        # Chinese rules: No bonus draw after Shominkan (PON to KAN upgrade)
-        self.assertEqual(len(state.wall), wall_before)
+        # Chinese rules: Replacement draw after Shominkan (PON to KAN upgrade)
+        self.assertEqual(len(state.wall), wall_before - 1)
 
     def test_shominkan_illegal_if_no_pon(self):
         from engine.tile import Tile
