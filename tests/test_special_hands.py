@@ -2,8 +2,7 @@
 
 import unittest
 from engine.tile import Tile
-from engine.game_state import GameState, is_winning_hand, check_seven_pairs, check_thirteen_orphans
-
+from engine.game_state import GameState, is_winning_hand, check_seven_pairs, check_thirteen_orphans, check_all_honors
 class TestSpecialHands(unittest.TestCase):
     
     def test_seven_pairs_win_on_draw(self):
@@ -196,6 +195,47 @@ class TestSpecialHands(unittest.TestCase):
         
         print(f"DEBUG: Thirteen Orphans hand: {[(t.category, t.value) for t in player.hand]}")
         print(f"DEBUG: Tile counts: {dict(counts)}")
+
+    def test_all_honors_valid_hand(self):
+        """Test that check_all_honors() correctly identifies pure honor hands"""
+        hand = [
+            # East wind triplet
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            # South wind triplet  
+            Tile("Wind", "South", 28), Tile("Wind", "South", 28), Tile("Wind", "South", 28),
+            # West wind triplet
+            Tile("Wind", "West", 29), Tile("Wind", "West", 29), Tile("Wind", "West", 29),
+            # Red dragon triplet
+            Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31),
+            # White dragon pair
+            Tile("Dragon", "White", 33), Tile("Dragon", "White", 33)
+        ]
+        
+        print(f"All Honors test hand: {[(t.category, t.value) for t in hand]}")
+        # Test the specific All Honors function (this WILL fail until we implement it)
+        result = check_all_honors(hand)
+        print(f"check_all_honors result: {result}")
+        self.assertTrue(result, "Pure honor hand should be All Honors")
+
+    def test_all_honors_mixed_with_suits_invalid(self):
+        """Test that check_all_honors() rejects hands with suit tiles"""
+        hand = [
+            # Honor tiles
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31),
+            # Mixed with suit tiles - should not be All Honors
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),
+            Tile("Pin", 5, 13), Tile("Pin", 5, 13), Tile("Pin", 5, 13),
+            # Pair
+            Tile("Sou", 9, 26), Tile("Sou", 9, 26)
+        ]
+        
+        print(f"Mixed hand test: {[(t.category, t.value) for t in hand]}")
+        # This should be False for All Honors (even if it's a winning hand)
+        result = check_all_honors(hand)
+        print(f"check_all_honors result: {result}")
+        self.assertFalse(result, "Mixed hand should not be All Honors")
+
 
 if __name__ == '__main__':
     unittest.main()

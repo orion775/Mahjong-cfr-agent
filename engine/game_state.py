@@ -841,4 +841,86 @@ def check_thirteen_orphans(hand_tiles):
         return False
     
     return True
+def check_all_honors(hand_tiles):
+    """
+    Check if hand is All Honors (Zi Yi Se) - only honor tiles (winds + dragons).
+    Must follow standard 4 melds + 1 pair structure.
+    
+    Args:
+        hand_tiles: List of 14 Tile objects
+        
+    Returns:
+        bool: True if hand is valid All Honors
+    """
+    if len(hand_tiles) != 14:
+        return False
+    
+    # Check that ALL tiles are honor tiles (winds or dragons)
+    for tile in hand_tiles:
+        if tile.category not in ["Wind", "Dragon"]:
+            return False
+    
+    # Since all tiles are honors, check if they form standard structure (4 melds + 1 pair)
+    # Honor tiles can only form triplets/quads, never sequences
+    from collections import Counter
+    
+    counts = Counter((t.category, t.value) for t in hand_tiles)
+    
+    # Try every possible pair
+    for pair, n in counts.items():
+        if n >= 2:
+            # Create remaining tiles after removing the pair
+            remaining = list(hand_tiles)
+            # Remove pair
+            removed = 0
+            for i in range(len(remaining)-1, -1, -1):
+                if (remaining[i].category, remaining[i].value) == pair:
+                    del remaining[i]
+                    removed += 1
+                    if removed == 2:
+                        break
+            
+            # Check if remaining 12 tiles can form 4 triplets
+            if _can_form_honor_melds(remaining):
+                return True
+    
+    return False
+
+def _can_form_honor_melds(tiles):
+    """
+    Helper function to check if honor tiles can form valid melds (only triplets/quads).
+    Honor tiles cannot form sequences, only triplets or quads.
+    
+    Args:
+        tiles: List of Tile objects (should be 12 tiles forming 4 triplets)
+        
+    Returns:
+        bool: True if tiles can form valid honor melds
+    """
+    if not tiles:
+        return True
+    
+    if len(tiles) % 3 != 0:
+        return False
+    
+    tiles = sorted(tiles, key=lambda t: (t.category, t.value))
+    first = tiles[0]
+    
+    # Try to form a triplet with the first tile
+    matching_count = sum(1 for t in tiles if t.category == first.category and t.value == first.value)
+    
+    if matching_count >= 3:
+        # Remove triplet and check remaining
+        remaining = []
+        removed = 0
+        for t in tiles:
+            if t.category == first.category and t.value == first.value and removed < 3:
+                removed += 1
+            else:
+                remaining.append(t)
+        
+        return _can_form_honor_melds(remaining)
+    
+    # If we can't form a triplet with the first tile, this configuration is invalid
+    return False
 
