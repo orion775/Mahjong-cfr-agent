@@ -5,6 +5,7 @@ from engine.player import Player
 from engine import action_space
 
 
+
 class GameState:
     def __init__(self):
         self.wall = generate_wall()
@@ -692,11 +693,34 @@ class GameState:
         return None
 
 def is_winning_hand(hand_tiles):
+    """
+    Check if a hand is a winning Mahjong hand.
     
+    Supports:
+    1. Seven Pairs (Qi Dui Zi): 7 distinct pairs
+    2. Thirteen Orphans (Shi San Yao): 13 terminals/honors + 1 duplicate
+    3. Standard structure: 4 melds + 1 pair
+    
+    Args:
+        hand_tiles: List of Tile objects (should be 14 tiles)
+        s
+    Returns:
+        bool: True if winning hand, False otherwise
+    """
     from collections import Counter
+    
     if len(hand_tiles) != 14:
         return False
-        
+    
+    # Check for Seven Pairs first (special hand)
+    if check_seven_pairs(hand_tiles):
+        return True
+    
+    # Check for Thirteen Orphans (special hand)
+    if check_thirteen_orphans(hand_tiles):
+        return True
+    
+    # Check standard structure (4 melds + 1 pair)
     counts = Counter((t.category, t.value) for t in hand_tiles)
     
     # Try every possible pair
@@ -712,8 +736,9 @@ def is_winning_hand(hand_tiles):
                     if removed == 2:
                         break
             
-            if _can_form_melds(remaining):  # ← CORRECT
+            if _can_form_melds(remaining):
                 return True
+    
     return False
 
 def _can_form_melds(tiles):
@@ -751,7 +776,69 @@ def _can_form_melds(tiles):
             remaining = [t for i, t in enumerate(tiles) if i not in [0, i2, i3]]
             if _can_form_melds(remaining):
                 return True
-                
-    
+            
     return False
+
+def check_seven_pairs(hand_tiles):
+    """
+    Check if a 14-tile hand forms Seven Pairs (Qi Dui Zi).
+    
+    Seven Pairs rules:
+    - Exactly 14 tiles
+    - Exactly 7 distinct pairs (no triplets or quads allowed)
+    - All tiles must be different types (no identical pairs)
+    
+    Args:
+        hand_tiles: List of 14 Tile objects
+        
+    Returns:
+        bool: True if hand is Seven Pairs, False otherwise
+    """
+    from collections import Counter
+    
+    if len(hand_tiles) != 14:
+        return False
+    
+    # Count tiles by (category, value)
+    counts = Counter((t.category, t.value) for t in hand_tiles)
+    
+    # Must have exactly 7 pairs (no singles, triplets, or quads)
+    if len(counts) != 7:
+        return False
+    
+    # Every tile type must appear exactly twice
+    for count in counts.values():
+        if count != 2:
+            return False
+    
+    return True
+
+def check_thirteen_orphans(hand_tiles):
+    """Check if hand is Thirteen Orphans (Shi San Yao)"""
+    from collections import Counter
+    
+    if len(hand_tiles) != 14:
+        return False
+    
+    # Required 13 terminal/honor types
+    required_types = {
+        ("Man", 1), ("Man", 9),
+        ("Pin", 1), ("Pin", 9), 
+        ("Sou", 1), ("Sou", 9),
+        ("Wind", "East"), ("Wind", "South"), ("Wind", "West"), ("Wind", "North"),
+        ("Dragon", "Red"), ("Dragon", "Green"), ("Dragon", "White")
+    }
+    
+    counts = Counter((t.category, t.value) for t in hand_tiles)
+    
+    # Must have exactly the 13 required types
+    if set(counts.keys()) != required_types:
+        return False
+    
+    # Must have 12 singles and 1 pair
+    count_values = list(counts.values())
+    if count_values.count(1) != 12 or count_values.count(2) != 1:
+        return False
+    
+    return True
 

@@ -537,3 +537,72 @@ Documented: 2025-06-30
 - Engine ready for special hands implementation
 
 **Next:** Seven Pairs special hand implementation
+
+---
+
+## v2.0.3 — Seven Pairs & Thirteen Orphans Special Hands (2025-07-19)
+
+**Summary:**  
+Successfully implemented the first two official Chinese Mahjong special hands using strict test-driven development. Both Seven Pairs and Thirteen Orphans are now fully functional and tested.
+
+**Major Changes:**
+- **Special Hand Architecture**: Added modular special hand detection system
+- **Seven Pairs Implementation**: Complete `check_seven_pairs()` function with validation
+- **Thirteen Orphans Implementation**: Complete `check_thirteen_orphans()` function following official rules
+- **Win Detection Enhancement**: Updated `is_winning_hand()` to check special hands before standard structure
+- **Test Suite Expansion**: Created dedicated `tests/test_special_hands.py` with comprehensive coverage
+
+**Files Modified:**
+- `engine/game_state.py`: Added `check_seven_pairs()` and `check_thirteen_orphans()` functions, updated `is_winning_hand()`
+- `tests/test_special_hands.py`: New file with 4 comprehensive test methods
+
+**Technical Details:**
+- **Seven Pairs Logic**: Exactly 7 distinct pairs, no triplets/quads allowed, all different tile types
+- **Thirteen Orphans Logic**: All 13 terminals/honors (1M,9M,1P,9P,1S,9S + 4 winds + 3 dragons) + 1 duplicate
+- **Integration**: Special hands checked before standard 4 melds + pair structure
+- **Error Prevention**: Circular import issues resolved, clean module structure
+
+**Testing Approach:**
+- **TDD Methodology**: Test written first, implementation second, verification third
+- **Realistic Scenarios**: Tests simulate actual draw mechanics and game flow
+- **Edge Cases**: Verification that triplets block Seven Pairs, incomplete hands fail
+- **Regression Testing**: Standard wins continue to work without interference
+
+**Test Results:**
+- 4 new tests added, all passing
+- Total project tests: 80+ (all passing)
+- Zero regressions in existing functionality
+- Comprehensive debug output for hand validation
+
+**Known Architecture Benefits:**
+- **Modular Design**: Each special hand is self-contained function
+- **Extensible**: Easy to add more special hands following same pattern
+- **Maintainable**: Clear separation between special hands and standard win logic
+- **Testable**: Each special hand can be tested in isolation
+
+**Development Process:**
+- **Step-by-step implementation**: One special hand at a time
+- **Import management**: Resolved circular import issues properly
+- **Code organization**: Created dedicated test file for special hands
+- **Documentation**: Debug output shows exact hand structures for verification
+
+**Impact on Gameplay:**
+- **Authentic Chinese Mahjong**: Engine now supports most common special winning patterns
+- **Player Experience**: Realistic special hand wins during actual games
+- **CFR Training**: AI can now learn strategies involving special hands
+- **Foundation Ready**: Architecture supports rapid addition of remaining special hands
+
+**Next Development Goals:**
+- Implement remaining special hands (All Honors, All Terminals, etc.)
+- Add special hand scoring bonuses to Chinese scoring system
+- Complete official Chinese Mahjong special hand coverage
+
+**Lessons Learned:**
+- TDD approach prevented many implementation errors
+- Modular architecture made debugging much easier
+- Comprehensive testing caught edge cases early
+- Official rules document was essential for correct implementation
+
+Documented: 2025-07-19
+
+---
