@@ -655,3 +655,77 @@ Successfully implemented All Honors (Zi Yi Se) special hand using strict TDD met
 - TDD workflow proven effective for complex rule implementation
 
 *Last updated: 2025-07-19 for v2.0.4 All Honors completion*
+---
+## v2.0.5 — Special Hands Architecture Refactor (2025-07-19)
+
+**Summary:**  
+Major code organization improvement: successfully moved all special hand detection functions to a dedicated module, resolving architecture issues and creating a clean foundation for future development.
+
+**Problem Solved:**
+- `game_state.py` was becoming bloated with special hand functions
+- Mixed responsibilities: core engine logic + specialized detection in same file
+- Difficult to maintain and extend special hands
+- Poor separation of concerns
+
+**Solution Implemented:**
+- Created dedicated `engine/special_hands.py` module
+- Moved all special hand detection functions to new module
+- Resolved circular import issues with proper dependency structure
+- Maintained complete backward compatibility
+
+**Technical Details:**
+- **Files Created**: `engine/special_hands.py` with all special hand functions
+- **Files Modified**: `engine/game_state.py` (removed special functions, added imports)
+- **Files Modified**: `tests/test_special_hands.py` (updated imports)
+- **Dependency Flow**: `game_state.py` → `special_hands.py` (clean, no circular imports)
+
+**Functions Moved:**
+- `check_seven_pairs()` → special_hands.py
+- `check_thirteen_orphans()` → special_hands.py
+- `check_all_honors()` → special_hands.py
+- `check_all_terminals()` → special_hands.py
+- `_can_form_honor_melds()` → special_hands.py
+- `_can_form_melds()` → special_hands.py (consolidated, no duplication)
+
+**Import Resolution:**
+- `game_state.py` imports special functions from `special_hands.py`
+- `special_hands.py` is self-contained (no game_state imports)
+- Test files import from both modules as needed
+- Clean dependency graph with no circular references
+
+**Challenges Encountered:**
+- Initial circular import issue when both modules imported from each other
+- Solved by moving `_can_form_melds()` entirely to special_hands module
+- Required careful sequencing of import changes and function moves
+
+**Validation:**
+- All 8 special hands tests passing after refactor
+- All game state tests passing (no regressions)
+- All engine functionality preserved
+- Win detection working perfectly across all hand types
+
+**Benefits Achieved:**
+- **Maintainability**: Special hands are now isolated and easy to modify
+- **Extensibility**: Adding new special hands is now straightforward
+- **Clarity**: Clear separation between core engine and specialized detection
+- **Performance**: No impact on runtime performance
+- **Testing**: Easier to test special hands in isolation
+
+**Development Impact:**
+- Future special hands can be added without touching core engine
+- Module structure supports rapid development and testing
+- Clean imports make dependencies explicit and manageable
+- Foundation ready for complex special hands implementation
+
+**Next Steps:**
+- Implement All One Suit using clean new architecture
+- Add remaining special hands systematically
+- Consider further modularization as system grows
+
+**Status:**
+- Refactoring complete and stable
+- All tests passing with improved architecture
+- Development velocity increased for future special hands
+- Clean foundation established for continued expansion
+
+*Last updated: 2025-07-19 for v2.0.5 architecture refactor*

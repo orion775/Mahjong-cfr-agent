@@ -2,7 +2,9 @@
 
 import unittest
 from engine.tile import Tile
-from engine.game_state import GameState, is_winning_hand, check_seven_pairs, check_thirteen_orphans, check_all_honors
+from engine.game_state import GameState, is_winning_hand, _can_form_melds
+from engine.special_hands import check_seven_pairs, check_thirteen_orphans, check_all_honors, check_all_terminals
+
 class TestSpecialHands(unittest.TestCase):
     
     def test_seven_pairs_win_on_draw(self):
@@ -235,6 +237,44 @@ class TestSpecialHands(unittest.TestCase):
         result = check_all_honors(hand)
         print(f"check_all_honors result: {result}")
         self.assertFalse(result, "Mixed hand should not be All Honors")
+        
+    def test_all_terminals_valid_hand(self):
+        """Test that check_all_terminals() correctly identifies hands with only 1s and 9s"""
+        hand = [
+            # Man 1 triplet
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            # Man 9 triplet
+            Tile("Man", 9, 8), Tile("Man", 9, 8), Tile("Man", 9, 8),
+            # Pin 1 triplet
+            Tile("Pin", 1, 9), Tile("Pin", 1, 9), Tile("Pin", 1, 9),
+            # Sou 9 triplet
+            Tile("Sou", 9, 26), Tile("Sou", 9, 26), Tile("Sou", 9, 26),
+            # Pin 9 pair
+            Tile("Pin", 9, 17), Tile("Pin", 9, 17)
+        ]
+        
+        print(f"All Terminals test hand: {[(t.category, t.value) for t in hand]}")
+        result = check_all_terminals(hand)
+        print(f"check_all_terminals result: {result}")
+        self.assertTrue(result, "Pure terminals hand should be All Terminals")
+    
+    def test_all_terminals_mixed_with_middle_tiles_invalid(self):
+        """Test that check_all_terminals() rejects hands with middle tiles (2-8)"""
+        hand = [
+            # Valid terminals
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            Tile("Man", 9, 8), Tile("Man", 9, 8), Tile("Man", 9, 8),
+            # Mixed with middle tiles - should not be All Terminals
+            Tile("Pin", 2, 10), Tile("Pin", 3, 11), Tile("Pin", 4, 12),
+            Tile("Sou", 5, 22), Tile("Sou", 5, 22), Tile("Sou", 5, 22),
+            # Pair
+            Tile("Sou", 9, 26), Tile("Sou", 9, 26)
+        ]
+        
+        print(f"Mixed terminals test: {[(t.category, t.value) for t in hand]}")
+        result = check_all_terminals(hand)
+        print(f"check_all_terminals result: {result}")
+        self.assertFalse(result, "Hand with middle tiles should not be All Terminals")
 
 
 if __name__ == '__main__':
