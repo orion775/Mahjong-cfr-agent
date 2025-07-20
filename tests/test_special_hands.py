@@ -6,7 +6,7 @@ from engine.game_state import GameState, is_winning_hand
 from engine.special_hands import (
     check_seven_pairs, check_thirteen_orphans, check_all_honors, 
     check_all_terminals, is_big_four_winds, _can_form_melds, check_all_green
-    ,check_nine_gates
+    ,check_nine_gates, check_four_concealed_triplets,check_all_red,check_thirteen_orphans_13_way_wait
 )
 
 class TestSpecialHands(unittest.TestCase):
@@ -662,6 +662,304 @@ class TestSpecialHands(unittest.TestCase):
         ]
         
         self.assertTrue(is_winning_hand(hand))
+
+    def test_four_concealed_triplets_basic(self):
+        """Test basic Four Concealed Triplets hand"""
+        hand = [
+            # Triplet 1: Man 1
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            # Triplet 2: Pin 5
+            Tile("Pin", 5, 13), Tile("Pin", 5, 13), Tile("Pin", 5, 13),
+            # Triplet 3: Sou 9
+            Tile("Sou", 9, 26), Tile("Sou", 9, 26), Tile("Sou", 9, 26),
+            # Triplet 4: Wind East
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            # Pair: Dragon Red
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33)
+        ]
+        
+        self.assertTrue(check_four_concealed_triplets(hand))
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_four_concealed_triplets_all_honors(self):
+        """Test Four Concealed Triplets with all honor tiles"""
+        hand = [
+            # Triplet 1: Wind East
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            # Triplet 2: Wind South
+            Tile("Wind", "South", 28), Tile("Wind", "South", 28), Tile("Wind", "South", 28),
+            # Triplet 3: Dragon Red
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33),
+            # Triplet 4: Dragon Green
+            Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32),
+            # Pair: Wind West
+            Tile("Wind", "West", 29), Tile("Wind", "West", 29)
+        ]
+        
+        self.assertTrue(check_four_concealed_triplets(hand))
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_four_concealed_triplets_mixed_suits(self):
+        """Test Four Concealed Triplets with mixed number tiles"""
+        hand = [
+            # Triplet 1: Man 2
+            Tile("Man", 2, 1), Tile("Man", 2, 1), Tile("Man", 2, 1),
+            # Triplet 2: Pin 7
+            Tile("Pin", 7, 15), Tile("Pin", 7, 15), Tile("Pin", 7, 15),
+            # Triplet 3: Sou 4
+            Tile("Sou", 4, 21), Tile("Sou", 4, 21), Tile("Sou", 4, 21),
+            # Triplet 4: Sou 8
+            Tile("Sou", 8, 25), Tile("Sou", 8, 25), Tile("Sou", 8, 25),
+            # Pair: Man 9
+            Tile("Man", 9, 8), Tile("Man", 9, 8)
+        ]
+        
+        self.assertTrue(check_four_concealed_triplets(hand))
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_not_four_concealed_triplets_with_sequence(self):
+        """Test that hand with sequence is not Four Concealed Triplets"""
+        hand = [
+            # Triplet 1: Man 1
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            # Triplet 2: Pin 5
+            Tile("Pin", 5, 13), Tile("Pin", 5, 13), Tile("Pin", 5, 13),
+            # Sequence instead of triplet: Man 7-8-9
+            Tile("Man", 7, 6), Tile("Man", 8, 7), Tile("Man", 9, 8),
+            # Another triplet: Wind East
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            # Pair: Dragon Red
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33)
+        ]
+        
+        self.assertFalse(check_four_concealed_triplets(hand))
+        # Should still be winning hand (standard 4 melds + pair)
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_not_four_concealed_triplets_only_three_triplets(self):
+        """Test that hand with only 3 triplets is not Four Concealed Triplets"""
+        hand = [
+            # Triplet 1: Man 1
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            # Triplet 2: Pin 5
+            Tile("Pin", 5, 13), Tile("Pin", 5, 13), Tile("Pin", 5, 13),
+            # Triplet 3: Sou 9
+            Tile("Sou", 9, 26), Tile("Sou", 9, 26), Tile("Sou", 9, 26),
+            # Not a triplet - scattered tiles
+            Tile("Man", 2, 1), Tile("Pin", 3, 11), Tile("Sou", 4, 21),
+            # Pair: Dragon Red
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33)
+        ]
+        
+        self.assertFalse(check_four_concealed_triplets(hand))
+        self.assertFalse(is_winning_hand(hand))  # Not a valid winning hand
+
+    def test_not_four_concealed_triplets_wrong_tile_count(self):
+        """Test rejection of hands with wrong number of tiles"""
+        # 13 tiles
+        short_hand = [
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            Tile("Pin", 5, 13), Tile("Pin", 5, 13), Tile("Pin", 5, 13),
+            Tile("Sou", 9, 26), Tile("Sou", 9, 26), Tile("Sou", 9, 26),
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            Tile("Dragon", "Red", 33)
+        ]
+        
+        self.assertFalse(check_four_concealed_triplets(short_hand))
+        
+        # 15 tiles
+        long_hand = short_hand + [Tile("Dragon", "Red", 33), Tile("Dragon", "Green", 32)]
+        
+        self.assertFalse(check_four_concealed_triplets(long_hand))
+
+    def test_all_red_with_man_and_red_dragons(self):
+        """Test All Red hand with Man suit and Red Dragons"""
+        hand = [
+            # Man suit tiles (red)
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),
+            Tile("Man", 4, 3), Tile("Man", 5, 4), Tile("Man", 6, 5),
+            Tile("Man", 7, 6), Tile("Man", 8, 7), Tile("Man", 9, 8),
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),
+            # Red Dragons (red)
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33)
+        ]
+        
+        self.assertTrue(check_all_red(hand))
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_all_red_with_pin_and_red_dragons(self):
+        """Test All Red hand with Pin suit and Red Dragons"""
+        hand = [
+            # Pin suit tiles (dots, often red)
+            Tile("Pin", 2, 10), Tile("Pin", 2, 10), Tile("Pin", 2, 10),
+            Tile("Pin", 5, 13), Tile("Pin", 5, 13), Tile("Pin", 5, 13),
+            Tile("Pin", 8, 16), Tile("Pin", 8, 16), Tile("Pin", 8, 16),
+            Tile("Pin", 9, 17), Tile("Pin", 9, 17), Tile("Pin", 9, 17),
+            # Red Dragons
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33)
+        ]
+        
+        self.assertTrue(check_all_red(hand))
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_all_red_mixed_man_pin_red_dragons(self):
+        """Test All Red hand mixing Man, Pin, and Red Dragons"""
+        hand = [
+            # Mix of Man and Pin (both red suits)
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            Tile("Pin", 3, 11), Tile("Pin", 3, 11), Tile("Pin", 3, 11),
+            Tile("Man", 7, 6), Tile("Man", 7, 6), Tile("Man", 7, 6),
+            Tile("Pin", 9, 17), Tile("Pin", 9, 17), Tile("Pin", 9, 17),
+            # Red Dragons
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33)
+        ]
+        
+        self.assertTrue(check_all_red(hand))
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_not_all_red_with_sou(self):
+        """Test that hand with Sou (bamboo) is not All Red"""
+        hand = [
+            # Man suit (red)
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),
+            Tile("Man", 4, 3), Tile("Man", 5, 4), Tile("Man", 6, 5),
+            # Sou suit (green bamboo - not red)
+            Tile("Sou", 1, 18), Tile("Sou", 2, 19), Tile("Sou", 3, 20),
+            Tile("Sou", 4, 21), Tile("Sou", 5, 22), Tile("Sou", 6, 23),
+            # Red Dragons
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33)
+        ]
+        
+        self.assertFalse(check_all_red(hand))
+        # Should still be winning hand (standard structure)
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_not_all_red_with_winds(self):
+        """Test that hand with Wind tiles is not All Red"""
+        hand = [
+            # Man suit (red)
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            Tile("Man", 2, 1), Tile("Man", 2, 1), Tile("Man", 2, 1),
+            Tile("Man", 3, 2), Tile("Man", 3, 2), Tile("Man", 3, 2),
+            # Wind tiles (not red)
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            # Red Dragons
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33)
+        ]
+        
+        self.assertFalse(check_all_red(hand))
+
+    def test_not_all_red_with_green_white_dragons(self):
+        """Test that hand with Green or White Dragons is not All Red"""
+        hand = [
+            # Man suit (red)
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            Tile("Man", 2, 1), Tile("Man", 2, 1), Tile("Man", 2, 1),
+            Tile("Man", 3, 2), Tile("Man", 3, 2), Tile("Man", 3, 2),
+            Tile("Man", 4, 3), Tile("Man", 4, 3), Tile("Man", 4, 3),
+            # Green Dragon (not red)
+            Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32)
+        ]
+
+        self.assertFalse(check_all_red(hand))
+    def test_thirteen_orphans_13_way_wait_with_man_pair(self):
+        """Test Thirteen Orphans 13-way wait with Man 1 pair"""
+        hand = [
+            # All 13 required tiles, with Man 1 appearing twice
+            Tile("Man", 1, 0), Tile("Man", 1, 0),  # Pair
+            Tile("Man", 9, 8),
+            Tile("Pin", 1, 9), Tile("Pin", 9, 17),
+            Tile("Sou", 1, 18), Tile("Sou", 9, 26),
+            Tile("Wind", "East", 27), Tile("Wind", "South", 28), 
+            Tile("Wind", "West", 29), Tile("Wind", "North", 30),
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Green", 32), 
+            Tile("Dragon", "White", 31)
+        ]
+        
+        self.assertTrue(check_thirteen_orphans_13_way_wait(hand))
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_thirteen_orphans_13_way_wait_with_dragon_pair(self):
+        """Test Thirteen Orphans 13-way wait with Red Dragon pair"""
+        hand = [
+            # All 13 required tiles, with Red Dragon appearing twice
+            Tile("Man", 1, 0), Tile("Man", 9, 8),
+            Tile("Pin", 1, 9), Tile("Pin", 9, 17),
+            Tile("Sou", 1, 18), Tile("Sou", 9, 26),
+            Tile("Wind", "East", 27), Tile("Wind", "South", 28), 
+            Tile("Wind", "West", 29), Tile("Wind", "North", 30),
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Red", 33),  # Pair
+            Tile("Dragon", "Green", 32), Tile("Dragon", "White", 31)
+        ]
+        
+        self.assertTrue(check_thirteen_orphans_13_way_wait(hand))
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_thirteen_orphans_13_way_wait_with_wind_pair(self):
+        """Test Thirteen Orphans 13-way wait with Wind pair"""
+        hand = [
+            # All 13 required tiles, with East Wind appearing twice
+            Tile("Man", 1, 0), Tile("Man", 9, 8),
+            Tile("Pin", 1, 9), Tile("Pin", 9, 17),
+            Tile("Sou", 1, 18), Tile("Sou", 9, 26),
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27),  # Pair
+            Tile("Wind", "South", 28), Tile("Wind", "West", 29), 
+            Tile("Wind", "North", 30),
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Green", 32), 
+            Tile("Dragon", "White", 31)
+        ]
+        
+        self.assertTrue(check_thirteen_orphans_13_way_wait(hand))
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_not_thirteen_orphans_13_way_wait_two_pairs(self):
+        """Test that hand with two pairs is not valid 13-way wait"""
+        hand = [
+            # Two pairs - not valid for 13-way wait
+            Tile("Man", 1, 0), Tile("Man", 1, 0),  # Pair 1
+            Tile("Man", 9, 8), Tile("Man", 9, 8),  # Pair 2
+            Tile("Pin", 1, 9), Tile("Pin", 9, 17),
+            Tile("Sou", 1, 18), Tile("Sou", 9, 26),
+            Tile("Wind", "East", 27), Tile("Wind", "South", 28), 
+            Tile("Wind", "West", 29), Tile("Wind", "North", 30),
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Green", 32)
+        ]
+        
+        self.assertFalse(check_thirteen_orphans_13_way_wait(hand))
+
+    def test_not_thirteen_orphans_13_way_wait_extra_tile(self):
+        """Test that hand with non-terminal/honor tile is not 13-way wait"""
+        hand = [
+            # Includes Man 5 (not terminal/honor)
+            Tile("Man", 1, 0), Tile("Man", 1, 0),  # Pair
+            Tile("Man", 9, 8),
+            Tile("Pin", 1, 9), Tile("Pin", 9, 17),
+            Tile("Sou", 1, 18), Tile("Sou", 9, 26),
+            Tile("Wind", "East", 27), Tile("Wind", "South", 28), 
+            Tile("Wind", "West", 29), Tile("Wind", "North", 30),
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Green", 32),
+            Tile("Man", 5, 4)  # Not a terminal/honor tile
+        ]
+        
+        self.assertFalse(check_thirteen_orphans_13_way_wait(hand))
+
+    def test_not_thirteen_orphans_13_way_wait_missing_tile(self):
+        """Test that hand missing a required tile is not 13-way wait"""
+        hand = [
+            # Missing Pin 9, has extra Man 1
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),  # Three of Man 1
+            Tile("Man", 9, 8),
+            Tile("Pin", 1, 9),  # Missing Pin 9
+            Tile("Sou", 1, 18), Tile("Sou", 9, 26),
+            Tile("Wind", "East", 27), Tile("Wind", "South", 28), 
+            Tile("Wind", "West", 29), Tile("Wind", "North", 30),
+            Tile("Dragon", "Red", 33), Tile("Dragon", "Green", 32), 
+            Tile("Dragon", "White", 31)
+        ]
+        
+        self.assertFalse(check_thirteen_orphans_13_way_wait(hand))
+
+    
 
 
 if __name__ == '__main__':

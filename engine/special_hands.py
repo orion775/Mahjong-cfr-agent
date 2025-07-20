@@ -477,3 +477,147 @@ def check_nine_gates(hand):
                 return False
     
     return True
+
+def check_four_concealed_triplets(hand):
+    """
+    Check if hand is Four Concealed Triplets (四暗刻).
+    
+    Pattern: 4 concealed triplets + 1 pair
+    All triplets must be formed from tiles in hand (no open melds).
+    
+    This is one of the most prestigious hands in Mahjong.
+    
+    Args:
+        hand_tiles: List of Tile objects (should be 14 tiles)
+    
+    Returns:
+        bool: True if hand matches Four Concealed Triplets pattern
+    """
+    from collections import Counter
+    
+    if len(hand) != 14:
+        return False
+    
+    # Count tiles by (category, value)
+    tile_counts = Counter((t.category, t.value) for t in hand)
+    
+    # Analyze the counts
+    triplets = 0
+    pairs = 0
+    
+    for count in tile_counts.values():
+        if count == 3:
+            triplets += 1
+        elif count == 2:
+            pairs += 1
+        elif count == 4:
+            # Four of a kind: treat as one triplet
+            triplets += 1
+        elif count == 1:
+            # Single tiles are not allowed in this pattern
+            return False
+        else:
+            # Invalid count (0, 5+)
+            return False
+    
+    # Must have exactly 4 triplets and 1 pair
+    return triplets == 4 and pairs == 1
+
+def check_all_red(hand):
+    """
+    Check if hand is All Red (全紅).
+    
+    Pattern: Hand using only red tiles
+    - Red Dragons
+    - Red suit tiles (typically Man and Pin suits, depending on tile design)
+    
+    Note: In traditional Chinese Mahjong, "red tiles" typically refers to:
+    - Red Dragons (always red)
+    - Man suit (traditionally red characters)
+    - Sometimes Pin suit (dots, often red)
+    
+    Args:
+        hand: List of 14-15 Tile objects
+        
+    Returns:
+        bool: True if hand contains only red tiles
+    """
+    if len(hand) not in [14, 15]:
+        return False
+    
+    for tile in hand:
+        # Red Dragon is always allowed
+        if tile.category == "Dragon" and tile.value == "Red":
+            continue
+        # Man suit (characters) - traditionally red
+        elif tile.category == "Man":
+            continue
+        # Pin suit (dots) - often red in traditional sets
+        elif tile.category == "Pin":
+            continue
+        else:
+            # Sou (bamboo), Winds, Green/White Dragons not allowed
+            return False
+    
+    # Must be a valid winning hand structure
+    return True
+
+def check_thirteen_orphans_13_way_wait(hand):
+    """
+    Check if hand is Thirteen Orphans with 13-way wait (十三么九種十三面).
+    
+    This is the ultimate form of Thirteen Orphans where the hand contains
+    exactly one of each of the 13 terminal and honor tiles, and can win
+    on any of those 13 tiles (13-way wait).
+    
+    Pattern: One each of 1M, 9M, 1P, 9P, 1S, 9S, East, South, West, North, Red, Green, White
+    Plus any one of these 13 tiles as the 14th tile.
+    
+    Args:
+        hand: List of 14-15 Tile objects
+        
+    Returns:
+        bool: True if hand is Thirteen Orphans with 13-way wait
+    """
+    if len(hand) not in [14, 15]:
+        return False
+    
+    # Required terminal and honor tiles for Thirteen Orphans
+    required_tiles = [
+        ("Man", 1), ("Man", 9),
+        ("Pin", 1), ("Pin", 9), 
+        ("Sou", 1), ("Sou", 9),
+        ("Wind", "East"), ("Wind", "South"), ("Wind", "West"), ("Wind", "North"),
+        ("Dragon", "Red"), ("Dragon", "Green"), ("Dragon", "White")
+    ]
+    
+    from collections import Counter
+    tile_counts = Counter((t.category, t.value) for t in hand)
+    
+    # Check if we have exactly the required tiles
+    found_required = 0
+    has_pair = False
+    
+    for required_tile in required_tiles:
+        count = tile_counts.get(required_tile, 0)
+        if count == 1:
+            found_required += 1
+        elif count == 2:
+            found_required += 1
+            # For 13-way wait, we should have exactly one pair from the required tiles
+            if has_pair:
+                return False  # Can't have more than one pair
+            has_pair = True
+        elif count > 2:
+            return False  # Too many of this tile
+        # count == 0 is handled below
+    
+    # For 13-way wait: should have all 13 required tiles, with exactly one appearing twice
+    if found_required == 13 and has_pair:
+        # Check that no other tiles are present
+        for tile_key, count in tile_counts.items():
+            if tile_key not in required_tiles:
+                return False  # Extra tile not in required set
+        return True
+    
+    return False

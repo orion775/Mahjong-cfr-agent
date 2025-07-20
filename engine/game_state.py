@@ -691,7 +691,12 @@ class GameState:
         return None
 
 def is_winning_hand(hand_tiles):
-    from .special_hands import check_seven_pairs, check_thirteen_orphans, check_all_honors, check_all_terminals, _can_form_melds , check_all_one_suit, check_big_three_dragons, check_little_four_winds ,is_big_four_winds, check_all_green,check_nine_gates
+    from .special_hands import (check_seven_pairs, check_thirteen_orphans, 
+        check_all_honors, check_all_terminals, _can_form_melds , 
+        check_all_one_suit, check_big_three_dragons, check_little_four_winds ,
+        is_big_four_winds, check_all_green,check_nine_gates,
+        check_four_concealed_triplets,check_all_red                           
+        )
     """
     Check if a hand is a winning Mahjong hand.
     
@@ -739,6 +744,10 @@ def is_winning_hand(hand_tiles):
     if  check_all_green(hand_tiles):  
         return True
     if check_nine_gates(hand_tiles):
+        return True
+    if check_four_concealed_triplets(hand_tiles):
+        return True
+    if check_all_red(hand_tiles):  # NEW
         return True
 
     
