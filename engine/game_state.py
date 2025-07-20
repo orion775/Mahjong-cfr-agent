@@ -3,7 +3,7 @@
 from engine.wall import generate_wall
 from engine.player import Player
 from engine import action_space
-from .special_hands import check_seven_pairs, check_thirteen_orphans, check_all_honors, check_all_terminals, _can_form_melds
+from .special_hands import check_seven_pairs, check_thirteen_orphans, check_all_honors, check_all_terminals, _can_form_melds, check_all_one_suit, check_big_three_dragons, check_little_four_winds
 
 
 class GameState:
@@ -692,44 +692,6 @@ class GameState:
         # No claim
         return None
 
-def _can_form_melds(tiles):
-    """Helper function to check if remaining tiles can form valid melds."""
-    from collections import Counter
-    if not tiles:
-        return True
-    
-    tiles = sorted(tiles, key=lambda t: (t.category, t.value))
-    first = tiles[0]
-    
-    # Try Pong (triplet)
-    if sum(1 for t in tiles if t.category == first.category and t.value == first.value) >= 3:
-        remaining = []
-        removed = 0
-        for t in tiles:
-            if t.category == first.category and t.value == first.value and removed < 3:
-                removed += 1
-            else:
-                remaining.append(t)
-        if _can_form_melds(remaining):
-            return True
-    
-    # Try Chi (sequence, only for suits)
-    if first.category in ["Man", "Pin", "Sou"]:
-        val2 = first.value + 1
-        val3 = first.value + 2
-        i2 = i3 = -1
-        for i, t in enumerate(tiles[1:], 1):
-            if i2 == -1 and t.category == first.category and t.value == val2:
-                i2 = i
-            elif i3 == -1 and t.category == first.category and t.value == val3:
-                i3 = i
-        if i2 != -1 and i3 != -1:
-            remaining = [t for i, t in enumerate(tiles) if i not in [0, i2, i3]]
-            if _can_form_melds(remaining):
-                return True
-            
-    return False
-
 def is_winning_hand(hand_tiles):
     """
     Check if a hand is a winning Mahjong hand.
@@ -764,6 +726,14 @@ def is_winning_hand(hand_tiles):
     
     # All Terminals (Yao Jiu)
     if check_all_terminals(hand_tiles):
+        return True
+    
+    if check_all_one_suit(hand_tiles):  # Add this line
+        return True
+    
+    if check_big_three_dragons(hand_tiles):  # Add this line
+        return True
+    if check_little_four_winds(hand_tiles):
         return True
     
     # Check standard structure (4 melds + 1 pair)

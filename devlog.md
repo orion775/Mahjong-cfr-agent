@@ -729,3 +729,14 @@ Major code organization improvement: successfully moved all special hand detecti
 - Clean foundation established for continued expansion
 
 *Last updated: 2025-07-19 for v2.0.5 architecture refactor*
+---
+## v2.0.6 — Little Four Winds Implementation Complete (2025-07-20)
+
+**What we completed:**
+- Added `check_little_four_winds()` function to `engine/special_hands.py`
+- 3 comprehensive tests (valid case, invalid case, integration test)
+- Integrated into main `is_winning_hand()` function
+- All existing tests continue to pass
+
+**Little Four Winds Rules:** 3 wind triplets + 1 wind pair + 1 other meld
+**Status:** 7 of 13 special hands complete, engine stable and fully tested

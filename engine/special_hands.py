@@ -211,3 +211,107 @@ def check_all_terminals(hand_tiles):
                 return True
     
     return False
+
+def check_all_one_suit(hand_tiles):
+    """
+    Check if hand is All One Suit (Qing Yi Se) - only tiles from one suit.
+    
+    Args:
+        hand_tiles: List of Tile objects (should be 14 tiles)
+        
+    Returns:
+        bool: True if all tiles are from exactly one suit (Man, Pin, or Sou)
+        
+    Rules:
+        - All tiles must be from the same suit (Man, Pin, or Sou only)
+        - No honor tiles (Winds, Dragons) allowed
+        - Can be any combination of sequences and triplets
+        - Must still form valid 4 melds + 1 pair structure
+    """
+    if len(hand_tiles) != 14:
+        return False
+    
+    # Get all suit categories in the hand
+    suits = set(tile.category for tile in hand_tiles)
+    
+    # Must have exactly one suit, and it must be a numbered suit
+    if len(suits) != 1:
+        return False
+    
+    suit = suits.pop()
+    if suit not in ["Man", "Pin", "Sou"]:
+        return False
+    
+    # All tiles are from one valid suit
+    return True
+
+def check_little_four_winds(hand_tiles):
+    """
+    Check if hand is Little Four Winds (Xiao Si Xi) - 3 wind triplets + 1 wind pair.
+    """
+    if len(hand_tiles) != 14:
+        return False
+    
+    from collections import Counter
+    
+    # Count each wind type
+    wind_counts = Counter()
+    for tile in hand_tiles:
+        if tile.category == "Wind":
+            wind_counts[tile.value] += 1
+    
+    # Must have all 4 wind types
+    all_winds = {"East", "South", "West", "North"}
+    if set(wind_counts.keys()) != all_winds:
+        return False
+    
+    # Count how many winds have 3+ tiles (triplets) vs 2 tiles (pairs)
+    triplet_winds = 0
+    pair_winds = 0
+    
+    for wind, count in wind_counts.items():
+        if count >= 3:
+            triplet_winds += 1
+        elif count == 2:
+            pair_winds += 1
+        else:
+            return False  # Must have at least 2 of each wind
+    
+    # Little Four Winds: exactly 3 triplets and 1 pair
+    return triplet_winds == 3 and pair_winds == 1
+
+def check_big_three_dragons(hand_tiles):
+    """
+    Check if hand is Big Three Dragons (Da San Yuan) - PON/KAN of all three dragons.
+    
+    Args:
+        hand_tiles: List of Tile objects (should be 14 tiles)
+        
+    Returns:
+        bool: True if hand contains triplets/quads of all three dragon types
+        
+    Rules:
+        - Must have PON (3) or KAN (4) of Red Dragon
+        - Must have PON (3) or KAN (4) of Green Dragon  
+        - Must have PON (3) or KAN (4) of White Dragon
+        - Remaining tiles form one more meld + pair
+    """
+    if len(hand_tiles) != 14:
+        return False
+    
+    from collections import Counter
+    
+    # Count each dragon type
+    dragon_counts = Counter()
+    for tile in hand_tiles:
+        if tile.category == "Dragon":
+            dragon_counts[tile.value] += 1
+    
+    # Must have at least 3 of each dragon type
+    required_dragons = {"Red", "Green", "White"}
+    for dragon in required_dragons:
+        if dragon_counts[dragon] < 3:
+            return False
+    
+    # All three dragons have at least 3 tiles each
+    return True

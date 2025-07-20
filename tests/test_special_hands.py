@@ -275,6 +275,141 @@ class TestSpecialHands(unittest.TestCase):
         result = check_all_terminals(hand)
         print(f"check_all_terminals result: {result}")
         self.assertFalse(result, "Hand with middle tiles should not be All Terminals")
+    
+    def test_all_one_suit_man_valid(self):
+        """Test valid All One Suit hand with Man tiles only"""
+        from engine.special_hands import check_all_one_suit
+        
+        # All Man tiles: sequences and triplets
+        hand = [
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),  # Triplet
+            Tile("Man", 2, 1), Tile("Man", 3, 2), Tile("Man", 4, 3),  # Sequence  
+            Tile("Man", 5, 4), Tile("Man", 6, 5), Tile("Man", 7, 6),  # Sequence
+            Tile("Man", 8, 7), Tile("Man", 8, 7), Tile("Man", 8, 7),  # Triplet
+            Tile("Man", 9, 8), Tile("Man", 9, 8)                      # Pair
+        ]
+        
+        self.assertTrue(check_all_one_suit(hand))
+    def test_all_one_suit_mixed_suits_invalid(self):
+        """Test that mixed suits invalidate All One Suit"""
+        from engine.special_hands import check_all_one_suit
+        
+        # Mix of Man and Pin tiles
+        hand = [
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            Tile("Pin", 2, 10), Tile("Pin", 3, 11), Tile("Pin", 4, 12),  # Different suit!
+            Tile("Man", 5, 4), Tile("Man", 6, 5), Tile("Man", 7, 6),
+            Tile("Man", 8, 7), Tile("Man", 8, 7), Tile("Man", 8, 7),
+            Tile("Man", 9, 8), Tile("Man", 9, 8)
+        ]
+        
+        self.assertFalse(check_all_one_suit(hand))
+    
+    def test_all_one_suit_integrated_win_detection(self):
+        """Test that All One Suit hands are detected as wins by main win function"""
+        from engine.game_state import is_winning_hand
+        
+        # All Pin tiles forming valid hand structure
+        hand = [
+            Tile("Pin", 1, 9), Tile("Pin", 2, 10), Tile("Pin", 3, 11),   # Sequence
+            Tile("Pin", 4, 12), Tile("Pin", 5, 13), Tile("Pin", 6, 14),  # Sequence
+            Tile("Pin", 7, 15), Tile("Pin", 8, 16), Tile("Pin", 9, 17),  # Sequence
+            Tile("Pin", 1, 9), Tile("Pin", 1, 9), Tile("Pin", 1, 9),     # Triplet
+            Tile("Pin", 2, 10), Tile("Pin", 2, 10)                       # Pair
+        ]
+        
+        self.assertTrue(is_winning_hand(hand))
+    
+    def test_big_three_dragons_valid(self):
+        """Test valid Big Three Dragons hand"""
+        from engine.special_hands import check_big_three_dragons
+        
+        # Three dragon triplets + one sequence + one pair
+        hand = [
+            Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31),       # Red triplet
+            Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32), # Green triplet  
+            Tile("Dragon", "White", 33), Tile("Dragon", "White", 33), Tile("Dragon", "White", 33), # White triplet
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),                              # Sequence
+            Tile("Pin", 5, 13), Tile("Pin", 5, 13)                                                 # Pair
+        ]
+        
+        self.assertTrue(check_big_three_dragons(hand))
+    
+    def test_big_three_dragons_missing_dragon_invalid(self):
+        """Test that missing a dragon triplet invalidates Big Three Dragons"""
+        from engine.special_hands import check_big_three_dragons
+        
+        # Only Red and Green dragon triplets, missing White dragon triplet
+        hand = [
+            Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31),       # Red triplet
+            Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32), # Green triplet
+            Tile("Dragon", "White", 33), Tile("Dragon", "White", 33),                              # Only 2 White (not triplet)
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),                              # Sequence
+            Tile("Pin", 5, 13), Tile("Pin", 6, 14), Tile("Pin", 7, 15)                            # Another sequence
+        ]
+        
+        self.assertFalse(check_big_three_dragons(hand))
+    
+    def test_big_three_dragons_integrated_win_detection(self):
+        """Test that Big Three Dragons hands are detected as wins by main win function"""
+        from engine.game_state import is_winning_hand
+        
+        # Big Three Dragons - exactly 14 tiles
+        hand = [
+            Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31),       # Red triplet (3)
+            Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32), # Green triplet (3) 
+            Tile("Dragon", "White", 33), Tile("Dragon", "White", 33), Tile("Dragon", "White", 33), # White triplet (3)
+            Tile("Sou", 7, 24), Tile("Sou", 8, 25), Tile("Sou", 9, 26),                           # Sequence (3)
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27)                                     # Pair (2)
+        ]  # Total: 3+3+3+3+2 = 14 tiles
+        
+        self.assertTrue(is_winning_hand(hand))
+    
+    def test_little_four_winds_valid(self):
+        """Test valid Little Four Winds hand"""
+        from engine.special_hands import check_little_four_winds
+        
+        # Three wind triplets + one wind pair + one other meld - exactly 14 tiles
+        hand = [
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),     # East triplet (3)
+            Tile("Wind", "South", 28), Tile("Wind", "South", 28), Tile("Wind", "South", 28), # South triplet (3)
+            Tile("Wind", "West", 29), Tile("Wind", "West", 29), Tile("Wind", "West", 29),    # West triplet (3)
+            Tile("Wind", "North", 30), Tile("Wind", "North", 30),                            # North pair (2)
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2)                         # Sequence (3)
+        ]  # Total: 3+3+3+2+3 = 14 tiles
+        
+        self.assertTrue(check_little_four_winds(hand))
+    
+    def test_little_four_winds_missing_wind_invalid(self):
+        """Test that missing a wind type invalidates Little Four Winds"""
+        from engine.special_hands import check_little_four_winds
+        
+        # Only 3 wind types (missing North), not Little Four Winds
+        hand = [
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),     # East triplet
+            Tile("Wind", "South", 28), Tile("Wind", "South", 28), Tile("Wind", "South", 28), # South triplet
+            Tile("Wind", "West", 29), Tile("Wind", "West", 29), Tile("Wind", "West", 29),    # West triplet
+            # Missing North wind entirely
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),                        # Sequence
+            Tile("Pin", 5, 13), Tile("Pin", 5, 13)                                          # Pair
+        ]
+        
+        self.assertFalse(check_little_four_winds(hand))
+    
+    def test_little_four_winds_integrated_win_detection(self):
+        """Test that Little Four Winds hands are detected as wins by main win function"""
+        from engine.game_state import is_winning_hand
+        
+        # Little Four Winds with different meld structure - exactly 14 tiles
+        hand = [
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),     # East triplet (3)
+            Tile("Wind", "South", 28), Tile("Wind", "South", 28), Tile("Wind", "South", 28), # South triplet (3)
+            Tile("Wind", "West", 29), Tile("Wind", "West", 29), Tile("Wind", "West", 29),    # West triplet (3)
+            Tile("Wind", "North", 30), Tile("Wind", "North", 30),                            # North pair (2)
+            Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31)  # Red triplet (3)
+        ]  # Total: 3+3+3+2+3 = 14 tiles
+        
+        self.assertTrue(is_winning_hand(hand))
 
 
 if __name__ == '__main__':
