@@ -3,8 +3,6 @@
 from engine.wall import generate_wall
 from engine.player import Player
 from engine import action_space
-from .special_hands import check_seven_pairs, check_thirteen_orphans, check_all_honors, check_all_terminals, _can_form_melds, check_all_one_suit, check_big_three_dragons, check_little_four_winds
-
 
 class GameState:
     def __init__(self):
@@ -693,6 +691,7 @@ class GameState:
         return None
 
 def is_winning_hand(hand_tiles):
+    from .special_hands import check_seven_pairs, check_thirteen_orphans, check_all_honors, check_all_terminals, _can_form_melds , check_all_one_suit, check_big_three_dragons, check_little_four_winds ,is_big_four_winds, check_all_green,check_nine_gates
     """
     Check if a hand is a winning Mahjong hand.
     
@@ -709,7 +708,7 @@ def is_winning_hand(hand_tiles):
     """
     from collections import Counter
     
-    if len(hand_tiles) != 14:
+    if len(hand_tiles) not in [14, 15]:
         return False
     
     # Check for Seven Pairs first (special hand)
@@ -728,17 +727,24 @@ def is_winning_hand(hand_tiles):
     if check_all_terminals(hand_tiles):
         return True
     
-    if check_all_one_suit(hand_tiles):  # Add this line
+    if check_all_one_suit(hand_tiles):  
         return True
     
-    if check_big_three_dragons(hand_tiles):  # Add this line
+    if check_big_three_dragons(hand_tiles):  
         return True
     if check_little_four_winds(hand_tiles):
         return True
+    if is_big_four_winds(hand_tiles):
+        return True
+    if  check_all_green(hand_tiles):  
+        return True
+    if check_nine_gates(hand_tiles):
+        return True
+
     
     # Check standard structure (4 melds + 1 pair)
     counts = Counter((t.category, t.value) for t in hand_tiles)
-    
+   
     # Try every possible pair
     for pair, n in counts.items():
         if n >= 2:
@@ -751,8 +757,8 @@ def is_winning_hand(hand_tiles):
                     removed += 1
                     if removed == 2:
                         break
-            
-            if _can_form_melds(remaining):
+           
+            if _can_form_melds(remaining):  
                 return True
     
     return False

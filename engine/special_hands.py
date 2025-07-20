@@ -315,3 +315,165 @@ def check_big_three_dragons(hand_tiles):
     
     # All three dragons have at least 3 tiles each
     return True
+
+def is_big_four_winds(hand):
+    """
+    Check if hand is Big Four Winds (大四喜):
+    Four PON/KAN sets, one for each wind tile (East, South, West, North).
+   
+    Args:
+        hand: List of 14-15 Tile objects (15 for KAN wins)
+       
+    Returns:
+        bool: True if hand is Big Four Winds
+    """
+    from collections import Counter
+   
+    # Allow 14 or 15 tiles (15 for wins after KAN replacement)
+    if len(hand) not in [14, 15]:
+        return False
+   
+    # Count all tiles
+    counts = Counter((t.category, t.value) for t in hand)
+   
+    # Must have exactly 4 wind triplets/quads
+    wind_sets = 0
+    winds_found = set()
+   
+    for (category, value), count in counts.items():
+        if category == "Wind":
+            if count >= 3:  # Triplet or quad
+                wind_sets += 1
+                winds_found.add(value)
+            elif count == 2:
+                # A wind pair - not allowed in Big Four Winds
+                return False
+            elif count == 1:
+                # Single wind tile - not allowed
+                return False
+   
+    # Must have all 4 winds as sets
+    required_winds = {"East", "South", "West", "North"}
+    if wind_sets != 4 or winds_found != required_winds:
+        return False
+   
+    # Check that remaining tiles form a valid pair
+    remaining_tiles = []
+    for (category, value), count in counts.items():
+        if category == "Wind":
+            continue
+        else:
+            remaining_tiles.extend([(category, value)] * count)
+   
+    # For both 14-tile and 15-tile hands, remaining tiles should form a valid pair
+    if len(remaining_tiles) == 2:
+        # Standard pair
+        if remaining_tiles[0] != remaining_tiles[1]:
+            return False
+    elif len(remaining_tiles) == 1:
+        # Single tile remaining (valid for some 15-tile KAN scenarios)
+        pass
+    elif len(remaining_tiles) == 3:
+        # Check if 3 tiles form a triplet (15-tile KAN scenario)
+        if len(set(remaining_tiles)) != 1:
+            return False
+    else:
+        return False
+   
+    return True
+
+def check_all_green(hand):
+    """
+    Check if hand is All Green (绿一色):
+    Hand contains only green tiles (2,3,4,6,8 Bamboo and Green Dragon).
+    
+    Args:
+        hand: List of 14-15 Tile objects
+        
+    Returns:
+        bool: True if hand is All Green
+    """
+    # Allow 14 or 15 tiles (15 for wins after KAN replacement)
+    if len(hand) not in [14, 15]:
+        return False
+    
+    # Define green tiles: 2,3,4,6,8 of Bamboo (Sou) + Green Dragon
+    green_tiles = {
+        ("Sou", 2), ("Sou", 3), ("Sou", 4), ("Sou", 6), ("Sou", 8),
+        ("Dragon", "Green")
+    }
+    
+    # Check that ALL tiles in hand are green
+    for tile in hand:
+        tile_type = (tile.category, tile.value)
+        if tile_type not in green_tiles:
+            return False
+    
+    # If we get here, all tiles are green
+    return True
+
+def check_nine_gates(hand):
+    """
+    Check if hand is Nine Gates (九莲宝灯):
+    Pure suit hand with pattern 1112345678999 + any tile from same suit.
+    
+    Args:
+        hand: List of 14-15 Tile objects
+        
+    Returns:
+        bool: True if hand is Nine Gates
+    """
+    from collections import Counter
+    
+    # Allow 14 or 15 tiles (15 for wins after KAN replacement)
+    if len(hand) not in [14, 15]:
+        return False
+    
+    # Check that all tiles are from the same suit (Man, Pin, or Sou only)
+    suits = set()
+    for tile in hand:
+        if tile.category in ["Man", "Pin", "Sou"]:
+            suits.add(tile.category)
+        else:
+            # Honor tiles not allowed in Nine Gates
+            return False
+    
+    # Must be exactly one suit
+    if len(suits) != 1:
+        return False
+    
+    suit = suits.pop()
+    
+    # Count tiles by value within the suit
+    value_counts = Counter()
+    for tile in hand:
+        if tile.category == suit:
+            value_counts[tile.value] += 1
+    
+    # Nine Gates pattern: 1112345678999 + one extra tile
+    # This means: 1(3), 2(1), 3(1), 4(1), 5(1), 6(1), 7(1), 8(1), 9(3) + one more
+    
+    # Check if we have the base pattern (without the extra tile)
+    base_pattern = {1: 3, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 3}
+    
+    # Make a copy to check against
+    remaining_counts = dict(value_counts)
+    
+    # Remove the base pattern
+    for value, required_count in base_pattern.items():
+        if remaining_counts.get(value, 0) < required_count:
+            return False
+        remaining_counts[value] -= required_count
+    
+    # After removing base pattern, should have exactly 1 tile left (the 14th tile)
+    total_remaining = sum(remaining_counts.values())
+    if total_remaining != 1:
+        return False
+    
+    # The remaining tile must be from values 1-9 in the same suit
+    for value, count in remaining_counts.items():
+        if count > 0:
+            if not (1 <= value <= 9):
+                return False
+    
+    return True

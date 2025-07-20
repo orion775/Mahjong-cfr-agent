@@ -2,8 +2,12 @@
 
 import unittest
 from engine.tile import Tile
-from engine.game_state import GameState, is_winning_hand, _can_form_melds
-from engine.special_hands import check_seven_pairs, check_thirteen_orphans, check_all_honors, check_all_terminals
+from engine.game_state import GameState, is_winning_hand
+from engine.special_hands import (
+    check_seven_pairs, check_thirteen_orphans, check_all_honors, 
+    check_all_terminals, is_big_four_winds, _can_form_melds, check_all_green
+    ,check_nine_gates
+)
 
 class TestSpecialHands(unittest.TestCase):
     
@@ -408,6 +412,254 @@ class TestSpecialHands(unittest.TestCase):
             Tile("Wind", "North", 30), Tile("Wind", "North", 30),                            # North pair (2)
             Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31)  # Red triplet (3)
         ]  # Total: 3+3+3+2+3 = 14 tiles
+        
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_big_four_winds_valid(self):
+        """Test valid Big Four Winds hand"""
+        hand = [
+            # East triplet
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            # South triplet  
+            Tile("Wind", "South", 28), Tile("Wind", "South", 28), Tile("Wind", "South", 28),
+            # West triplet
+            Tile("Wind", "West", 29), Tile("Wind", "West", 29), Tile("Wind", "West", 29),
+            # North triplet
+            Tile("Wind", "North", 30), Tile("Wind", "North", 30), Tile("Wind", "North", 30),
+            # Any pair (e.g., Red Dragon)
+            Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31)
+        ]
+        
+        self.assertTrue(is_big_four_winds(hand))
+
+    def test_big_four_winds_with_kans(self):
+        """Test Big Four Winds with some KANs (quads)"""
+        hand = [
+            # East quad
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), 
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            # South triplet
+            Tile("Wind", "South", 28), Tile("Wind", "South", 28), Tile("Wind", "South", 28),
+            # West triplet
+            Tile("Wind", "West", 29), Tile("Wind", "West", 29), Tile("Wind", "West", 29),
+            # North triplet  
+            Tile("Wind", "North", 30), Tile("Wind", "North", 30), Tile("Wind", "North", 30),
+            # Pair (Man 1)
+            Tile("Man", 1, 0), Tile("Man", 1, 0)
+        ]
+        
+        self.assertTrue(is_big_four_winds(hand))
+
+    def test_big_four_winds_invalid_missing_wind(self):
+        """Test invalid Big Four Winds - missing one wind"""
+        hand = [
+            # East triplet
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            # South triplet
+            Tile("Wind", "South", 28), Tile("Wind", "South", 28), Tile("Wind", "South", 28),
+            # West triplet  
+            Tile("Wind", "West", 29), Tile("Wind", "West", 29), Tile("Wind", "West", 29),
+            # Missing North, have other tiles instead
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            # Pair
+            Tile("Dragon", "Red", 31), Tile("Dragon", "Red", 31)
+        ]
+        
+        self.assertFalse(is_big_four_winds(hand))
+
+    def test_big_four_winds_invalid_wind_pair(self):
+        """Test invalid Big Four Winds - has wind pair instead of triplet"""
+        hand = [
+            # East triplet
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            # South triplet
+            Tile("Wind", "South", 28), Tile("Wind", "South", 28), Tile("Wind", "South", 28),
+            # West triplet
+            Tile("Wind", "West", 29), Tile("Wind", "West", 29), Tile("Wind", "West", 29),
+            # North pair (should be triplet)
+            Tile("Wind", "North", 30), Tile("Wind", "North", 30),
+            # Fill with other tiles
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 2, 1)
+        ]
+        
+        self.assertFalse(is_big_four_winds(hand))
+
+    def test_big_four_winds_integration_with_game_state(self):
+        """Test Big Four Winds detection integrated with game state"""
+        from engine.game_state import is_winning_hand
+        
+        hand = [
+            # Four wind triplets
+            Tile("Wind", "East", 27), Tile("Wind", "East", 27), Tile("Wind", "East", 27),
+            Tile("Wind", "South", 28), Tile("Wind", "South", 28), Tile("Wind", "South", 28),
+            Tile("Wind", "West", 29), Tile("Wind", "West", 29), Tile("Wind", "West", 29),
+            Tile("Wind", "North", 30), Tile("Wind", "North", 30), Tile("Wind", "North", 30),
+            # Pair
+            Tile("Dragon", "White", 33), Tile("Dragon", "White", 33)
+        ]
+        
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_all_green_valid(self):
+        """Test valid All Green hand"""
+        hand = [
+            # Green bamboos: 2,3,4,6,8
+            Tile("Sou", 2, 19), Tile("Sou", 2, 19), Tile("Sou", 2, 19),  # 2 Bamboo triplet
+            Tile("Sou", 3, 20), Tile("Sou", 3, 20), Tile("Sou", 3, 20),  # 3 Bamboo triplet
+            Tile("Sou", 4, 21), Tile("Sou", 4, 21), Tile("Sou", 4, 21),  # 4 Bamboo triplet
+            Tile("Sou", 6, 23), Tile("Sou", 6, 23), Tile("Sou", 6, 23),  # 6 Bamboo triplet
+            # Green Dragon pair
+            Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32)
+        ]
+        
+        self.assertTrue(check_all_green(hand))
+
+    def test_all_green_with_sequences(self):
+        """Test All Green with sequences (chows)"""
+        hand = [
+            # Green sequences
+            Tile("Sou", 2, 19), Tile("Sou", 3, 20), Tile("Sou", 4, 21),  # 2-3-4 sequence
+            Tile("Sou", 3, 20), Tile("Sou", 4, 21), Tile("Sou", 6, 23),  # 3-4-6 is invalid sequence
+            Tile("Sou", 6, 23), Tile("Sou", 8, 25), Tile("Sou", 2, 19),  # Non-consecutive
+            Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32),
+            # Pair
+            Tile("Sou", 4, 21), Tile("Sou", 4, 21)
+        ]
+        
+        self.assertTrue(check_all_green(hand))
+
+    def test_all_green_invalid_wrong_bamboo(self):
+        """Test invalid All Green - contains non-green bamboo"""
+        hand = [
+            # Contains 5 Bamboo (not green)
+            Tile("Sou", 2, 19), Tile("Sou", 3, 20), Tile("Sou", 4, 21),
+            Tile("Sou", 5, 22), Tile("Sou", 6, 23), Tile("Sou", 8, 25),  # 5 is not green!
+            Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32),
+            Tile("Sou", 2, 19), Tile("Sou", 2, 19), Tile("Sou", 3, 20),
+            Tile("Sou", 4, 21), Tile("Sou", 6, 23)
+        ]
+        
+        self.assertFalse(check_all_green(hand))
+
+    def test_all_green_invalid_other_suit(self):
+        """Test invalid All Green - contains non-bamboo tiles"""
+        hand = [
+            # Contains Man tiles (not green)
+            Tile("Sou", 2, 19), Tile("Sou", 3, 20), Tile("Sou", 4, 21),
+            Tile("Man", 1, 0), Tile("Man", 2, 1), Tile("Man", 3, 2),  # Not green!
+            Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32),
+            Tile("Sou", 6, 23), Tile("Sou", 6, 23), Tile("Sou", 8, 25),
+            Tile("Sou", 8, 25), Tile("Sou", 2, 19)
+        ]
+        
+        self.assertFalse(check_all_green(hand))
+
+    def test_all_green_integration_with_game_state(self):
+        """Test All Green detection integrated with game state"""
+        from engine.game_state import is_winning_hand
+        
+        hand = [
+            # All green tiles
+            Tile("Sou", 2, 19), Tile("Sou", 2, 19), Tile("Sou", 2, 19),
+            Tile("Sou", 3, 20), Tile("Sou", 3, 20), Tile("Sou", 3, 20),
+            Tile("Sou", 4, 21), Tile("Sou", 4, 21), Tile("Sou", 4, 21),
+            Tile("Sou", 6, 23), Tile("Sou", 6, 23), Tile("Sou", 6, 23),
+            Tile("Dragon", "Green", 32), Tile("Dragon", "Green", 32)
+        ]
+        
+        self.assertTrue(is_winning_hand(hand))
+
+    def test_nine_gates_valid_man_suit(self):
+        """Test valid Nine Gates in Man suit"""
+        hand = [
+            # Pattern: 1112345678999 + extra 5
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),  # Three 1s
+            Tile("Man", 2, 1),                                        # One 2
+            Tile("Man", 3, 2),                                        # One 3
+            Tile("Man", 4, 3),                                        # One 4
+            Tile("Man", 5, 4),                                        # One 5
+            Tile("Man", 6, 5),                                        # One 6
+            Tile("Man", 7, 6),                                        # One 7
+            Tile("Man", 8, 7),                                        # One 8
+            Tile("Man", 9, 8), Tile("Man", 9, 8), Tile("Man", 9, 8), # Three 9s
+            Tile("Man", 5, 4)                                         # Extra 5 (14th tile)
+        ]
+        
+        self.assertTrue(check_nine_gates(hand))
+
+    def test_nine_gates_valid_pin_suit(self):
+        """Test valid Nine Gates in Pin suit"""
+        hand = [
+            # Pattern: 1112345678999 + extra 1
+            Tile("Pin", 1, 9), Tile("Pin", 1, 9), Tile("Pin", 1, 9),   # Three 1s
+            Tile("Pin", 2, 10),                                         # One 2
+            Tile("Pin", 3, 11),                                         # One 3
+            Tile("Pin", 4, 12),                                         # One 4
+            Tile("Pin", 5, 13),                                         # One 5
+            Tile("Pin", 6, 14),                                         # One 6
+            Tile("Pin", 7, 15),                                         # One 7
+            Tile("Pin", 8, 16),                                         # One 8
+            Tile("Pin", 9, 17), Tile("Pin", 9, 17), Tile("Pin", 9, 17), # Three 9s
+            Tile("Pin", 1, 9)                                           # Extra 1 (14th tile)
+        ]
+        
+        self.assertTrue(check_nine_gates(hand))
+
+    def test_nine_gates_invalid_mixed_suits(self):
+        """Test invalid Nine Gates - mixed suits"""
+        hand = [
+            # Mixed Man and Pin (not pure suit)
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            Tile("Man", 2, 1), Tile("Man", 3, 2), Tile("Man", 4, 3),
+            Tile("Pin", 5, 13), Tile("Pin", 6, 14), Tile("Pin", 7, 15),  # Wrong suit!
+            Tile("Man", 8, 7),
+            Tile("Man", 9, 8), Tile("Man", 9, 8), Tile("Man", 9, 8),
+            Tile("Man", 5, 4)
+        ]
+        
+        self.assertFalse(check_nine_gates(hand))
+
+    def test_nine_gates_invalid_wrong_pattern(self):
+        """Test invalid Nine Gates - wrong tile pattern"""
+        hand = [
+            # Wrong pattern: 1122345678999 (two 1s, two 2s instead of three 1s, one 2)
+            Tile("Sou", 1, 18), Tile("Sou", 1, 18),                    # Only two 1s
+            Tile("Sou", 2, 19), Tile("Sou", 2, 19),                    # Two 2s
+            Tile("Sou", 3, 20), Tile("Sou", 4, 21), Tile("Sou", 5, 22),
+            Tile("Sou", 6, 23), Tile("Sou", 7, 24), Tile("Sou", 8, 25),
+            Tile("Sou", 9, 26), Tile("Sou", 9, 26), Tile("Sou", 9, 26),
+            Tile("Sou", 5, 22)
+        ]
+        
+        self.assertFalse(check_nine_gates(hand))
+
+    def test_nine_gates_invalid_honors(self):
+        """Test invalid Nine Gates - contains honor tiles"""
+        hand = [
+            # Contains Wind tile (honor) - not allowed
+            Tile("Man", 1, 0), Tile("Man", 1, 0), Tile("Man", 1, 0),
+            Tile("Man", 2, 1), Tile("Man", 3, 2), Tile("Man", 4, 3),
+            Tile("Man", 5, 4), Tile("Man", 6, 5), Tile("Man", 7, 6),
+            Tile("Wind", "East", 27),                                   # Honor tile!
+            Tile("Man", 9, 8), Tile("Man", 9, 8), Tile("Man", 9, 8),
+            Tile("Man", 5, 4)
+        ]
+        
+        self.assertFalse(check_nine_gates(hand))
+
+    def test_nine_gates_integration_with_game_state(self):
+        """Test Nine Gates detection integrated with game state"""
+        from engine.game_state import is_winning_hand
+        
+        hand = [
+            # Perfect Nine Gates pattern
+            Tile("Sou", 1, 18), Tile("Sou", 1, 18), Tile("Sou", 1, 18),
+            Tile("Sou", 2, 19), Tile("Sou", 3, 20), Tile("Sou", 4, 21),
+            Tile("Sou", 5, 22), Tile("Sou", 6, 23), Tile("Sou", 7, 24),
+            Tile("Sou", 8, 25),
+            Tile("Sou", 9, 26), Tile("Sou", 9, 26), Tile("Sou", 9, 26),
+            Tile("Sou", 9, 26)  # Extra 9 as 14th tile
+        ]
         
         self.assertTrue(is_winning_hand(hand))
 
