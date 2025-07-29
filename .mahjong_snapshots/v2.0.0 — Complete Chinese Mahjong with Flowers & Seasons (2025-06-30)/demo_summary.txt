@@ -1,0 +1,45 @@
+=== MAHJONG GAME SUMMARY ===
+Game Terminal: True
+Wall Remaining: 32 tiles
+
+=== PLAYER 0: East ===
+Hand (1 tiles): ['Sou 6']
+Melds (4): [('CHI', ['Pin 6', 'Pin 7', 'Pin 8']), ('CHI', ['Sou 6', 'Sou 7', 'Sou 8']), ('CHI', ['Sou 5', 'Sou 6', 'Sou 7']), ('CHI', ['Man 4', 'Man 5', 'Man 6'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Flower Bamboo', 'Wind East', 'Sou 3', 'Season Spring', 'Man 2', 'Dragon Red', 'Pin 6', 'Pin 6', 'Pin 7', 'Dragon Red', 'Wind North', 'Season Winter', 'Sou 3', 'Wind South', 'Pin 1']
+
+=== PLAYER 1: South ===
+Hand (1 tiles): ['Man 7']
+Melds (4): [('PON', ['Dragon Green', 'Dragon Green', 'Dragon Green']), ('CHI', ['Sou 1', 'Sou 2', 'Sou 3']), ('CHI', ['Sou 5', 'Sou 6', 'Sou 7']), ('CHI', ['Pin 7', 'Pin 8', 'Pin 9'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Man 8', 'Sou 2', 'Pin 8', 'Man 1', 'Sou 9', 'Man 1', 'Pin 1', 'Man 7', 'Wind South', 'Wind West', 'Wind East', 'Man 3', 'Sou 9', 'Pin 7', 'Pin 2', 'Dragon White']
+
+=== PLAYER 2: West ===
+Hand (2 tiles): ['Wind North', 'Wind North']
+Melds (4): [('CHI', ['Man 2', 'Man 3', 'Man 4']), ('PON', ['Sou 4', 'Sou 4', 'Sou 4']), ('CHI', ['Pin 3', 'Pin 4', 'Pin 5']), ('CHI', ['Man 5', 'Man 6', 'Man 7'])]
+Chinese Score: 2 points
+CFR Reward: 1.0
+Winner: True
+>>> WIN ANALYSIS <<<
+Basic win
+Discards: ['Dragon White', 'Pin 5', 'Pin 1', 'Wind South', 'Wind West', 'Wind North', 'Sou 3', 'Sou 8', 'Sou 5', 'Man 9', 'Man 3']
+
+=== PLAYER 3: North ===
+Hand (6 tiles): ['Dragon Red', 'Man 9', 'Dragon Green', 'Pin 6', 'Man 9', 'Sou 1']
+Melds (2): [('CHI', ['Sou 7', 'Sou 8', 'Sou 9']), ('CHI', ['Man 7', 'Man 8', 'Man 9'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Dragon Red', 'Wind West', 'Pin 1', 'Sou 4', 'Flower Chrysanthemum', 'Sou 1', 'Sou 1', 'Man 2', 'Pin 3', 'Wind East', 'Man 4', 'Pin 5', 'Sou 2', 'Pin 3']
+
+=== GAME STATISTICS ===
+Total Chinese Points: 2
+Total CFR Rewards: 1.0
+Highest Scoring Player: Player 2
+Winners: ['West']
+
+=== END SUMMARY ===

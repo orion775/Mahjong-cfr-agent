@@ -1,0 +1,42 @@
+=== MAHJONG GAME SUMMARY ===
+Game Terminal: True
+Wall Remaining: 0 tiles
+
+=== PLAYER 0: East ===
+Hand (7 tiles): ['Sou 4', 'Sou 9', 'Man 4', 'Sou 8', 'Pin 9', 'Pin 2', 'Sou 3']
+Melds (2): [('PON', ['Man 3', 'Man 3', 'Man 3']), ('PON', ['Sou 5', 'Sou 5', 'Sou 5'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Dragon Red', 'Man 5', 'Sou 3', 'Pin 5', 'Sou 3', 'Sou 3', 'Sou 8', 'Man 6', 'Wind North', 'Wind East', 'Sou 7', 'Man 5', 'Dragon Red', 'Wind South', 'Pin 3', 'Man 7', 'Pin 7', 'Dragon White', 'Pin 6', 'Man 6', 'Man 2', 'Sou 9', 'Dragon White', 'Sou 8', 'Man 3']
+
+=== PLAYER 1: South ===
+Hand (10 tiles): ['Man 8', 'Man 8', 'Pin 2', 'Dragon White', 'Man 9', 'Sou 2', 'Pin 1', 'Man 4', 'Pin 9', 'Wind East']
+Melds (1): [('PON', ['Sou 6', 'Sou 6', 'Sou 6'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Pin 9', 'Pin 6', 'Sou 1', 'Man 7', 'Sou 4', 'Pin 2', 'Sou 2', 'Pin 1', 'Sou 9', 'Pin 6', 'Wind North', 'Wind South', 'Dragon Green', 'Man 2', 'Man 8', 'Man 6', 'Sou 7', 'Pin 4', 'Sou 8', 'Wind South']
+
+=== PLAYER 2: West ===
+Hand (9 tiles): ['Man 7', 'Flower Plum', 'Pin 3', 'Pin 6', 'Man 8', 'Sou 2', 'Man 4', 'Pin 5', 'Dragon Green']
+Melds (1): [('KAN', ['Pin 8', 'Pin 8', 'Pin 8', 'Pin 8'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Dragon Green', 'Wind North', 'Pin 4', 'Wind South', 'Wind East', 'Sou 1', 'Wind West', 'Man 5', 'Man 1', 'Dragon Red', 'Man 6', 'Pin 4', 'Flower Orchid', 'Sou 1', 'Pin 2', 'Sou 9', 'Pin 4', 'Man 1']
+
+=== PLAYER 3: North ===
+Hand (8 tiles): ['Pin 3', 'Pin 5', 'Man 9', 'Sou 7', 'Dragon Green', 'Pin 5', 'Dragon White', 'Sou 5']
+Melds (2): [('PON', ['Pin 7', 'Pin 7', 'Pin 7']), ('PON', ['Wind West', 'Wind West', 'Wind West'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Pin 9', 'Man 1', 'Flower Bamboo', 'Man 7', 'Dragon Red', 'Sou 7', 'Sou 4', 'Man 4', 'Man 1', 'Pin 3', 'Sou 1', 'Sou 2', 'Pin 1', 'Wind North', 'Man 5', 'Man 9', 'Sou 4', 'Man 9', 'Man 2', 'Man 2', 'Wind East', 'Pin 1']
+
+=== GAME STATISTICS ===
+Total Chinese Points: 0
+Total CFR Rewards: 0.0
+Highest Scoring Player: Player 0
+
+=== END SUMMARY ===

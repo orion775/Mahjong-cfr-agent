@@ -1,0 +1,42 @@
+=== MAHJONG GAME SUMMARY ===
+Game Terminal: True
+Wall Remaining: 0 tiles
+
+=== PLAYER 0: East ===
+Hand (9 tiles): ['Sou 1', 'Flower Chrysanthemum', 'Pin 8', 'Man 5', 'Sou 6', 'Man 5', 'Sou 3', 'Sou 7', 'Sou 1']
+Melds (1): [('KAN', ['Man 4', 'Man 4', 'Man 4', 'Man 4'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Sou 9', 'Dragon Red', 'Man 7', 'Wind West', 'Man 8', 'Pin 9', 'Man 2', 'Pin 7', 'Wind South', 'Dragon White', 'Man 2', 'Dragon Green', 'Sou 5', 'Man 3', 'Sou 7', 'Man 2', 'Pin 6', 'Man 6', 'Pin 9', 'Dragon White']
+
+=== PLAYER 1: South ===
+Hand (10 tiles): ['Pin 1', 'Sou 6', 'Man 3', 'Sou 4', 'Man 5', 'Sou 8', 'Man 1', 'Pin 8', 'Pin 7', 'Pin 8']
+Melds (1): [('PON', ['Dragon Red', 'Dragon Red', 'Dragon Red'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Man 1', 'Man 7', 'Pin 8', 'Sou 5', 'Flower Orchid', 'Pin 6', 'Sou 5', 'Pin 2', 'Wind West', 'Sou 9', 'Man 8', 'Sou 9', 'Pin 4', 'Flower Bamboo', 'Sou 3', 'Sou 3', 'Sou 2', 'Sou 4', 'Pin 7']
+
+=== PLAYER 2: West ===
+Hand (10 tiles): ['Pin 1', 'Man 9', 'Wind South', 'Sou 2', 'Dragon White', 'Sou 7', 'Wind South', 'Pin 3', 'Wind South', 'Man 9']
+Melds (1): [('PON', ['Wind North', 'Wind North', 'Wind North'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Man 9', 'Man 3', 'Season Summer', 'Sou 8', 'Dragon Green', 'Sou 2', 'Man 5', 'Man 3', 'Pin 2', 'Sou 4', 'Man 1', 'Pin 9', 'Pin 5', 'Pin 6', 'Wind North', 'Sou 2', 'Man 8', 'Sou 8', 'Pin 2', 'Sou 6', 'Man 6', 'Pin 4', 'Man 8', 'Man 7', 'Pin 4', 'Man 6']
+
+=== PLAYER 3: North ===
+Hand (8 tiles): ['Pin 2', 'Pin 3', 'Pin 3', 'Dragon White', 'Pin 1', 'Man 2', 'Sou 4', 'Dragon Green']
+Melds (2): [('KAN', ['Wind East', 'Wind East', 'Wind East', 'Wind East']), ('PON', ['Pin 5', 'Pin 5', 'Pin 5'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Sou 9', 'Man 9', 'Man 6', 'Flower Plum', 'Sou 7', 'Wind West', 'Pin 7', 'Pin 6', 'Pin 3', 'Sou 5', 'Pin 9', 'Man 7', 'Sou 8', 'Sou 1', 'Pin 4', 'Dragon Green', 'Pin 1', 'Sou 6', 'Wind West', 'Sou 1', 'Man 1', 'Sou 3']
+
+=== GAME STATISTICS ===
+Total Chinese Points: 0
+Total CFR Rewards: 0.0
+Highest Scoring Player: Player 0
+
+=== END SUMMARY ===

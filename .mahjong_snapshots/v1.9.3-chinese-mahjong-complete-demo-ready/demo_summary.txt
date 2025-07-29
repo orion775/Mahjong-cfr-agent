@@ -1,0 +1,45 @@
+=== MAHJONG GAME SUMMARY ===
+Game Terminal: True
+Wall Remaining: 36 tiles
+
+=== PLAYER 0: East ===
+Hand (7 tiles): ['Dragon Green', 'Dragon Red', 'Sou 9', 'Man 2', 'Pin 9', 'Sou 9', 'Sou 3']
+Melds (2): [('CHI', ['Man 7', 'Man 8', 'Man 9']), ('CHI', ['Sou 7', 'Sou 8', 'Sou 9'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Pin 2', 'Dragon White', 'Wind West', 'Pin 3', 'Pin 1', 'Wind South', 'Man 9', 'Dragon White', 'Man 3', 'Wind North', 'Sou 4', 'Pin 9']
+
+=== PLAYER 1: South ===
+Hand (2 tiles): ['Sou 8', 'Sou 8']
+Melds (4): [('CHI', ['Sou 4', 'Sou 5', 'Sou 6']), ('CHI', ['Sou 1', 'Sou 2', 'Sou 3']), ('CHI', ['Man 1', 'Man 2', 'Man 3']), ('CHI', ['Man 6', 'Man 7', 'Man 8'])]
+Chinese Score: 3 points
+CFR Reward: 1.0
+Winner: True
+>>> WIN ANALYSIS <<<
+Basic win
+Discards: ['Wind West', 'Pin 8', 'Wind South', 'Dragon Red', 'Dragon Red', 'Dragon Green', 'Wind East', 'Pin 5', 'Dragon Red', 'Pin 6', 'Pin 3', 'Pin 6', 'Man 3']
+
+=== PLAYER 2: West ===
+Hand (7 tiles): ['Man 7', 'Wind South', 'Pin 1', 'Wind North', 'Dragon Green', 'Pin 4', 'Pin 9']
+Melds (2): [('PON', ['Sou 1', 'Sou 1', 'Sou 1']), ('PON', ['Man 5', 'Man 5', 'Man 5'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Pin 8', 'Pin 9', 'Man 9', 'Man 8', 'Man 9', 'Pin 1', 'Sou 7', 'Man 6', 'Wind North', 'Dragon White', 'Sou 7']
+
+=== PLAYER 3: North ===
+Hand (1 tiles): ['Dragon Green']
+Melds (4): [('CHI', ['Pin 4', 'Pin 5', 'Pin 6']), ('CHI', ['Man 1', 'Man 2', 'Man 3']), ('CHI', ['Sou 2', 'Sou 3', 'Sou 4']), ('CHI', ['Man 6', 'Man 7', 'Man 8'])]
+Chinese Score: 0 points
+CFR Reward: 0.0
+Winner: False
+Discards: ['Sou 4', 'Wind East', 'Pin 8', 'Pin 8', 'Man 4', 'Wind East', 'Pin 5', 'Sou 5', 'Wind West', 'Wind South', 'Man 4']
+
+=== GAME STATISTICS ===
+Total Chinese Points: 3
+Total CFR Rewards: 1.0
+Highest Scoring Player: Player 1
+Winners: ['South']
+
+=== END SUMMARY ===
