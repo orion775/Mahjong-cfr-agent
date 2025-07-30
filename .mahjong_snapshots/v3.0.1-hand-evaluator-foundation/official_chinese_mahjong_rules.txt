@@ -1,0 +1,190 @@
+## Official Chinese Mahjong Core Rules (Gameplay Only)
+
+## 1. Tiles and Wall
+- Use a full set of 144 tiles:
+  - 36 Characters (Manzu), 36 Bamboos (Souzu), 36 Dots (Pinzu): 4 of each, values 1–9 in each suit
+  - 16 Winds (East, South, West, North): 4 of each
+  - 12 Dragons (Red, Green, White): 4 of each
+  - 8 Bonus Tiles (Flowers: Plum, Orchid, Chrysanthemum, Bamboo; Seasons: Spring, Summer, Autumn, Winter): 1 of each
+- All tiles shuffled and built into a single wall.
+
+## 2. Seating and Turn Order
+- 4 players: East, South, West, North
+- Turns proceed counterclockwise (East → South → West → North → ...)
+
+## 3. Initial Dealing
+- Each player receives 13 tiles.
+- Remaining tiles form the wall.
+- Dealer (East) starts first.
+
+## 4. Tile Draw and Discard Cycle
+- On your turn, draw one tile (except during claims/melds).
+- If you draw a bonus tile (Flower/Season), immediately set it aside and draw a replacement tile from the wall.
+- After drawing, you must discard one tile (unless declaring a win).
+- Play proceeds to the next player.
+
+## 5. Bonus Tiles (Flowers and Seasons)
+- If you draw a Flower or Season tile:
+  - Reveal and set it aside (not part of your hand).
+  - Immediately draw a replacement from the back of the wall.
+- Bonus tiles do NOT count toward hand size or melds.
+
+## 6. Winning Hand Structure
+- A standard winning hand is 14 tiles (excluding bonus tiles).
+  - **Structure:** 4 melds (sets of 3: CHI, PON, or KAN) + 1 pair
+- You win by forming a complete hand immediately after drawing or claiming a tile.
+- Some rare wins (after KAN or flower replacement) can have 15 tiles at the moment of victory, but only 14 are counted for meld+pair.
+
+## 7. Melds (Open Sets)
+- **CHI (Chow):** Sequence of 3 tiles, same suit, consecutive numbers (e.g., 2-3-4 Pin).
+  - You may CHI from any player's discard (Chinese rules).
+  - Only suit tiles (Man, Pin, Sou) may form CHI.
+- **PON (Pung):** Triplet of identical tiles.
+  - Claim any player's discard if you have the other 2 in hand.
+- **KAN (Kong):** Quad of identical tiles.
+  - Closed KAN (Ankan): 4 identical tiles from your hand.
+  - Open KAN (Minkan): Add a fourth tile to your open PON using a discard.
+  - PON-to-KAN upgrade (Shominkan): Add fourth matching tile to your own open PON.
+  - After any KAN, immediately draw a replacement tile from the wall (no bonus draw in official Chinese rules).
+- You must immediately declare and show melds.
+
+## 8. Claiming Discards (Call Priority)
+- When a tile is discarded, the following claims are prioritized:
+  1. **RON** (Winning on discard): Any player who can win on the discarded tile may claim first.
+  2. **KAN** (if three in hand and claiming fourth from discard)
+  3. **PON** (if two in hand)
+  4. **CHI** (sequence; Chinese rules allow any player, not just next in turn)
+- Only one claim is accepted per discard, based on above priority.
+
+## 9. Win Types
+- **Self-draw (Zimo):** Complete your hand by drawing a tile from the wall.
+- **Ron:** Complete your hand by claiming another player's discard.
+- **Robbing a KAN (Qianggang Hu):** Win by claiming the tile another player uses to upgrade PON to KAN (special case).
+
+## 10. Game End
+- Game ends when:
+  - A player declares a win (any type above).
+  - The wall is exhausted (draw/stalemate).
+
+## 11. Hand Size at End
+- Normally, a winning hand is 14 tiles (not counting bonus tiles).
+- In rare cases (e.g., winning immediately after KAN or bonus replacement before discarding), may briefly have 15 tiles at win.
+
+## 12. Illegal Melds/Sequences
+- CHI cannot "wrap" (no 9-1-2, etc.), must be within suit and sequential.
+- All melds must be validated for suit, tile count, and discard/hand balance.
+- No melds can be formed with honor tiles except PON/KAN.
+
+## 13. Flowers/Seasons
+- Each Flower or Season drawn is immediately replaced; collecting all 4 of a set grants bonus points (not required for win).
+
+## Official Chinese Mahjong Core Rules (With Special Hands, No Scoring)
+
+## 14. Special Hands (Rare Winning Patterns)
+The following hands are "special hands" recognized in Chinese mahjong. They have unique patterns, do not follow the standard 4 meld + 1 pair structure, and usually score the highest.
+
+- **Thirteen Orphans (Shi San Yao / 十三么)**
+  - One of each terminal and honor tile (1 and 9 of each suit, and all 7 honor tiles), plus one duplicate of any of these 13 tiles (to make a pair).
+  - Example: 1M, 9M, 1P, 9P, 1S, 9S, East, South, West, North, Red, Green, White, and any one of these as the pair.
+  - Can win by drawing or claiming the 14th tile for the pair.
+
+- **Seven Pairs (Qi Dui Zi / 七对子)**
+  - Hand consists of seven distinct pairs (no melds).
+  - Cannot include KANs.
+  - Example: 2M, 2M, 5S, 5S, East, East, Red, Red, 7P, 7P, 3S, 3S, North, North.
+
+- **All Honors (Zi Yi Se / 字一色)**
+  - Hand consists only of honor tiles (winds and dragons), any combination of PONs/KANs and a pair.
+
+- **All Terminals (Yao Jiu / 幺九)**
+  - All sets and pair are terminals (1s and 9s only).
+
+- **Big Three Dragons (Da San Yuan / 大三元)**
+  - Three PON/KAN sets of each dragon tile (Red, Green, White), plus any other set and a pair.
+
+- **Little Four Winds (Xiao Si Xi / 小四喜)**
+  - Three PON/KAN sets of three different wind tiles and a pair of the fourth wind.
+
+- **Big Four Winds (Da Si Xi / 大四喜)**
+  - Four PON/KAN sets, one for each wind tile.
+
+- **All Green (Lv Yi Se / 绿一色)**
+  - Hand contains only green tiles (2, 3, 4, 6, 8 of Bamboo, and Green Dragon).
+
+- **Nine Gates (Jiu Lian Bao Deng / 九莲宝灯)**
+  - Pure suit (e.g. all Manzu), hand is 1112345678999 + any one tile from that suit.
+  - The rarest possible hand.
+
+- **Four Concealed Triplets (Si An Ke / 四暗刻)**
+  - Four concealed PON/KAN in hand, plus a pair. May require self-draw to qualify in some rule sets.
+
+- **Other rare hands:**
+  - **All Green, All Red, All Honors, All Terminals, etc.**
+  - **13 Orphans with a 13-way wait** (winning on the 14th different tile)
+
+## 15. Yaku/Fan Requirements
+- A hand must satisfy at least the minimum scoring requirement (minimum "fan" or yaku).
+- In Chinese Official rules: at least 8 fan (often achieved with any special hand, or multiple yaku/bonus combinations).
+- Standard hands must contain 4 valid melds + 1 pair and meet at least one yaku/fan pattern to win.
+- Special hands are always eligible for winning (even if not 8 fan), unless local rules state otherwise.
+
+## Chinese Mahjong Hand Size Edge Cases
+
+### Standard Winning Hand Size
+- A normal winning hand always consists of 14 tiles: 4 melds (3 tiles each) + 1 pair.
+- After winning (ron or self-draw), the winning hand is revealed as 14 tiles (excluding bonus tiles).
+
+### Edge Case 1: Win After KAN Replacement (Kong Draw / Rinshan Kaihou)
+- Player forms a KAN and immediately draws a replacement tile from the wall.
+- If the replacement tile completes their hand, the player may declare a win **before discarding**.
+- At that moment, the player is holding 15 tiles (14 from hand + the replacement draw).
+- **Legal and recognized in Chinese Mahjong.**
+- Example scenario:
+    - Player has: [3 open melds], 1 concealed meld (3 tiles), 2 tiles in hand (waiting for a pair).
+    - Declares KAN, draws replacement, and it forms a pair or meld → wins with 15 tiles.
+
+### Edge Case 2: Win After Multiple Flower/Season Replacement Draws
+- Player draws a flower/season tile, sets it aside, and draws a replacement.
+- If the replacement tile is also a flower/season, the player repeats this process.
+- If the final replacement tile completes the hand, the player may win before discarding.
+- At the win moment, the hand can be 15 tiles (if a replacement completed the hand before a discard).
+- **Legal.** All bonus tiles are set aside and not counted.
+
+### Edge Case 3: Robbing a KAN (Qianggang Hu)
+- Another player attempts to upgrade a PON to a KAN.
+- If you can win on the tile used to complete the KAN, you declare a win immediately (before the KAN is completed).
+- Your hand may briefly be at 15 tiles if you have just drawn, but after claiming the tile, the win is displayed as a legal 14-tile hand.
+
+### Edge Case 4: Simultaneous Multiple KANs (Very Rare)
+- If a hand structure allows two KANs to be formed sequentially (e.g., with many matching tiles), each KAN is declared and processed one at a time.
+- After each KAN, the player draws a replacement tile.
+- If a win is declared after a KAN replacement but before discarding, the hand may temporarily have 15 tiles, **but never 16 or more**.
+
+### Summary Table
+
+| Situation                              | Possible Hand Size at Win | Official? | Notes                                     |
+|-----------------------------------------|--------------------------|-----------|-------------------------------------------|
+| Standard win (ron or tsumo)             | 14                       | Yes       | 4 melds + 1 pair                         |
+| Win on KAN replacement/bonus replacement| 15                       | Yes       | Only if win declared before discard       |
+| Robbing a KAN (Qianggang Hu)            | 14 (may briefly be 15)   | Yes       | Depends on timing of claim                |
+| Two KANs in one turn                    | 15 (never 16+)           | Yes       | Only if win declared before discard       |
+| 16 or more tiles at win                 | Not possible             | No        | Forbidden by Chinese official rules       |
+
+---
+
+**Note:**  
+Your engine’s win detection must allow a hand to win with 15 tiles at the instant after KAN or bonus replacement draw, but never allow a win with 16 or more tiles.
+
+
+
+---
+
+**For full engine compliance, your win-checking logic should allow these hands to win, even if they don’t fit the standard 4 meld + 1 pair rule.**
+
+---
+
+
+---
+
+**This document is for verifying your engine’s move logic, meld handling, draw/discard cycle, claim priority, and hand structure according to Chinese Official rules.**
+
