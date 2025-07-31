@@ -1,0 +1,561 @@
+Initial draw. Wall: 91 tiles.
+Turn 0: East | Action: DISCARD: Man 8
+    Hand: ['Wind South', 'Sou 8', 'Man 8', 'Season Spring', 'Pin 1', 'Dragon White', 'Pin 5', 'Dragon Green', 'Pin 3', 'Sou 7', 'Pin 5', 'Pin 1', 'Pin 9', 'Sou 9']
+    Melds: []
+Turn 1: South | Action: PASS
+    Hand: ['Sou 5', 'Flower Bamboo', 'Pin 5', 'Man 3', 'Sou 2', 'Pin 4', 'Wind North', 'Season Winter', 'Pin 8', 'Pin 7', 'Dragon Green', 'Wind West', 'Wind South']
+    Melds: []
+Turn 2: South | Action: DISCARD: Sou 2
+    Hand: ['Sou 5', 'Flower Bamboo', 'Pin 5', 'Man 3', 'Sou 2', 'Pin 4', 'Wind North', 'Season Winter', 'Pin 8', 'Pin 7', 'Dragon Green', 'Wind West', 'Wind South', 'Man 6']
+    Melds: []
+Turn 3: West | Action: PASS
+    Hand: ['Dragon White', 'Wind North', 'Pin 8', 'Sou 3', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Dragon Red', 'Pin 5']
+    Melds: []
+Turn 4: West | Action: DISCARD: Wind North
+    Hand: ['Dragon White', 'Wind North', 'Pin 8', 'Sou 3', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Dragon Red', 'Pin 5', 'Sou 9']
+    Melds: []
+Turn 5: North | Action: PASS
+    Hand: ['Dragon Red', 'Sou 4', 'Sou 7', 'Pin 2', 'Wind South', 'Sou 2', 'Man 8', 'Sou 5', 'Season Autumn', 'Flower Orchid', 'Dragon Red', 'Man 3', 'Pin 9']
+    Melds: []
+Turn 6: North | Action: DISCARD: Sou 2
+    Hand: ['Dragon Red', 'Sou 4', 'Sou 7', 'Pin 2', 'Wind South', 'Sou 2', 'Man 8', 'Sou 5', 'Season Autumn', 'Flower Orchid', 'Dragon Red', 'Man 3', 'Pin 9', 'Man 4']
+    Melds: []
+Turn 7: East | Action: PASS
+    Hand: ['Wind South', 'Sou 8', 'Season Spring', 'Pin 1', 'Dragon White', 'Pin 5', 'Dragon Green', 'Pin 3', 'Sou 7', 'Pin 5', 'Pin 1', 'Pin 9', 'Sou 9']
+    Melds: []
+Turn 8: East | Action: DISCARD: Dragon White
+    Hand: ['Wind South', 'Sou 8', 'Season Spring', 'Pin 1', 'Dragon White', 'Pin 5', 'Dragon Green', 'Pin 3', 'Sou 7', 'Pin 5', 'Pin 1', 'Pin 9', 'Sou 9', 'Man 9']
+    Melds: []
+Turn 9: South | Action: PASS
+    Hand: ['Sou 5', 'Flower Bamboo', 'Pin 5', 'Man 3', 'Pin 4', 'Wind North', 'Season Winter', 'Pin 8', 'Pin 7', 'Dragon Green', 'Wind West', 'Wind South', 'Man 6']
+    Melds: []
+Turn 10: South | Action: DISCARD: Dragon Green
+    Hand: ['Sou 5', 'Flower Bamboo', 'Pin 5', 'Man 3', 'Pin 4', 'Wind North', 'Season Winter', 'Pin 8', 'Pin 7', 'Dragon Green', 'Wind West', 'Wind South', 'Man 6', 'Sou 6']
+    Melds: []
+Turn 11: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Sou 3', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Dragon Red', 'Pin 5', 'Sou 9']
+    Melds: []
+Turn 12: West | Action: DISCARD: Dragon Red
+    Hand: ['Dragon White', 'Pin 8', 'Sou 3', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Dragon Red', 'Pin 5', 'Sou 9', 'Sou 8']
+    Melds: []
+Turn 13: North | Action: DISCARD: Sou 5
+    Hand: ['Sou 4', 'Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Sou 5', 'Season Autumn', 'Flower Orchid', 'Man 3', 'Pin 9', 'Man 4']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 14: East | Action: PASS
+    Hand: ['Wind South', 'Sou 8', 'Season Spring', 'Pin 1', 'Pin 5', 'Dragon Green', 'Pin 3', 'Sou 7', 'Pin 5', 'Pin 1', 'Pin 9', 'Sou 9', 'Man 9']
+    Melds: []
+Turn 15: East | Action: DISCARD: Season Spring
+    Hand: ['Wind South', 'Sou 8', 'Season Spring', 'Pin 1', 'Pin 5', 'Dragon Green', 'Pin 3', 'Sou 7', 'Pin 5', 'Pin 1', 'Pin 9', 'Sou 9', 'Man 9', 'Sou 3']
+    Melds: []
+Turn 16: South | Action: PASS
+    Hand: ['Sou 5', 'Flower Bamboo', 'Pin 5', 'Man 3', 'Pin 4', 'Wind North', 'Season Winter', 'Pin 8', 'Pin 7', 'Wind West', 'Wind South', 'Man 6', 'Sou 6']
+    Melds: []
+Turn 17: South | Action: DISCARD: Wind North
+    Hand: ['Sou 5', 'Flower Bamboo', 'Pin 5', 'Man 3', 'Pin 4', 'Wind North', 'Season Winter', 'Pin 8', 'Pin 7', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East']
+    Melds: []
+Turn 18: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Sou 3', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Pin 5', 'Sou 9', 'Sou 8']
+    Melds: []
+Turn 19: West | Action: DISCARD: Pin 5
+    Hand: ['Dragon White', 'Pin 8', 'Sou 3', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Pin 5', 'Sou 9', 'Sou 8', 'Pin 6']
+    Melds: []
+Turn 20: East | Action: DISCARD: Wind South
+    Hand: ['Wind South', 'Sou 8', 'Pin 1', 'Dragon Green', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Sou 9', 'Man 9', 'Sou 3']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 21: South | Action: PASS
+    Hand: ['Sou 5', 'Flower Bamboo', 'Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Pin 7', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East']
+    Melds: []
+Turn 22: South | Action: DISCARD: Flower Bamboo
+    Hand: ['Sou 5', 'Flower Bamboo', 'Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Pin 7', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 8']
+    Melds: []
+Turn 23: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Sou 3', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Sou 9', 'Sou 8', 'Pin 6']
+    Melds: []
+Turn 24: West | Action: DISCARD: Pin 6
+    Hand: ['Dragon White', 'Pin 8', 'Sou 3', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Sou 9', 'Sou 8', 'Pin 6', 'Sou 8']
+    Melds: []
+Turn 25: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Sou 3', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Sou 9', 'Sou 8', 'Sou 8']
+    Melds: []
+Turn 26: West | Action: DISCARD: Sou 3
+    Hand: ['Dragon White', 'Pin 8', 'Sou 3', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Sou 9', 'Sou 8', 'Sou 8', 'Sou 9']
+    Melds: []
+Turn 27: North | Action: PASS
+    Hand: ['Sou 4', 'Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Season Autumn', 'Flower Orchid', 'Man 3', 'Pin 9', 'Man 4']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 28: North | Action: DISCARD: Sou 4
+    Hand: ['Sou 4', 'Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Season Autumn', 'Flower Orchid', 'Man 3', 'Pin 9', 'Man 4', 'Man 4']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 29: North | Action: PASS
+    Hand: ['Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Season Autumn', 'Flower Orchid', 'Man 3', 'Pin 9', 'Man 4', 'Man 4']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 30: North | Action: DISCARD: Man 4
+    Hand: ['Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Season Autumn', 'Flower Orchid', 'Man 3', 'Pin 9', 'Man 4', 'Man 4', 'Pin 3']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 31: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 1', 'Dragon Green', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Sou 9', 'Man 9', 'Sou 3']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 32: East | Action: DISCARD: Pin 1
+    Hand: ['Sou 8', 'Pin 1', 'Dragon Green', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Sou 9', 'Man 9', 'Sou 3', 'Man 3']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 33: East | Action: PASS
+    Hand: ['Sou 8', 'Dragon Green', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Sou 9', 'Man 9', 'Sou 3', 'Man 3']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 34: East | Action: DISCARD: Dragon Green
+    Hand: ['Sou 8', 'Dragon Green', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Sou 9', 'Man 9', 'Sou 3', 'Man 3', 'Sou 1']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 35: South | Action: PASS
+    Hand: ['Sou 5', 'Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Pin 7', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 8']
+    Melds: []
+Turn 36: South | Action: DISCARD: Man 8
+    Hand: ['Sou 5', 'Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Pin 7', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 8', 'Man 6']
+    Melds: []
+Turn 37: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Sou 9', 'Sou 8', 'Sou 8', 'Sou 9']
+    Melds: []
+Turn 38: West | Action: DISCARD: Wind East
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Wind East', 'Man 2', 'Pin 2', 'Sou 9', 'Sou 8', 'Sou 8', 'Sou 9', 'Dragon Green']
+    Melds: []
+Turn 39: North | Action: PASS
+    Hand: ['Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Season Autumn', 'Flower Orchid', 'Man 3', 'Pin 9', 'Man 4', 'Pin 3']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 40: North | Action: DISCARD: Season Autumn
+    Hand: ['Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Season Autumn', 'Flower Orchid', 'Man 3', 'Pin 9', 'Man 4', 'Pin 3', 'Sou 6']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 41: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Sou 9', 'Man 9', 'Sou 3', 'Man 3', 'Sou 1']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 42: East | Action: DISCARD: Sou 9
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Sou 9', 'Man 9', 'Sou 3', 'Man 3', 'Sou 1', 'Wind West']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 43: West | Action: DISCARD: Sou 8
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Man 2', 'Pin 2', 'Sou 8', 'Sou 8', 'Dragon Green']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 44: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Man 2', 'Pin 2', 'Sou 8', 'Dragon Green']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 45: West | Action: DISCARD: Wind West
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Wind West', 'Man 2', 'Pin 2', 'Sou 8', 'Dragon Green', 'Man 9']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 46: North | Action: PASS
+    Hand: ['Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Flower Orchid', 'Man 3', 'Pin 9', 'Man 4', 'Pin 3', 'Sou 6']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 47: North | Action: DISCARD: Man 4
+    Hand: ['Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Flower Orchid', 'Man 3', 'Pin 9', 'Man 4', 'Pin 3', 'Sou 6', 'Pin 1']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 48: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Man 9', 'Sou 3', 'Man 3', 'Sou 1', 'Wind West']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 49: East | Action: DISCARD: Man 7
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Man 9', 'Sou 3', 'Man 3', 'Sou 1', 'Wind West', 'Man 7']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 50: South | Action: PASS
+    Hand: ['Sou 5', 'Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Pin 7', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6']
+    Melds: []
+Turn 51: South | Action: DISCARD: Pin 7
+    Hand: ['Sou 5', 'Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Pin 7', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4']
+    Melds: []
+Turn 52: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Man 2', 'Pin 2', 'Sou 8', 'Dragon Green', 'Man 9']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 53: West | Action: DISCARD: Sou 4
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Man 2', 'Pin 2', 'Sou 8', 'Dragon Green', 'Man 9', 'Sou 4']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 54: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Man 2', 'Pin 2', 'Sou 8', 'Dragon Green', 'Man 9']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 55: West | Action: DISCARD: Pin 2
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Man 2', 'Pin 2', 'Sou 8', 'Dragon Green', 'Man 9', 'Man 5']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 56: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Man 2', 'Sou 8', 'Dragon Green', 'Man 9', 'Man 5']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 57: West | Action: DISCARD: Sou 7
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Sou 7', 'Man 1', 'Man 2', 'Sou 8', 'Dragon Green', 'Man 9', 'Man 5', 'Pin 7']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 58: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Man 1', 'Man 2', 'Sou 8', 'Dragon Green', 'Man 9', 'Man 5', 'Pin 7']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 59: West | Action: DISCARD: Man 5
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Man 1', 'Man 2', 'Sou 8', 'Dragon Green', 'Man 9', 'Man 5', 'Pin 7', 'Man 9']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 60: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Man 1', 'Man 2', 'Sou 8', 'Dragon Green', 'Man 9', 'Pin 7', 'Man 9']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 61: West | Action: DISCARD: Dragon Green
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Man 1', 'Man 2', 'Sou 8', 'Dragon Green', 'Man 9', 'Pin 7', 'Man 9', 'Man 4']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9])]
+Turn 62: North | Action: PASS
+    Hand: ['Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Flower Orchid', 'Man 3', 'Pin 9', 'Pin 3', 'Sou 6', 'Pin 1']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 63: North | Action: DISCARD: Sou 6
+    Hand: ['Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Flower Orchid', 'Man 3', 'Pin 9', 'Pin 3', 'Sou 6', 'Pin 1', 'Man 6']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 64: North | Action: PASS
+    Hand: ['Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Flower Orchid', 'Man 3', 'Pin 9', 'Pin 3', 'Pin 1', 'Man 6']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 65: North | Action: DISCARD: Pin 2
+    Hand: ['Sou 7', 'Pin 2', 'Wind South', 'Man 8', 'Flower Orchid', 'Man 3', 'Pin 9', 'Pin 3', 'Pin 1', 'Man 6', 'Sou 2']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 66: North | Action: PASS
+    Hand: ['Sou 7', 'Wind South', 'Man 8', 'Flower Orchid', 'Man 3', 'Pin 9', 'Pin 3', 'Pin 1', 'Man 6', 'Sou 2']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 67: North | Action: DISCARD: Man 8
+    Hand: ['Sou 7', 'Wind South', 'Man 8', 'Flower Orchid', 'Man 3', 'Pin 9', 'Pin 3', 'Pin 1', 'Man 6', 'Sou 2', 'Sou 6']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 68: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Man 9', 'Sou 3', 'Man 3', 'Sou 1', 'Wind West']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 69: East | Action: DISCARD: Man 9
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Man 9', 'Sou 3', 'Man 3', 'Sou 1', 'Wind West', 'Pin 8']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 70: West | Action: DISCARD: Pin 8
+    Hand: ['Dragon White', 'Pin 8', 'Man 1', 'Man 1', 'Man 2', 'Sou 8', 'Pin 7', 'Man 4']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 71: North | Action: PASS
+    Hand: ['Sou 7', 'Wind South', 'Flower Orchid', 'Man 3', 'Pin 9', 'Pin 3', 'Pin 1', 'Man 6', 'Sou 2', 'Sou 6']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 72: North | Action: DISCARD: Pin 1
+    Hand: ['Sou 7', 'Wind South', 'Flower Orchid', 'Man 3', 'Pin 9', 'Pin 3', 'Pin 1', 'Man 6', 'Sou 2', 'Sou 6', 'Man 5']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 73: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Sou 3', 'Man 3', 'Sou 1', 'Wind West', 'Pin 8']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 74: East | Action: DISCARD: Sou 3
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Sou 3', 'Man 3', 'Sou 1', 'Wind West', 'Pin 8', 'Sou 5']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 75: South | Action: PASS
+    Hand: ['Sou 5', 'Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4']
+    Melds: []
+Turn 76: South | Action: DISCARD: Sou 5
+    Hand: ['Sou 5', 'Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4', 'Sou 5']
+    Melds: []
+Turn 77: South | Action: PASS
+    Hand: ['Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4', 'Sou 5']
+    Melds: []
+Turn 78: South | Action: DISCARD: Sou 5
+    Hand: ['Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4', 'Sou 5', 'Pin 9']
+    Melds: []
+Turn 79: South | Action: PASS
+    Hand: ['Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4', 'Pin 9']
+    Melds: []
+Turn 80: South | Action: DISCARD: Pin 5
+    Hand: ['Pin 5', 'Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4', 'Pin 9', 'Pin 4']
+    Melds: []
+Turn 81: West | Action: PASS
+    Hand: ['Dragon White', 'Man 1', 'Man 1', 'Man 2', 'Sou 8', 'Pin 7', 'Man 4']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 82: West | Action: DISCARD: Sou 8
+    Hand: ['Dragon White', 'Man 1', 'Man 1', 'Man 2', 'Sou 8', 'Pin 7', 'Man 4', 'Pin 2']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 83: West | Action: PASS
+    Hand: ['Dragon White', 'Man 1', 'Man 1', 'Man 2', 'Pin 7', 'Man 4', 'Pin 2']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 84: West | Action: DISCARD: Man 2
+    Hand: ['Dragon White', 'Man 1', 'Man 1', 'Man 2', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 85: West | Action: PASS
+    Hand: ['Dragon White', 'Man 1', 'Man 1', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 86: West | Action: DISCARD: Man 1
+    Hand: ['Dragon White', 'Man 1', 'Man 1', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2', 'Man 9']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 87: North | Action: PASS
+    Hand: ['Sou 7', 'Wind South', 'Flower Orchid', 'Man 3', 'Pin 9', 'Pin 3', 'Man 6', 'Sou 2', 'Sou 6', 'Man 5']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 88: North | Action: DISCARD: Pin 9
+    Hand: ['Sou 7', 'Wind South', 'Flower Orchid', 'Man 3', 'Pin 9', 'Pin 3', 'Man 6', 'Sou 2', 'Sou 6', 'Man 5', 'Man 1']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 89: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Man 3', 'Sou 1', 'Wind West', 'Pin 8', 'Sou 5']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 90: East | Action: DISCARD: Pin 9
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Pin 9', 'Man 3', 'Sou 1', 'Wind West', 'Pin 8', 'Sou 5', 'Pin 3']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 91: South | Action: PASS
+    Hand: ['Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4', 'Pin 9', 'Pin 4']
+    Melds: []
+Turn 92: South | Action: DISCARD: Season Winter
+    Hand: ['Man 3', 'Pin 4', 'Season Winter', 'Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4', 'Pin 9', 'Pin 4', 'Pin 3']
+    Melds: []
+Turn 93: West | Action: PASS
+    Hand: ['Dragon White', 'Man 1', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2', 'Man 9']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 94: West | Action: DISCARD: Man 1
+    Hand: ['Dragon White', 'Man 1', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2', 'Man 9', 'Sou 3']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 95: North | Action: PASS
+    Hand: ['Sou 7', 'Wind South', 'Flower Orchid', 'Man 3', 'Pin 3', 'Man 6', 'Sou 2', 'Sou 6', 'Man 5', 'Man 1']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 96: North | Action: DISCARD: Flower Orchid
+    Hand: ['Sou 7', 'Wind South', 'Flower Orchid', 'Man 3', 'Pin 3', 'Man 6', 'Sou 2', 'Sou 6', 'Man 5', 'Man 1', 'Sou 1']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 97: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Man 3', 'Sou 1', 'Wind West', 'Pin 8', 'Sou 5', 'Pin 3']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 98: East | Action: DISCARD: Sou 7
+    Hand: ['Sou 8', 'Pin 3', 'Sou 7', 'Pin 1', 'Man 3', 'Sou 1', 'Wind West', 'Pin 8', 'Sou 5', 'Pin 3', 'Man 2']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 99: South | Action: PASS
+    Hand: ['Man 3', 'Pin 4', 'Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4', 'Pin 9', 'Pin 4', 'Pin 3']
+    Melds: []
+Turn 100: South | Action: DISCARD: Man 3
+    Hand: ['Man 3', 'Pin 4', 'Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4', 'Pin 9', 'Pin 4', 'Pin 3', 'Sou 1']
+    Melds: []
+Turn 101: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2', 'Man 9', 'Sou 3']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 102: West | Action: DISCARD: Pin 4
+    Hand: ['Dragon White', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2', 'Man 9', 'Sou 3', 'Pin 4']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 103: South | Action: DISCARD: Wind East
+    Hand: ['Pin 8', 'Wind West', 'Wind South', 'Man 6', 'Sou 6', 'Wind East', 'Man 6', 'Man 4', 'Pin 9', 'Pin 3', 'Sou 1']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4])]
+Turn 104: West | Action: KAN: ActionID 114
+    Hand: ['Dragon White', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2', 'Man 9', 'Sou 3']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 105: West | Action: DISCARD: Sou 3
+    Hand: ['Dragon White', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2', 'Man 9', 'Sou 3', 'Dragon White']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 106: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2', 'Man 9', 'Dragon White']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 107: West | Action: DISCARD: Man 4
+    Hand: ['Dragon White', 'Pin 7', 'Man 4', 'Pin 2', 'Sou 2', 'Man 9', 'Dragon White', 'Man 7']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 108: West | Action: KAN: ActionID 114
+    Hand: ['Dragon White', 'Pin 7', 'Pin 2', 'Sou 2', 'Man 9', 'Dragon White', 'Man 7']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 109: West | Action: DISCARD: Man 7
+    Hand: ['Dragon White', 'Pin 7', 'Pin 2', 'Sou 2', 'Man 9', 'Dragon White', 'Man 7', 'Dragon Red']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 110: West | Action: KAN: ActionID 114
+    Hand: ['Dragon White', 'Pin 7', 'Pin 2', 'Sou 2', 'Man 9', 'Dragon White', 'Dragon Red']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 111: West | Action: DISCARD: Man 9
+    Hand: ['Dragon White', 'Pin 7', 'Pin 2', 'Sou 2', 'Man 9', 'Dragon White', 'Dragon Red', 'Wind West']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 112: North | Action: PASS
+    Hand: ['Sou 7', 'Wind South', 'Man 3', 'Pin 3', 'Man 6', 'Sou 2', 'Sou 6', 'Man 5', 'Man 1', 'Sou 1']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 113: North | Action: DISCARD: Man 6
+    Hand: ['Sou 7', 'Wind South', 'Man 3', 'Pin 3', 'Man 6', 'Sou 2', 'Sou 6', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 114: South | Action: DISCARD: Pin 9
+    Hand: ['Pin 8', 'Wind West', 'Wind South', 'Sou 6', 'Man 4', 'Pin 9', 'Pin 3', 'Sou 1']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 115: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 7', 'Pin 2', 'Sou 2', 'Dragon White', 'Dragon Red', 'Wind West']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 116: West | Action: DISCARD: Wind West
+    Hand: ['Dragon White', 'Pin 7', 'Pin 2', 'Sou 2', 'Dragon White', 'Dragon Red', 'Wind West', 'Pin 7']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 117: North | Action: PASS
+    Hand: ['Sou 7', 'Wind South', 'Man 3', 'Pin 3', 'Sou 2', 'Sou 6', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 118: North | Action: DISCARD: Sou 6
+    Hand: ['Sou 7', 'Wind South', 'Man 3', 'Pin 3', 'Sou 2', 'Sou 6', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1', 'Sou 4']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 119: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 3', 'Pin 1', 'Man 3', 'Sou 1', 'Wind West', 'Pin 8', 'Sou 5', 'Pin 3', 'Man 2']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 120: East | Action: DISCARD: Wind West
+    Hand: ['Sou 8', 'Pin 3', 'Pin 1', 'Man 3', 'Sou 1', 'Wind West', 'Pin 8', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 121: South | Action: PASS
+    Hand: ['Pin 8', 'Wind West', 'Wind South', 'Sou 6', 'Man 4', 'Pin 3', 'Sou 1']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 122: South | Action: DISCARD: Wind West
+    Hand: ['Pin 8', 'Wind West', 'Wind South', 'Sou 6', 'Man 4', 'Pin 3', 'Sou 1', 'Sou 7']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 123: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 7', 'Pin 2', 'Sou 2', 'Dragon White', 'Dragon Red', 'Pin 7']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 124: West | Action: DISCARD: Dragon Green
+    Hand: ['Dragon White', 'Pin 7', 'Pin 2', 'Sou 2', 'Dragon White', 'Dragon Red', 'Pin 7', 'Dragon Green']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 125: North | Action: PASS
+    Hand: ['Sou 7', 'Wind South', 'Man 3', 'Pin 3', 'Sou 2', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1', 'Sou 4']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 126: North | Action: DISCARD: Sou 7
+    Hand: ['Sou 7', 'Wind South', 'Man 3', 'Pin 3', 'Sou 2', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1', 'Sou 4', 'Sou 9']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 127: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 3', 'Pin 1', 'Man 3', 'Sou 1', 'Pin 8', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 128: East | Action: DISCARD: Pin 3
+    Hand: ['Sou 8', 'Pin 3', 'Pin 1', 'Man 3', 'Sou 1', 'Pin 8', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5', 'Dragon White']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 129: South | Action: PASS
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Man 4', 'Pin 3', 'Sou 1', 'Sou 7']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 130: South | Action: DISCARD: Wind North
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Man 4', 'Pin 3', 'Sou 1', 'Sou 7', 'Wind North']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 131: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 7', 'Pin 2', 'Sou 2', 'Dragon White', 'Dragon Red', 'Pin 7']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 132: West | Action: DISCARD: Pin 2
+    Hand: ['Dragon White', 'Pin 7', 'Pin 2', 'Sou 2', 'Dragon White', 'Dragon Red', 'Pin 7', 'Man 1']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 133: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 7', 'Sou 2', 'Dragon White', 'Dragon Red', 'Pin 7', 'Man 1']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 134: West | Action: DISCARD: Sou 2
+    Hand: ['Dragon White', 'Pin 7', 'Sou 2', 'Dragon White', 'Dragon Red', 'Pin 7', 'Man 1', 'Man 2']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 135: North | Action: PASS
+    Hand: ['Wind South', 'Man 3', 'Pin 3', 'Sou 2', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1', 'Sou 4', 'Sou 9']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 136: North | Action: DISCARD: Pin 3
+    Hand: ['Wind South', 'Man 3', 'Pin 3', 'Sou 2', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1', 'Sou 4', 'Sou 9', 'Man 5']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 137: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 1', 'Man 3', 'Sou 1', 'Pin 8', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5', 'Dragon White']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 138: East | Action: DISCARD: Sou 1
+    Hand: ['Sou 8', 'Pin 1', 'Man 3', 'Sou 1', 'Pin 8', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5', 'Dragon White', 'Sou 4']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 139: South | Action: PASS
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Man 4', 'Pin 3', 'Sou 1', 'Sou 7']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 140: South | Action: DISCARD: Wind East
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Man 4', 'Pin 3', 'Sou 1', 'Sou 7', 'Wind East']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 141: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 7', 'Dragon White', 'Dragon Red', 'Pin 7', 'Man 1', 'Man 2']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 142: West | Action: DISCARD: Dragon Red
+    Hand: ['Dragon White', 'Pin 7', 'Dragon White', 'Dragon Red', 'Pin 7', 'Man 1', 'Man 2', 'Man 7']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 143: North | Action: PASS
+    Hand: ['Wind South', 'Man 3', 'Sou 2', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1', 'Sou 4', 'Sou 9', 'Man 5']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 144: North | Action: DISCARD: Sou 4
+    Hand: ['Wind South', 'Man 3', 'Sou 2', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1', 'Sou 4', 'Sou 9', 'Man 5', 'Pin 7']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 145: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 1', 'Man 3', 'Pin 8', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5', 'Dragon White', 'Sou 4']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 146: East | Action: DISCARD: Pin 8
+    Hand: ['Sou 8', 'Pin 1', 'Man 3', 'Pin 8', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5', 'Dragon White', 'Sou 4', 'Pin 6']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 147: South | Action: PASS
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Man 4', 'Pin 3', 'Sou 1', 'Sou 7']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 148: South | Action: DISCARD: Pin 3
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Man 4', 'Pin 3', 'Sou 1', 'Sou 7', 'Man 8']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 149: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 7', 'Dragon White', 'Pin 7', 'Man 1', 'Man 2', 'Man 7']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 150: West | Action: DISCARD: Man 7
+    Hand: ['Dragon White', 'Pin 7', 'Dragon White', 'Pin 7', 'Man 1', 'Man 2', 'Man 7', 'Pin 4']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9])]
+Turn 151: North | Action: PASS
+    Hand: ['Wind South', 'Man 3', 'Sou 2', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1', 'Sou 9', 'Man 5', 'Pin 7']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 152: North | Action: DISCARD: Pin 1
+    Hand: ['Wind South', 'Man 3', 'Sou 2', 'Man 5', 'Man 1', 'Sou 1', 'Pin 1', 'Sou 9', 'Man 5', 'Pin 7', 'Pin 8']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red])]
+Turn 153: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5', 'Dragon White', 'Sou 4', 'Pin 6']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 154: East | Action: DISCARD: Pin 6
+    Hand: ['Sou 8', 'Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5', 'Dragon White', 'Sou 4', 'Pin 6', 'Pin 6']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 155: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5', 'Dragon White', 'Sou 4', 'Pin 6']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 156: East | Action: DISCARD: Man 5
+    Hand: ['Sou 8', 'Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Man 5', 'Dragon White', 'Sou 4', 'Pin 6', 'Pin 6']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 157: North | Action: DISCARD: Pin 7
+    Hand: ['Wind South', 'Man 3', 'Sou 2', 'Man 1', 'Sou 1', 'Sou 9', 'Pin 7', 'Pin 8']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red]), ('PON', [Man 5, Man 5, Man 5])]
+Turn 158: West | Action: DISCARD: Dragon White
+    Hand: ['Dragon White', 'Dragon White', 'Man 1', 'Man 2', 'Pin 4']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9]), ('PON', [Pin 7, Pin 7, Pin 7])]
+Turn 159: North | Action: PASS
+    Hand: ['Wind South', 'Man 3', 'Sou 2', 'Man 1', 'Sou 1', 'Sou 9', 'Pin 8']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red]), ('PON', [Man 5, Man 5, Man 5])]
+Turn 160: North | Action: DISCARD: Pin 8
+    Hand: ['Wind South', 'Man 3', 'Sou 2', 'Man 1', 'Sou 1', 'Sou 9', 'Pin 8', 'Wind North']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red]), ('PON', [Man 5, Man 5, Man 5])]
+Turn 161: East | Action: PASS
+    Hand: ['Sou 8', 'Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Dragon White', 'Sou 4', 'Pin 6', 'Pin 6']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 162: East | Action: DISCARD: Sou 8
+    Hand: ['Sou 8', 'Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Dragon White', 'Sou 4', 'Pin 6', 'Pin 6', 'Sou 1']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 163: East | Action: PASS
+    Hand: ['Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Dragon White', 'Sou 4', 'Pin 6', 'Pin 6', 'Sou 1']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 164: East | Action: DISCARD: Sou 3
+    Hand: ['Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Dragon White', 'Sou 4', 'Pin 6', 'Pin 6', 'Sou 1', 'Sou 3']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 165: East | Action: PASS
+    Hand: ['Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Dragon White', 'Sou 4', 'Pin 6', 'Pin 6', 'Sou 1']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 166: East | Action: DISCARD: Pin 2
+    Hand: ['Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Dragon White', 'Sou 4', 'Pin 6', 'Pin 6', 'Sou 1', 'Pin 2']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 167: South | Action: PASS
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Man 4', 'Sou 1', 'Sou 7', 'Man 8']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 168: South | Action: DISCARD: Man 4
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Man 4', 'Sou 1', 'Sou 7', 'Man 8', 'Pin 9']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 169: South | Action: PASS
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Sou 1', 'Sou 7', 'Man 8', 'Pin 9']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 170: South | Action: DISCARD: Pin 9
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Sou 1', 'Sou 7', 'Man 8', 'Pin 9', 'Man 3']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+Turn 171: West | Action: PASS
+    Hand: ['Dragon White', 'Man 1', 'Man 2', 'Pin 4']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9]), ('PON', [Pin 7, Pin 7, Pin 7])]
+Turn 172: West | Action: DISCARD: Man 1
+    Hand: ['Dragon White', 'Man 1', 'Man 2', 'Pin 4', 'Sou 8']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9]), ('PON', [Pin 7, Pin 7, Pin 7])]
+Turn 173: West | Action: PASS
+    Hand: ['Dragon White', 'Man 2', 'Pin 4', 'Sou 8']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9]), ('PON', [Pin 7, Pin 7, Pin 7])]
+Turn 174: West | Action: DISCARD: Sou 8
+    Hand: ['Dragon White', 'Man 2', 'Pin 4', 'Sou 8', 'Man 6']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9]), ('PON', [Pin 7, Pin 7, Pin 7])]
+Turn 175: West | Action: PASS
+    Hand: ['Dragon White', 'Man 2', 'Pin 4', 'Man 6']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9]), ('PON', [Pin 7, Pin 7, Pin 7])]
+Turn 176: West | Action: DISCARD: Man 2
+    Hand: ['Dragon White', 'Man 2', 'Pin 4', 'Man 6', 'Wind East']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9]), ('PON', [Pin 7, Pin 7, Pin 7])]
+Turn 177: West | Action: PASS
+    Hand: ['Dragon White', 'Pin 4', 'Man 6', 'Wind East']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9]), ('PON', [Pin 7, Pin 7, Pin 7])]
+Turn 178: West | Action: DISCARD: Wind South
+    Hand: ['Dragon White', 'Pin 4', 'Man 6', 'Wind East', 'Wind South']
+    Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9]), ('PON', [Pin 7, Pin 7, Pin 7])]
+Turn 179: North | Action: PASS
+    Hand: ['Wind South', 'Man 3', 'Sou 2', 'Man 1', 'Sou 1', 'Sou 9', 'Wind North']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red]), ('PON', [Man 5, Man 5, Man 5])]
+Turn 180: North | Action: DISCARD: Man 3
+    Hand: ['Wind South', 'Man 3', 'Sou 2', 'Man 1', 'Sou 1', 'Sou 9', 'Wind North', 'Man 7']
+    Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red]), ('PON', [Man 5, Man 5, Man 5])]
+Turn 181: East | Action: PASS
+    Hand: ['Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Dragon White', 'Sou 4', 'Pin 6', 'Pin 6', 'Sou 1']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 182: East | Action: DISCARD: Pin 1
+    Hand: ['Pin 1', 'Man 3', 'Sou 5', 'Pin 3', 'Man 2', 'Dragon White', 'Sou 4', 'Pin 6', 'Pin 6', 'Sou 1', 'Man 2']
+    Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+Turn 183: South | Action: PASS
+    Hand: ['Pin 8', 'Wind South', 'Sou 6', 'Sou 1', 'Sou 7', 'Man 8', 'Man 3']
+    Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+GAME END | Reason: Wall exhausted
+
+No winner (draw).
+
+East: 10 tiles, Melds: [('PON', [Pin 5, Pin 5, Pin 5])]
+South: 8 tiles, Melds: [('PON', [Pin 4, Pin 4, Pin 4]), ('PON', [Man 6, Man 6, Man 6])]
+West: 4 tiles, Melds: [('PON', [Sou 9, Sou 9, Sou 9]), ('PON', [Man 9, Man 9, Man 9]), ('PON', [Pin 7, Pin 7, Pin 7])]
+North: 7 tiles, Melds: [('PON', [Dragon Red, Dragon Red, Dragon Red]), ('PON', [Man 5, Man 5, Man 5])]

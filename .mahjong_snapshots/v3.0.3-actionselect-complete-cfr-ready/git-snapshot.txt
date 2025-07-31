@@ -1,0 +1,9 @@
+git add engine/ tests/ scripts/ *.py *.md *.txt
+git commit -m "v3.0.0: Working CFR trainer with 1.7% win rate achieved..."
+git push origin main  
+git push github main
+
+$snapshotName = "v3.0.0-working-cfr-trainer"
+$target = ".\.mahjong_snapshots\$snapshotName"
+New-Item -ItemType Directory -Force -Path $target
+Copy-Item -Recurse -Path .\* -Exclude ".git", ".mahjong_snapshots", "mahjong_snapshots" -Destination $target
