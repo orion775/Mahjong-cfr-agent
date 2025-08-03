@@ -46,11 +46,6 @@ class GameState:
         else:
             return f"Unknown({tile_id})"
     
-    @property
-    def current_player(self):
-        """Property to get current player index for compatibility."""
-        return self.turn_index
-    
     def get_current_player(self):
         return self.players[self.turn_index]
 
@@ -63,13 +58,6 @@ class GameState:
             print(f"[DEBUG] Step limit of {self.step_limit} reached — game ends in draw.")
             return
         player = self.get_current_player()
-        
-        # Debug: Check tile counts at start of each step
-        if self.step_counter % 10 == 0:  # Check every 10 steps to avoid spam
-            total_tiles = self.get_player_total_tiles(player)
-            expected = 14 if self.awaiting_discard else 13
-            if total_tiles != expected:
-                print(f"[TILE COUNT DEBUG] Step {self.step_counter}: Player {self.turn_index} has {total_tiles} tiles, expected {expected}")
 
         # DRAW PHASE
         if not self.awaiting_discard:
@@ -92,16 +80,6 @@ class GameState:
                 return
             else:
                 player.draw_tile(drawn_tile)
-                
-            # Check for win after drawing (Tsumo win)
-            if self.check_player_win(player):
-                if not hasattr(self, 'winners'):
-                    self.winners = []
-                if self.turn_index not in self.winners:
-                    self.winners.append(self.turn_index)
-                self._terminal = True
-                print(f"[DEBUG] Player {self.turn_index} ({player.seat}) wins by Tsumo! Hand: {[str(t) for t in player.hand]}")
-                return
                 
             self.awaiting_discard = True
             if self.is_terminal():
@@ -691,286 +669,22 @@ class GameState:
         return False
     
     
-    def check_win(self, player_id):
-        """
-        Check if a player (by ID) has a winning hand.
-        This method provides the API that trainers expect.
-        """
-        if 0 <= player_id < len(self.players):
-            return self.check_player_win(self.players[player_id])
-        return False
-    
     def check_player_win(self, player):
         """
-        Check if a player has a winning hand according to Chinese Mahjong rules.
-        
-        A winning hand consists of:
-        - Exactly 4 melds (PON/CHI/KAN) + 1 pair, OR
-        - Special hands (Seven Pairs, Thirteen Orphans, etc.)
-        
-        For players with open melds, we check if the remaining hand tiles
-        can form the required final meld + pair structure.
+        Check if a player has a winning hand by combining hand tiles with meld tiles.
+        Returns True if the player has a valid Mahjong win.
         """
-        hand_tiles = player.hand[:]
-        melds = getattr(player, "melds", [])
+        # Combine hand + all tiles from open melds (flattened)
+        full_hand = player.hand[:]
+        for meld_type, meld_tiles in getattr(player, "melds", []):
+            full_hand.extend(meld_tiles)
         
-        # Calculate total tiles (hand + melds)
-        total_meld_tiles = sum(len(meld_tiles) for _, meld_tiles in melds)
-        total_tiles = len(hand_tiles) + total_meld_tiles
-        
-        # Must have exactly 14 tiles total (or 15 for KAN replacement scenarios)
-        if total_tiles not in [14, 15]:
-            return False
-        
-        # Case 1: No open melds - check if hand forms complete winning pattern
-        if not melds:
-            return is_winning_hand(hand_tiles)
-        
-        # Case 2: Has open melds - check if remaining hand can complete the win
-        num_melds = len(melds)
-        remaining_tiles_needed = 14 - total_meld_tiles
-        
-        # Must have correct number of remaining tiles
-        if len(hand_tiles) != remaining_tiles_needed:
-            return False
-        
-        # Calculate how many more melds we need
-        melds_needed = 4 - num_melds
-        
-        if melds_needed == 1:
-            # Need 1 more meld + 1 pair (5 tiles total)
-            if len(hand_tiles) == 5:
-                return self._can_form_final_meld_and_pair(hand_tiles)
-            else:
-                return False
-        elif melds_needed == 2:
-            # Need 2 more melds + 1 pair (8 tiles total)
-            if len(hand_tiles) == 8:
-                return self._can_form_two_melds_and_pair(hand_tiles)
-            else:
-                return False
-        elif melds_needed == 3:
-            # Need 3 more melds + 1 pair (11 tiles total)
-            if len(hand_tiles) == 11:
-                return self._can_form_three_melds_and_pair(hand_tiles)
-            else:
-                return False
-        elif melds_needed == 0:
-            # All 4 melds are open, just need a pair
-            if len(hand_tiles) == 2:
-                return hand_tiles[0].tile_id == hand_tiles[1].tile_id
-            else:
-                return False
-        
-        return False
-    
-    def _can_form_final_meld_and_pair(self, tiles):
-        """Check if 5 tiles can form 1 meld + 1 pair."""
-        if len(tiles) != 5:
-            return False
-        
-        from collections import Counter
-        counts = Counter((t.category, t.value) for t in tiles)
-        
-        # Try each possible pair
-        for pair_type, count in counts.items():
-            if count >= 2:
-                # Remove pair and check if remaining 3 tiles form a meld
-                remaining = list(tiles)
-                removed = 0
-                for i in range(len(remaining) - 1, -1, -1):
-                    if (remaining[i].category, remaining[i].value) == pair_type:
-                        del remaining[i]
-                        removed += 1
-                        if removed == 2:
-                            break
-                
-                if len(remaining) == 3:
-                    # Check if 3 tiles form a valid meld (triplet or sequence)
-                    if self._is_valid_meld(remaining):
-                        return True
-        
-        return False
-    
-    def _can_form_two_melds_and_pair(self, tiles):
-        """Check if 8 tiles can form 2 melds + 1 pair."""
-        if len(tiles) != 8:
-            return False
-        
-        from collections import Counter
-        counts = Counter((t.category, t.value) for t in tiles)
-        
-        # Try each possible pair
-        for pair_type, count in counts.items():
-            if count >= 2:
-                # Remove pair and check if remaining 6 tiles form 2 melds
-                remaining = list(tiles)
-                removed = 0
-                for i in range(len(remaining) - 1, -1, -1):
-                    if (remaining[i].category, remaining[i].value) == pair_type:
-                        del remaining[i]
-                        removed += 1
-                        if removed == 2:
-                            break
-                
-                if len(remaining) == 6:
-                    # Check if 6 tiles can form exactly 2 melds
-                    if self._can_form_n_melds(remaining, 2):
-                        return True
-        
-        return False
-    
-    def _can_form_three_melds_and_pair(self, tiles):
-        """Check if 11 tiles can form 3 melds + 1 pair."""
-        if len(tiles) != 11:
-            return False
-        
-        from collections import Counter
-        counts = Counter((t.category, t.value) for t in tiles)
-        
-        # Try each possible pair
-        for pair_type, count in counts.items():
-            if count >= 2:
-                # Remove pair and check if remaining 9 tiles form 3 melds
-                remaining = list(tiles)
-                removed = 0
-                for i in range(len(remaining) - 1, -1, -1):
-                    if (remaining[i].category, remaining[i].value) == pair_type:
-                        del remaining[i]
-                        removed += 1
-                        if removed == 2:
-                            break
-                
-                if len(remaining) == 9:
-                    # Check if 9 tiles can form exactly 3 melds
-                    if self._can_form_n_melds(remaining, 3):
-                        return True
-        
-        return False
-    
-    def _is_valid_meld(self, tiles):
-        """Check if 3 tiles form a valid meld (triplet or sequence)."""
-        if len(tiles) != 3:
-            return False
-        
-        # Check for triplet
-        if all(t.tile_id == tiles[0].tile_id for t in tiles):
-            return True
-        
-        # Check for sequence (only for suit tiles)
-        if all(t.category in ["Man", "Pin", "Sou"] for t in tiles):
-            if all(t.category == tiles[0].category for t in tiles):
-                values = sorted([t.value for t in tiles])
-                if values == [values[0], values[0] + 1, values[0] + 2]:
-                    return True
-        
-        return False
-    
-    def _can_form_n_melds(self, tiles, n):
-        """Check if tiles can form exactly n melds."""
-        if len(tiles) != n * 3:
-            return False
-        
-        if n == 0:
-            return len(tiles) == 0
-        
-        if not tiles:
-            return n == 0
-        
-        # Try to form a meld with the first tile
-        first_tile = tiles[0]
-        
-        # Try triplet
-        matching_tiles = [t for t in tiles if t.tile_id == first_tile.tile_id]
-        if len(matching_tiles) >= 3:
-            # Form triplet and check remaining
-            remaining = list(tiles)
-            removed = 0
-            for i in range(len(remaining) - 1, -1, -1):
-                if remaining[i].tile_id == first_tile.tile_id and removed < 3:
-                    del remaining[i]
-                    removed += 1
-            
-            if self._can_form_n_melds(remaining, n - 1):
-                return True
-        
-        # Try sequence (only for suit tiles)
-        if first_tile.category in ["Man", "Pin", "Sou"]:
-            val2 = first_tile.value + 1
-            val3 = first_tile.value + 2
-            
-            tile2 = next((t for t in tiles[1:] if t.category == first_tile.category and t.value == val2), None)
-            tile3 = next((t for t in tiles[1:] if t.category == first_tile.category and t.value == val3), None)
-            
-            if tile2 and tile3:
-                # Form sequence and check remaining
-                remaining = [t for t in tiles if t not in [first_tile, tile2, tile3]]
-                if self._can_form_n_melds(remaining, n - 1):
-                    return True
-        
-        return False
-    
-    def get_player_total_tiles(self, player):
-        """
-        Calculate the total number of tiles a player has (hand + melds).
-        Accounts for KAN having 4 tiles vs PON/CHI having 3 tiles.
-        """
-        hand_size = len(player.hand)
-        meld_tiles = 0
-        
-        for meld_type, meld_tiles_list in player.melds:
-            if meld_type == "KAN":
-                meld_tiles += 4
-            else:  # PON or CHI
-                meld_tiles += 3
-        
-        return hand_size + meld_tiles
-    
-    def validate_player_tile_counts(self):
-        """
-        Validate that all players have proper tile counts according to Chinese Mahjong rules.
-        - Non-winning players: exactly 13 tiles
-        - Winning players: 14 or 15 tiles (15 only if winning after KAN replacement)
-        """
-        for i, player in enumerate(self.players):
-            total_tiles = self.get_player_total_tiles(player)
-            is_winner = i in getattr(self, 'winners', [])
-            
-            if is_winner:
-                if total_tiles not in [14, 15]:
-                    print(f"[TILE COUNT ERROR] Winner Player {i} has {total_tiles} tiles, should be 14-15")
-                    return False
-            else:
-                if total_tiles != 13:
-                    print(f"[TILE COUNT ERROR] Non-winner Player {i} has {total_tiles} tiles, should be 13")
-                    print(f"  Hand: {len(player.hand)} tiles")
-                    print(f"  Melds: {[(mtype, len(tiles)) for mtype, tiles in player.melds]}")
-                    return False
-        
-        return True
-    
+        return is_winning_hand(full_hand)
+
     def get_reward(self, player_id):
-        """
-        Get reward using the balanced reward system that prevents reward hacking.
-        This provides massive win bonuses while preventing defensive play.
-        """
-        from engine.balanced_rewards import get_balanced_terminal_reward
-        
-        if self.is_terminal():
-            # Use balanced terminal rewards that heavily favor wins
-            return get_balanced_terminal_reward(self, player_id)
-        else:
-            # Very small ongoing reward to avoid encouraging prolonged games
-            return 0.1
-    
-    def get_action_reward(self, player_id, action, prev_game_state=None):
-        """
-        Get balanced reward for a specific action.
-        This prevents reward hacking while encouraging wins.
-        """
-        from engine.balanced_rewards import get_balanced_reward
-        
-        return get_balanced_reward(self, player_id, action, prev_game_state)
+        if hasattr(self, 'winners'):
+            return 1.0 if player_id in self.winners else 0.0
+        return 0.0
     
     def get_hand_score(self, player):
         """
